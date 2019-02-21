@@ -110,6 +110,8 @@ public class UtilsAndCommons {
 
     public static final String INSTANCE_LIST_PERSISTED_PROPERTY_KEY = "nacos.instanceListPersisted";
 
+    public static final String SWITCH_DOMAIN_NAME = "00-00---000-NACOS_SWITCH_DOMAIN-000---00-00";
+
     public static final boolean INSTANCE_LIST_PERSISTED = Boolean.getBoolean(INSTANCE_LIST_PERSISTED_PROPERTY_KEY);
 
     public static final ScheduledExecutorService SERVER_STATUS_EXECUTOR;
