@@ -292,7 +292,6 @@ public class ApiCommands {
         VirtualClusterDomain virtualClusterDomain = (VirtualClusterDomain) domainsManager.getDomain(dom);
         Map<String, String[]> stringMap = new HashMap<>(16);
         stringMap.put("dom", Arrays.asList(dom).toArray(new String[1]));
-        stringMap.put("enableClientBeat", Arrays.asList("true").toArray(new String[1]));
         stringMap.put("cktype", Arrays.asList("TCP").toArray(new String[1]));
         stringMap.put("appName", Arrays.asList(app).toArray(new String[1]));
         stringMap.put("clusterName", Arrays.asList(clusterName).toArray(new String[1]));
@@ -327,9 +326,9 @@ public class ApiCommands {
 
         if (!virtualClusterDomain.allIPs().contains(ipAddress)) {
 
-            if (!virtualClusterDomain.getEnableClientBeat()) {
-                return result;
-            }
+//            if (!virtualClusterDomain.getEnableClientBeat()) {
+//                return result;
+//            }
             stringMap.put("ipList", Arrays.asList(JSON.toJSONString(Arrays.asList(ipAddress))).toArray(new String[1]));
             stringMap.put("json", Arrays.asList("true").toArray(new String[1]));
             addIP4Dom(MockHttpRequest.buildRequest(stringMap));
