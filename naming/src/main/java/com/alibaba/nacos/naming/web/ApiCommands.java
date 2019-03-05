@@ -1274,7 +1274,7 @@ public class ApiCommands {
         result.put("dom", dom);
         result.put("cacheMillis", cacheMillis);
         result.put("lastRefTime", System.currentTimeMillis());
-        result.put("checksum", domObj.getChecksum() + System.currentTimeMillis());
+        result.put("checksum", domObj.getChecksum());
         result.put("useSpecifiedURL", false);
         result.put("clusters", clusters);
         result.put("env", env);
