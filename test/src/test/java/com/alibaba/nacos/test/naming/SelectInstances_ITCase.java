@@ -20,7 +20,7 @@ import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
-import com.alibaba.nacos.api.selector.ExpressionSelector;
+import com.alibaba.nacos.api.selector.DslSelector;
 import com.alibaba.nacos.naming.NamingApp;
 import org.junit.Assert;
 import org.junit.Before;
@@ -386,9 +386,9 @@ public class SelectInstances_ITCase {
 
         TimeUnit.SECONDS.sleep(10);
 
-        ExpressionSelector expressionSelector = new ExpressionSelector();
-        expressionSelector.setExpression("INSTANCE.label.registerSource = 'dubbo'");
-        ListView<String> serviceList = naming.getServicesOfServer(1, 10, expressionSelector);
+        DslSelector dslSelector = new DslSelector();
+        dslSelector.setExpression("INSTANCE.label.registerSource = 'dubbo'");
+        ListView<String> serviceList = naming.getServicesOfServer(1, 10, dslSelector);
 
         Assert.assertTrue(serviceList.getData().contains(serviceName));
 
@@ -402,8 +402,8 @@ public class SelectInstances_ITCase {
 
         TimeUnit.SECONDS.sleep(10);
 
-        expressionSelector.setExpression("INSTANCE.label.registerSource = 'spring'");
-        serviceList = naming.getServicesOfServer(1, 10, expressionSelector);
+        dslSelector.setExpression("INSTANCE.label.registerSource = 'spring'");
+        serviceList = naming.getServicesOfServer(1, 10, dslSelector);
 
         Assert.assertTrue(serviceList.getData().contains(serviceName));
 

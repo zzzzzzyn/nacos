@@ -17,7 +17,7 @@ package com.alibaba.nacos.naming.selector;
 
 
 import com.alibaba.nacos.api.cmdb.pojo.PreservedEntityTypes;
-import com.alibaba.nacos.api.selector.ExpressionSelector;
+import com.alibaba.nacos.api.selector.DslSelector;
 import com.alibaba.nacos.api.selector.SelectorType;
 import com.alibaba.nacos.cmdb.service.CmdbReader;
 import com.alibaba.nacos.naming.boot.SpringContext;
@@ -55,7 +55,7 @@ import java.util.Set;
  * @see CmdbReader
  * @since 0.7.0
  */
-public class LabelSelector extends ExpressionSelector implements Selector {
+public class LabelSelector extends DslSelector implements Selector {
 
     private CmdbReader cmdbReader;
 

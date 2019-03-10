@@ -21,14 +21,14 @@ package com.alibaba.nacos.api.selector;
  * @author nkorange
  * @since 0.7.0
  */
-public class ExpressionSelector extends AbstractSelector {
+public class DslSelector extends AbstractSelector {
 
     /**
      * Label expression of this selector.
      */
     private String expression;
 
-    public ExpressionSelector() {
+    public DslSelector() {
         this.setType(SelectorType.label.name());
     }
 
