@@ -53,7 +53,7 @@ public class TcpSuperSenseProcessor implements HealthCheckProcessor, Runnable {
 
     private Map<String, BeatKey> keyMap = new ConcurrentHashMap<>();
 
-    private BlockingQueue<Beat> taskQueue = new LinkedBlockingQueue<Beat>();
+    private BlockingQueue<Beat> taskQueue = new LinkedBlockingQueue<>();
 
     /**
      * this value has been carefully tuned, do not modify unless you're confident
@@ -79,14 +79,11 @@ public class TcpSuperSenseProcessor implements HealthCheckProcessor, Runnable {
 
     private static ScheduledExecutorService NIO_EXECUTOR
         = Executors.newScheduledThreadPool(NIO_THREAD_COUNT,
-        new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                thread.setName("nacos.supersense.checker");
-                return thread;
-            }
+        (r) -> {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            thread.setName("nacos.supersense.checker");
+            return thread;
         }
     );
 
@@ -135,16 +132,14 @@ public class TcpSuperSenseProcessor implements HealthCheckProcessor, Runnable {
             taskQueue.add(beat);
             MetricsMonitor.getTcpHealthCheckMonitor().incrementAndGet();
         }
-
-//        selector.wakeup();
     }
 
     private void processTask() throws Exception {
-        Collection<Callable<Void>> tasks = new LinkedList<Callable<Void>>();
+        Collection<Callable<Void>> tasks = new LinkedList<>();
         do {
             Beat beat = taskQueue.poll(CONNECT_TIMEOUT_MS / 2, TimeUnit.MILLISECONDS);
             if (beat == null) {
-                return;
+                break;
             }
 
             tasks.add(new TaskProcessor(beat));
@@ -201,7 +196,7 @@ public class TcpSuperSenseProcessor implements HealthCheckProcessor, Runnable {
                 }
 
                 if (key.isValid() && key.isConnectable()) {
-                    //connected
+                    // connected
                     channel.finishConnect();
                     beat.finishCheck(true, false, System.currentTimeMillis() - beat.getTask().getStartTime(), "tcp:ok+");
                 }
@@ -357,7 +352,7 @@ public class TcpSuperSenseProcessor implements HealthCheckProcessor, Runnable {
     private class TaskProcessor implements Callable<Void> {
 
         private static final int MAX_WAIT_TIME_MILLISECONDS = 500;
-        Beat beat = null;
+        Beat beat;
 
         public TaskProcessor(Beat beat) {
             this.beat = beat;

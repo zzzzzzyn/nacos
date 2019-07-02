@@ -27,7 +27,6 @@ import com.alibaba.nacos.naming.healthcheck.RsInfo;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Record;
-import com.alibaba.nacos.naming.push.PushService;
 import com.alibaba.nacos.naming.selector.NoneSelector;
 import com.alibaba.nacos.naming.selector.Selector;
 import org.apache.commons.collections.CollectionUtils;
@@ -78,18 +77,13 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
      */
     private long pushCacheMillis = 0L;
 
-    private Map<String, Cluster> clusterMap = new HashMap<String, Cluster>();
+    private Map<String, Cluster> clusterMap = new HashMap<>();
 
     public Service() {
     }
 
     public Service(String name) {
         super(name);
-    }
-
-    @JSONField(serialize = false)
-    public PushService getPushService() {
-        return SpringContext.getAppContext().getBean(PushService.class);
     }
 
     public long getIpDeleteTimeout() {
@@ -239,7 +233,7 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
         }
 
         setLastModifiedMillis(System.currentTimeMillis());
-        getPushService().serviceChanged(namespaceId, getName());
+        SpringContext.getPushService().serviceChanged(namespaceId, getName());
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Instance instance : allIPs()) {

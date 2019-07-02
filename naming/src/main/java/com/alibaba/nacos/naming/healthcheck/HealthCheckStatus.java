@@ -34,7 +34,7 @@ public class HealthCheckStatus {
     public long checkRT = -1L;
 
     private static ConcurrentMap<String, HealthCheckStatus> statusMap =
-            new ConcurrentHashMap<String, HealthCheckStatus>();
+        new ConcurrentHashMap<>();
 
     public static void reset(Instance instance) {
         statusMap.put(buildKey(instance), new HealthCheckStatus());
@@ -61,8 +61,8 @@ public class HealthCheckStatus {
             String serviceName = instance.getServiceName();
             String datumKey = instance.getDatumKey();
             return serviceName + ":"
-                    + clusterName + ":"
-                    + datumKey;
+                + clusterName + ":"
+                + datumKey;
         } catch (Throwable e) {
             Loggers.SRV_LOG.error("[BUILD-KEY] Exception while set rt, ip {}, error: {}", instance.toJSON(), e);
         }

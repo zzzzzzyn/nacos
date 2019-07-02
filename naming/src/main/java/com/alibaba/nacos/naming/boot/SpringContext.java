@@ -15,6 +15,9 @@
  */
 package com.alibaba.nacos.naming.boot;
 
+import com.alibaba.nacos.naming.core.DistroMapper;
+import com.alibaba.nacos.naming.misc.GlobalConfig;
+import com.alibaba.nacos.naming.push.PushService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -28,7 +31,7 @@ import org.springframework.stereotype.Component;
 @Component("nacosApplicationContext")
 public class SpringContext implements ApplicationContextAware {
 
-    static ApplicationContext context;
+    private static ApplicationContext context;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -37,5 +40,18 @@ public class SpringContext implements ApplicationContextAware {
 
     public static ApplicationContext getAppContext() {
         return context;
+    }
+
+    public static PushService getPushService() {
+        return context.getBean(PushService.class);
+    }
+
+    public static DistroMapper getDistroMapper() {
+        return context.getBean(DistroMapper.class);
+    }
+
+    public static GlobalConfig getGlobalConfig() {
+
+        return context.getBean(GlobalConfig.class);
     }
 }

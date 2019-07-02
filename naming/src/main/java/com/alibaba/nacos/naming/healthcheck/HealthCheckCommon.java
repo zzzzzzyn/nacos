@@ -33,7 +33,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Health check public methods
@@ -58,50 +61,42 @@ public class HealthCheckCommon {
 
     private static LinkedBlockingDeque<HealthCheckResult> healthCheckResults = new LinkedBlockingDeque<>(1024 * 128);
 
-    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setDaemon(true);
-            thread.setName("com.taobao.health-check.notifier");
-            return thread;
-        }
+    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor((runnable) -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        thread.setName("com.taobao.health-check.notifier");
+        return thread;
     });
 
 
     public void init() {
-        executorService.schedule(new Runnable() {
-            @Override
-            public void run() {
-                List list = Arrays.asList(healthCheckResults.toArray());
-                healthCheckResults.clear();
+        executorService.schedule(() -> {
+            List list = Arrays.asList(healthCheckResults.toArray());
+            healthCheckResults.clear();
+            List<Server> sameSiteServers = serverListManager.getServers();
 
-                List<Server> sameSiteServers = serverListManager.getServers();
+            if (sameSiteServers == null || sameSiteServers.size() <= 0) {
+                return;
+            }
 
-                if (sameSiteServers == null || sameSiteServers.size() <= 0) {
-                    return;
+            for (Server server : sameSiteServers) {
+                if (server.getKey().equals(NetUtils.localServer())) {
+                    continue;
+                }
+                Map<String, String> params = new HashMap<>(10);
+                params.put("result", JSON.toJSONString(list));
+                if (Loggers.DEBUG_LOG.isDebugEnabled()) {
+                    Loggers.DEBUG_LOG.debug("[HEALTH-SYNC] server: {}, healthCheckResults: {}",
+                        server, JSON.toJSONString(list));
                 }
 
-                for (Server server : sameSiteServers) {
-                    if (server.getKey().equals(NetUtils.localServer())) {
-                        continue;
-                    }
-                    Map<String, String> params = new HashMap<>(10);
-                    params.put("result", JSON.toJSONString(list));
-                    if (Loggers.DEBUG_LOG.isDebugEnabled()) {
-                        Loggers.DEBUG_LOG.debug("[HEALTH-SYNC] server: {}, healthCheckResults: {}",
-                            server, JSON.toJSONString(list));
-                    }
+                HttpClient.HttpResult httpResult = HttpClient.httpPost("http://" + server.getKey()
+                    + RunningConfig.getContextPath() + UtilsAndCommons.NACOS_NAMING_CONTEXT
+                    + "/api/healthCheckResult", null, params);
 
-                    HttpClient.HttpResult httpResult = HttpClient.httpPost("http://" + server.getKey()
-                        + RunningConfig.getContextPath() + UtilsAndCommons.NACOS_NAMING_CONTEXT
-                        + "/api/healthCheckResult", null, params);
-
-                    if (httpResult.code != HttpURLConnection.HTTP_OK) {
-                        Loggers.EVT_LOG.warn("[HEALTH-CHECK-SYNC] failed to send result to {}, result: {}",
-                            server, JSON.toJSONString(list));
-                    }
-
+                if (httpResult.code != HttpURLConnection.HTTP_OK) {
+                    Loggers.EVT_LOG.warn("[HEALTH-CHECK-SYNC] failed to send result to {}, result: {}",
+                        server, JSON.toJSONString(list));
                 }
 
             }
@@ -251,7 +246,7 @@ public class HealthCheckCommon {
         }
     }
 
-    static class HealthCheckResult {
+    private static class HealthCheckResult {
         private String serviceName;
         private Instance instance;
 

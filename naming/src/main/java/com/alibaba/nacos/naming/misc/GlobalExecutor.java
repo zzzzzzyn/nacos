@@ -37,81 +37,55 @@ public class GlobalExecutor {
     private static final long SERVER_STATUS_UPDATE_PERIOD = TimeUnit.SECONDS.toMillis(5);
 
     private static ScheduledExecutorService executorService =
-        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-
-                t.setDaemon(true);
-                t.setName("com.alibaba.nacos.naming.raft.timer");
-
-                return t;
-            }
+        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), (runnable) -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            t.setName("com.alibaba.nacos.naming.raft.timer");
+            return t;
         });
 
     private static ScheduledExecutorService taskDispatchExecutor =
-        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-
-                t.setDaemon(true);
-                t.setName("com.alibaba.nacos.naming.distro.task.dispatcher");
-
-                return t;
-            }
+        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), (runnable) -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            t.setName("com.alibaba.nacos.naming.distro.task.dispatcher");
+            return t;
         });
 
 
     private static ScheduledExecutorService dataSyncExecutor =
-        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-
-                t.setDaemon(true);
-                t.setName("com.alibaba.nacos.naming.distro.data.syncer");
-
-                return t;
-            }
+        new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), (runnable) -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            t.setName("com.alibaba.nacos.naming.distro.data.syncer");
+            return t;
         });
 
     private static ScheduledExecutorService notifyServerListExecutor =
-        new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-
-                t.setDaemon(true);
-                t.setName("com.alibaba.nacos.naming.server.list.notifier");
-
-                return t;
-            }
+        new ScheduledThreadPoolExecutor(1, (runnable) -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            t.setName("com.alibaba.nacos.naming.server.list.notifier");
+            return t;
         });
 
-    private static final ScheduledExecutorService SERVER_STATUS_EXECUTOR
-        = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName("nacos.naming.status.worker");
-            t.setDaemon(true);
-            return t;
-        }
+    private static ScheduledExecutorService serverStatusExecutor
+        = new ScheduledThreadPoolExecutor(1, (runnable) -> {
+        Thread t = new Thread(runnable);
+        t.setName("nacos.naming.status.worker");
+        t.setDaemon(true);
+        return t;
     });
 
     /**
      * thread pool that processes getting service detail from other server asynchronously
      */
     private static ExecutorService serviceUpdateExecutor
-        = Executors.newFixedThreadPool(2, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName("com.alibaba.nacos.naming.service.update.http.handler");
-            t.setDaemon(true);
-            return t;
-        }
+        = Executors.newFixedThreadPool(2, (runnable) -> {
+        Thread t = new Thread(runnable);
+        t.setName("com.alibaba.nacos.naming.service.update.http.handler");
+        t.setDaemon(true);
+        return t;
     });
 
     public static void submitDataSync(Runnable runnable, long delay) {
@@ -132,7 +106,7 @@ public class GlobalExecutor {
     }
 
     public static void registerServerStatusReporter(Runnable runnable, long delay) {
-        SERVER_STATUS_EXECUTOR.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+        serverStatusExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
     }
 
     public static void registerServerStatusUpdater(Runnable runnable) {
