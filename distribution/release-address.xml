@@ -14,7 +14,7 @@
   limitations under the License.
  -->
 <assembly>
-    <id>server</id>
+    <id>server-${project.version}</id>
     <includeBaseDirectory>false</includeBaseDirectory>
     <formats>
         <format>dir</format>
