@@ -100,6 +100,12 @@
         <!-- Exclude all generated code -->
         <sonar.jacoco.itReportPath>${project.basedir}/../test/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.exclusions>file:**/generated-sources/**,**/test/**</sonar.exclusions>
+        <grpc.version>1.17.0</grpc.version>
+        <protoc.version>3.5.1</protoc.version>
+        <reactor-bom.version>Californium-SR5</reactor-bom.version>
+        <protobuf-java.version>3.6.1</protobuf-java.version>
+        <protostuff.version>1.5.9</protostuff.version>
+        <reactor-bom.version>Californium-SR5</reactor-bom.version>
     </properties>
     <!-- == -->
     <!-- =========================================================Build plugins================================================ -->
@@ -437,6 +443,9 @@
         <module>distribution</module>
         <module>console</module>
         <module>cmdb</module>
+        <module>remoting/remoting-core</module>
+        <module>remoting/remoting-protocol</module>
+        <module>remoting/remoting-grpc</module>
     </modules>
 
     <!-- 所有的子项目默认依赖 -->
@@ -715,7 +724,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>19.0</version>
+                <version>26.0-android</version>
             </dependency>
 
             <dependency>
