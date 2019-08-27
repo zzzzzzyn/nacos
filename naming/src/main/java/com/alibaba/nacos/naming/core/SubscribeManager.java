@@ -70,7 +70,7 @@ public class SubscribeManager {
                 return getSubscribers(serviceName, namespaceId);
             }
 
-            List<Subscriber> subscriberList = new ArrayList<Subscriber>();
+            List<Subscriber> subscriberList = new ArrayList<>();
             // try sync data from remote server:
             for (Server server : serverListManager.getHealthyServers()) {
 
@@ -86,7 +86,7 @@ public class SubscribeManager {
                     + UtilsAndCommons.NACOS_NAMING_CONTEXT + SUBSCRIBER_ON_SYNC_URL, new ArrayList<>(), paramValues);
 
                 if (HttpURLConnection.HTTP_OK == result.code) {
-                    Subscribers subscribers = (Subscribers) JSONObject.parseObject(result.content, Subscribers.class);
+                    Subscribers subscribers = JSONObject.parseObject(result.content, Subscribers.class);
                     subscriberList.addAll(subscribers.getSubscribers());
                 }
                 return subscriberList.stream().filter(distinctByKey(Subscriber::toString)).collect(Collectors.toList());

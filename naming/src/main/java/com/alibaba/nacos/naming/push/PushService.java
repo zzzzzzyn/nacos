@@ -60,10 +60,10 @@ public class PushService implements ApplicationContextAware, ApplicationListener
     private static final int MAX_RETRY_TIMES = 1;
 
     private static volatile ConcurrentMap<String, Receiver.AckEntry> ackMap
-        = new ConcurrentHashMap<String, Receiver.AckEntry>();
+        = new ConcurrentHashMap<>();
 
     private static ConcurrentMap<String, ConcurrentMap<String, PushClient>> clientMap
-        = new ConcurrentHashMap<String, ConcurrentMap<String, PushClient>>();
+        = new ConcurrentHashMap<>();
 
     private static volatile ConcurrentHashMap<String, Long> udpSendTimeMap = new ConcurrentHashMap<String, Long>();
 
@@ -136,60 +136,56 @@ public class PushService implements ApplicationContextAware, ApplicationListener
         String serviceName = service.getName();
         String namespaceId = service.getNamespaceId();
 
-        Future future = udpSender.schedule(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Loggers.PUSH.info(serviceName + " is changed, add it to push queue.");
-                    ConcurrentMap<String, PushClient> clients = clientMap.get(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
-                    if (MapUtils.isEmpty(clients)) {
-                        return;
-                    }
-
-                    Map<String, Object> cache = new HashMap<>(16);
-                    long lastRefTime = System.nanoTime();
-                    for (PushClient client : clients.values()) {
-                        if (client.zombie()) {
-                            Loggers.PUSH.debug("client is zombie: " + client.toString());
-                            clients.remove(client.toString());
-                            Loggers.PUSH.debug("client is zombie: " + client.toString());
-                            continue;
-                        }
-
-                        Receiver.AckEntry ackEntry;
-                        Loggers.PUSH.debug("push serviceName: {} to client: {}", serviceName, client.toString());
-                        String key = getPushCacheKey(serviceName, client.getIp(), client.getAgent());
-                        byte[] compressData = null;
-                        Map<String, Object> data = null;
-                        if (switchDomain.getDefaultPushCacheMillis() >= 20000 && cache.containsKey(key)) {
-                            org.javatuples.Pair pair = (org.javatuples.Pair) cache.get(key);
-                            compressData = (byte[]) (pair.getValue0());
-                            data = (Map<String, Object>) pair.getValue1();
-
-                            Loggers.PUSH.debug("[PUSH-CACHE] cache hit: {}:{}", serviceName, client.getAddrStr());
-                        }
-
-                        if (compressData != null) {
-                            ackEntry = prepareAckEntry(client, compressData, data, lastRefTime);
-                        } else {
-                            ackEntry = prepareAckEntry(client, prepareHostsData(client), lastRefTime);
-                            if (ackEntry != null) {
-                                cache.put(key, new org.javatuples.Pair<>(ackEntry.origin.getData(), ackEntry.data));
-                            }
-                        }
-
-                        Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
-                            client.getServiceName(), client.getAddrStr(), client.getAgent(), (ackEntry == null ? null : ackEntry.key));
-
-                        udpPush(ackEntry);
-                    }
-                } catch (Exception e) {
-                    Loggers.PUSH.error("[NACOS-PUSH] failed to push serviceName: {} to client, error: {}", serviceName, e);
-
-                } finally {
-                    futureMap.remove(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
+        Future future = udpSender.schedule(() -> {
+            try {
+                Loggers.PUSH.info(serviceName + " is changed, add it to push queue.");
+                ConcurrentMap<String, PushClient> clients = clientMap.get(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
+                if (MapUtils.isEmpty(clients)) {
+                    return;
                 }
 
+                Map<String, Object> cache = new HashMap<>(16);
+                long lastRefTime = System.nanoTime();
+                for (PushClient client : clients.values()) {
+                    if (client.zombie()) {
+                        Loggers.PUSH.debug("client is zombie: " + client.toString());
+                        clients.remove(client.toString());
+                        Loggers.PUSH.debug("client is zombie: " + client.toString());
+                        continue;
+                    }
+
+                    Receiver.AckEntry ackEntry;
+                    Loggers.PUSH.debug("push serviceName: {} to client: {}", serviceName, client.toString());
+                    String key = getPushCacheKey(serviceName, client.getIp(), client.getAgent());
+                    byte[] compressData = null;
+                    Map<String, Object> data = null;
+                    if (switchDomain.getDefaultPushCacheMillis() >= 20000 && cache.containsKey(key)) {
+                        org.javatuples.Pair pair = (org.javatuples.Pair) cache.get(key);
+                        compressData = (byte[]) (pair.getValue0());
+                        data = (Map<String, Object>) pair.getValue1();
+
+                        Loggers.PUSH.debug("[PUSH-CACHE] cache hit: {}:{}", serviceName, client.getAddrStr());
+                    }
+
+                    if (compressData != null) {
+                        ackEntry = prepareAckEntry(client, compressData, data, lastRefTime);
+                    } else {
+                        ackEntry = prepareAckEntry(client, prepareHostsData(client), lastRefTime);
+                        if (ackEntry != null) {
+                            cache.put(key, new org.javatuples.Pair<>(ackEntry.origin.getData(), ackEntry.data));
+                        }
+                    }
+
+                    Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
+                        client.getServiceName(), client.getAddrStr(), client.getAgent(), (ackEntry == null ? null : ackEntry.key));
+
+                    udpPush(ackEntry);
+                }
+            } catch (Exception e) {
+                Loggers.PUSH.error("[NACOS-PUSH] failed to push serviceName: {} to client, error: {}", serviceName, e);
+
+            } finally {
+                futureMap.remove(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
             }
         }, 1000, TimeUnit.MILLISECONDS);
 
@@ -228,10 +224,9 @@ public class PushService implements ApplicationContextAware, ApplicationListener
     public static void addClient(PushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
         String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getNamespaceId(), client.getServiceName());
-        ConcurrentMap<String, PushClient> clients =
-            clientMap.get(serviceKey);
+        ConcurrentMap<String, PushClient> clients = clientMap.get(serviceKey);
         if (clients == null) {
-            clientMap.putIfAbsent(serviceKey, new ConcurrentHashMap<String, PushClient>(1024));
+            clientMap.putIfAbsent(serviceKey, new ConcurrentHashMap<>(1024));
             clients = clientMap.get(serviceKey);
         }
 
@@ -253,10 +248,10 @@ public class PushService implements ApplicationContextAware, ApplicationListener
         if (Objects.isNull(clientConcurrentMap)) {
             return null;
         }
-        List<Subscriber> clients = new ArrayList<Subscriber>();
-        clientConcurrentMap.forEach((key, client) -> {
-            clients.add(new Subscriber(client.getAddrStr(), client.getAgent(), client.getApp(), client.getIp(), namespaceId, serviceName));
-        });
+        List<Subscriber> clients = new ArrayList<>();
+        clientConcurrentMap.forEach((key, client) ->
+            clients.add(new Subscriber(client.getAddrStr(), client.getAgent(), client.getApp(), client.getIp(), namespaceId, serviceName))
+        );
         return clients;
     }
 
