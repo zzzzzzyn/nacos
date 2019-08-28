@@ -16,6 +16,9 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
+import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
+import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
 import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.client.ClientType;
 import com.alibaba.nacos.naming.core.Service;
@@ -24,6 +27,7 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Subscriber;
 import com.alibaba.nacos.naming.push.udp.UdpPushClient;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.codehaus.jackson.util.VersionUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -34,7 +38,9 @@ import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -48,7 +54,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     private ApplicationContext applicationContext;
 
-    public static final long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10L);
+    public static final int ACK_TIMEOUT_SECONDS = 10;
+    public static final long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
     public static final int MAX_RETRY_TIMES = 1;
 
     private AtomicInteger totalPush = new AtomicInteger();
@@ -61,22 +68,57 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     private volatile ConcurrentHashMap<String, Long> pushCostMap = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+    private final EventLoopPipelineReactive pushEventLoopReactive
+        = new EventLoopPipelineReactive(new DefaultEventExecutorGroup(2, runnable -> {
         Thread t = new Thread(runnable);
         t.setDaemon(true);
         t.setName("com.alibaba.nacos.naming.push.retransmitter");
         return t;
-    });
+    }));
 
     @Override
     public void afterSingletonsInstantiated() {
-        executorService.scheduleWithFixedDelay(() -> {
-            try {
+
+        //1. attach some event loop listener
+        initEventLoopListener();
+
+        //2. reactive remove push client id zombie with recycle
+        pushEventLoopReactive.reactive(new RecyclableEvent(this, IEventType.REMOVE_CLIENT_IF_ZOMBIE, 20));
+    }
+
+    private void initEventLoopListener() {
+        pushEventLoopReactive.addListener(new IPipelineEventListener<RecyclableEvent>() {
+            @Override
+            public boolean onEvent(RecyclableEvent event, int listenerIndex) {
                 removeClientIfZombie();
-            } catch (Throwable e) {
-                Loggers.PUSH.warn("[NACOS-PUSH] failed to remove client zombie");
+                return true;
             }
-        }, 0, 20, TimeUnit.SECONDS);
+
+            @Override
+            public int[] interestEventTypes() {
+                return new int[]{IEventType.REMOVE_CLIENT_IF_ZOMBIE};
+            }
+        });
+
+        pushEventLoopReactive.addListener(new IPipelineEventListener<RecyclableEvent>() {
+            @Override
+            public boolean onEvent(RecyclableEvent event, int listenerIndex) {
+                IReTransmitter reTransmitter = event.getValue();
+                reTransmitter.run();
+                /**
+                 * must cancel ,because The following code will determine whether
+                 * it needs to be executed once, depending on the circumstances.
+                 * so exit current event loop.
+                 */
+                event.cancel();
+                return true;
+            }
+
+            @Override
+            public int[] interestEventTypes() {
+                return new int[]{IEventType.RE_TRANSMITTER};
+            }
+        });
     }
 
     public Map<String, Long> getPushCostMap() {
@@ -185,8 +227,9 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     }
 
     public void schedulerReTransmitter(IReTransmitter reTransmitter) {
-        executorService.schedule(reTransmitter, TimeUnit.NANOSECONDS.toMillis(PushService.ACK_TIMEOUT_NANOS),
-            TimeUnit.MILLISECONDS);
+        RecyclableEvent recyclableEvent =
+            new RecyclableEvent(this, reTransmitter, IEventType.RE_TRANSMITTER, ACK_TIMEOUT_SECONDS);
+        pushEventLoopReactive.reactive(recyclableEvent);
     }
 
     public void putAckEntry(String key, AckEntry ackEntry) {

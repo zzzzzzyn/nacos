@@ -66,7 +66,7 @@ public class GrpcServerRemotingManager extends AbstractGrpcRemotingManager imple
             }
 
             Class<? extends IEventPipelineReactive> eventPipelineReactive =
-                iPipelineEventListener.eventListenerPartition();
+                iPipelineEventListener.pipelineReactivePartition();
             IEventPipelineReactive eventReactive = getAbstractEventPipelineReactive(eventPipelineReactive);
             if (eventReactive == null) {
                 try {

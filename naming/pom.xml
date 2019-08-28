@@ -154,6 +154,13 @@
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-cmdb</artifactId>
         </dependency>
+        <!-- support long connection -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>nacos-remoting-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -201,7 +208,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <!--<excludes>-->
-                    <!--<exclude>application.properties</exclude>-->
+                <!--<exclude>application.properties</exclude>-->
                 <!--</excludes>-->
             </resource>
         </resources>

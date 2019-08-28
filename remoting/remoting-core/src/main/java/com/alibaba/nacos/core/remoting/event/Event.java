@@ -26,6 +26,8 @@ import java.util.HashMap;
  */
 public class Event extends EventObject implements IEventContext {
 
+    public static final Object EMPTY_VALUE = new Object();
+
     protected HashMap<String, Object> eventContext = null;
 
     protected boolean isInterrupt;
@@ -40,6 +42,10 @@ public class Event extends EventObject implements IEventContext {
         super(source);
         this.value = value;
         this.eventType = eventType;
+    }
+
+    public Event(Object source, int eventType) {
+        this(source, EMPTY_VALUE, eventType);
     }
 
     public int getEventType() {

@@ -48,13 +48,13 @@ public interface IPipelineEventListener<T extends Event> extends EventListener {
     int[] interestEventTypes();
 
     /**
-     * event listener partition.
+     * event pipeline reactive partition.
      * Multiple eventListeners can be merged into the specified partition according to their respective characteristics
      * By default, all of the event listeners are under the BaseEventPipelineReactive partition.
      *
      * @return the default event listener partition。
      */
-    default Class<? extends IEventPipelineReactive> eventListenerPartition() {
+    default Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
 
         return BaseEventPipelineReactive.class;
     }
