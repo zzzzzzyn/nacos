@@ -23,8 +23,7 @@ import io.grpc.stub.CallStreamObserver;
 /**
  * @author pbting
  */
-public abstract class AbstractCallStreamObserver
-    extends CallStreamObserver<InteractivePayload>
+public abstract class AbstractCallStreamObserver extends CallStreamObserver<InteractivePayload>
     implements IInteractive, IIdentifyStreamObserver {
 
     private String identifyStream;

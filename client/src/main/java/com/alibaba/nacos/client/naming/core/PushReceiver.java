@@ -16,6 +16,7 @@
 package com.alibaba.nacos.client.naming.core;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.naming.push.AckPacket;
 import com.alibaba.nacos.client.naming.utils.IoUtils;
 import com.alibaba.nacos.client.utils.StringUtils;
 
@@ -76,30 +77,22 @@ public class PushReceiver implements Runnable {
                 NAMING_LOGGER.info("received push data: " + json + " from " + packet.getAddress().toString());
 
                 PushPacket pushPacket = JSON.parseObject(json, PushPacket.class);
-                String ack;
+                AckPacket pushResponseAck;
                 if ("dom".equals(pushPacket.type) || "service".equals(pushPacket.type)) {
                     hostReactor.processServiceJSON(pushPacket.data);
 
                     // send ack to server
-                    ack = "{\"type\": \"push-ack\""
-                        + ", \"lastRefTime\":\"" + pushPacket.lastRefTime
-                        + "\", \"data\":" + "\"\"}";
+                    pushResponseAck = new AckPacket("push-ack", pushPacket.lastRefTime, StringUtils.EMPTY);
                 } else if ("dump".equals(pushPacket.type)) {
                     // dump data to server
-                    ack = "{\"type\": \"dump-ack\""
-                        + ", \"lastRefTime\": \"" + pushPacket.lastRefTime
-                        + "\", \"data\":" + "\""
-                        + StringUtils.escapeJavaScript(JSON.toJSONString(hostReactor.getServiceInfoMap()))
-                        + "\"}";
+                    pushResponseAck = new AckPacket("dump-ack", pushPacket.lastRefTime, StringUtils.escapeJavaScript(JSON.toJSONString(hostReactor.getServiceInfoMap())));
                 } else {
                     // do nothing send ack only
-                    ack = "{\"type\": \"unknown-ack\""
-                        + ", \"lastRefTime\":\"" + pushPacket.lastRefTime
-                        + "\", \"data\":" + "\"\"}";
+                    pushResponseAck = new AckPacket("unknown-ack", pushPacket.lastRefTime, StringUtils.EMPTY);
                 }
 
-                udpSocket.send(new DatagramPacket(ack.getBytes(Charset.forName("UTF-8")),
-                    ack.getBytes(Charset.forName("UTF-8")).length, packet.getSocketAddress()));
+                byte[] ack = JSON.toJSONString(pushResponseAck).getBytes(Charset.forName("UTF-8"));
+                udpSocket.send(new DatagramPacket(ack, ack.length, packet.getSocketAddress()));
             } catch (Exception e) {
                 NAMING_LOGGER.error("[NA] error while receiving push data", e);
             }

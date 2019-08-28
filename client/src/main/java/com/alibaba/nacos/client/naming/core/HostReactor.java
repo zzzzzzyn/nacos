@@ -292,12 +292,14 @@ public class HostReactor {
         }
     }
 
-    public void refreshOnly(String serviceName, String clusters) {
+    public String refreshOnly(String serviceName, String clusters) {
         try {
-            serverProxy.queryList(serviceName, clusters, pushReceiver.getUDPPort(), false);
+            return serverProxy.queryList(serviceName, clusters, pushReceiver.getUDPPort(), false);
         } catch (Exception e) {
             NAMING_LOGGER.error("[NA] failed to update serviceName: " + serviceName, e);
         }
+
+        return StringUtils.EMPTY;
     }
 
     public class UpdateTask implements Runnable {

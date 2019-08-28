@@ -31,7 +31,8 @@ import com.alibaba.nacos.naming.healthcheck.RsInfo;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.push.ClientInfo;
+import com.alibaba.nacos.naming.push.AbstractPushClientSupport;
+import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.PushService;
 import com.alibaba.nacos.naming.web.CanDistro;
@@ -72,12 +73,12 @@ public class InstanceController {
     private DataSource pushDataSource = new DataSource() {
 
         @Override
-        public String getData(PushService.PushClient client) throws Exception {
+        public String getData(AbstractPushClientSupport client) throws Exception {
 
             JSONObject result = new JSONObject();
             try {
                 result = doSrvIPXT(client.getNamespaceId(), client.getServiceName(), client.getAgent(),
-                    client.getClusters(), client.getSocketAddr().getAddress().getHostAddress(), 0, StringUtils.EMPTY,
+                    client.getClusters(), client.getIp(), 0, StringUtils.EMPTY,
                     false, StringUtils.EMPTY, StringUtils.EMPTY, false);
             } catch (Exception e) {
                 Loggers.SRV_LOG.warn("PUSH-SERVICE: service is not modified", e);
@@ -388,7 +389,7 @@ public class InstanceController {
         // now try to enable the push
         try {
             if (udpPort > 0 && pushService.canEnablePush(agent)) {
-                pushService.addClient(namespaceId, serviceName,
+                pushService.addUdpPushClient(namespaceId, serviceName,
                     clusters,
                     agent,
                     new InetSocketAddress(clientIP, udpPort),

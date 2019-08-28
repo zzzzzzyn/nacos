@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,30 @@
  */
 package com.alibaba.nacos.naming.push;
 
+import com.alibaba.nacos.naming.core.Service;
+import org.springframework.context.ApplicationContext;
+
 /**
- * @author nacos
+ * @author pbting
+ * @date 2019-08-28 8:52 AM
  */
-public interface DataSource {
+public interface IEmitter {
+
+    ApplicationContext getApplicationContext();
+
     /**
-     * Get push data for a specified client
-     *
-     * @param client target client
-     * @return data to push
-     * @throws Exception
+     * @param <T>
+     * @return
      */
-    String getData(AbstractPushClientSupport client) throws Exception;
+    <T> T getEmitSource();
+
+    /**
+     *
+     */
+    void initEmitter();
+
+    /**
+     * @param service
+     */
+    void emitter(Service service);
 }

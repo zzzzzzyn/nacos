@@ -23,7 +23,7 @@ import com.alibaba.nacos.core.utils.WebUtils;
 import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.ServiceManager;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.push.ClientInfo;
+import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.web.CanDistro;
 import com.alibaba.nacos.naming.web.OverrideParameterRequestWrapper;
 import org.apache.commons.collections.CollectionUtils;

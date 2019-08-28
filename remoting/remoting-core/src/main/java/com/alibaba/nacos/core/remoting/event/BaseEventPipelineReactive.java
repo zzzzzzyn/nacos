@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.event;
 
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -142,10 +143,11 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
     /**
      * 处理 单个的事件
      */
-    public void listenerReactive(final Deque<IPipelineEventListener> objectListeners,
-                                 final Event event) {
-        if (event.getEventExecutor() != null) {
-            event.getEventExecutor().execute(() -> doListenerReactive(objectListeners, event));
+    private void listenerReactive(final Deque<IPipelineEventListener> objectListeners,
+                                  final Event event) {
+        EventExecutor eventExecutor = event.getEventExecutor();
+        if (eventExecutor != null) {
+            eventExecutor.execute(() -> doListenerReactive(objectListeners, event));
         } else {
             doListenerReactive(objectListeners, event);
         }

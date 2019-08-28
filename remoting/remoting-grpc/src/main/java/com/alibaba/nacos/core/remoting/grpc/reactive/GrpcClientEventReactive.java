@@ -37,8 +37,9 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
 
     @Override
     public void pipelineReactive(Event event) {
-        Lock readLock = readWriteLock.readLock();
         EventExecutor eventExecutor;
+        final Lock readLock = readWriteLock.readLock();
+
         readLock.lock();
         try {
             eventExecutor = eventExecutorMapping.get(event.getEventType());

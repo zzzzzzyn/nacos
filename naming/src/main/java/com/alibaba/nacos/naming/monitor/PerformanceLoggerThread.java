@@ -125,7 +125,7 @@ public class PerformanceLoggerThread {
     private long getMaxPushCost() {
         long max = -1;
 
-        for (Map.Entry<String, Long> entry : PushService.pushCostMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : pushService.getPushCostMap().entrySet()) {
             if (entry.getValue() > max) {
                 max = entry.getValue();
             }
@@ -139,12 +139,11 @@ public class PerformanceLoggerThread {
         long totalCost = 0;
         long avgCost = -1;
 
-        for (Map.Entry<String, Long> entry : PushService.pushCostMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : pushService.getPushCostMap().entrySet()) {
             size += 1;
             totalCost += entry.getValue();
         }
-        PushService.pushCostMap.clear();
-
+        pushService.clearPushCostMap();
         if (size > 0 && totalCost > 0) {
             avgCost = totalCost / size;
         }

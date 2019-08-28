@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,42 @@
  */
 package com.alibaba.nacos.naming.push;
 
+import com.alibaba.nacos.naming.misc.SwitchDomain;
+
 /**
- * @author nacos
+ * @author pbting
+ * @date 2019-08-28 9:45 AM
  */
-public interface DataSource {
+public interface IPushClient {
+
     /**
-     * Get push data for a specified client
-     *
-     * @param client target client
-     * @return data to push
-     * @throws Exception
+     * @return
      */
-    String getData(AbstractPushClientSupport client) throws Exception;
+    DataSource getDataSource();
+
+    /**
+     * @param switchDomain
+     * @return
+     */
+    boolean zombie(SwitchDomain switchDomain);
+
+    /**
+     *
+     */
+    void refresh();
+
+    /**
+     * @return
+     */
+    String getAddrStr();
+
+    /**
+     * @return
+     */
+    String getIp();
+
+    /**
+     * @return
+     */
+    int getPort();
 }

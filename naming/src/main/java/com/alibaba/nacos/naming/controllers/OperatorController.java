@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.CommonParams;
+import com.alibaba.nacos.api.naming.push.AckEntry;
 import com.alibaba.nacos.core.utils.SystemUtils;
 import com.alibaba.nacos.core.utils.WebUtils;
 import com.alibaba.nacos.naming.cluster.ServerListManager;
@@ -90,7 +91,7 @@ public class OperatorController {
         boolean detail = Boolean.parseBoolean(WebUtils.optional(request, "detail", "false"));
         boolean reset = Boolean.parseBoolean(WebUtils.optional(request, "reset", "false"));
 
-        List<PushService.Receiver.AckEntry> failedPushes = PushService.getFailedPushes();
+        List<AckEntry> failedPushes = pushService.getFailedPushes();
         int failedPushCount = pushService.getFailedPushCount();
         result.put("succeed", pushService.getTotalPush() - failedPushCount);
         result.put("total", pushService.getTotalPush());
@@ -103,9 +104,9 @@ public class OperatorController {
 
         JSONArray dataArray = new JSONArray();
         if (detail) {
-            for (PushService.Receiver.AckEntry entry : failedPushes) {
+            for (AckEntry entry : failedPushes) {
                 try {
-                    dataArray.add(new String(entry.origin.getData(), "UTF-8"));
+                    dataArray.add(new String(entry.getOrigin().getData(), "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
                     dataArray.add("[encoding failure]");
                 }
@@ -114,7 +115,7 @@ public class OperatorController {
         }
 
         if (reset) {
-            PushService.resetPushState();
+            pushService.resetPushState();
         }
 
         result.put("reset", reset);
@@ -242,7 +243,7 @@ public class OperatorController {
 
         List<RaftPeer> raftPeerLists = new ArrayList<>();
 
-        int total = serviceManager.getPagedClusterState(namespaceId, page - 1, pageSize, keyword, containedInstance, raftPeerLists,  raftPeerSet);
+        int total = serviceManager.getPagedClusterState(namespaceId, page - 1, pageSize, keyword, containedInstance, raftPeerLists, raftPeerSet);
 
         if (CollectionUtils.isEmpty(raftPeerLists)) {
             result.put("clusterStateList", Collections.emptyList());
@@ -251,7 +252,7 @@ public class OperatorController {
         }
 
         JSONArray clusterStateJsonArray = new JSONArray();
-        for(RaftPeer raftPeer: raftPeerLists) {
+        for (RaftPeer raftPeer : raftPeerLists) {
             ClusterStateView clusterStateView = new ClusterStateView();
             clusterStateView.setClusterTerm(raftPeer.term.intValue());
             clusterStateView.setNodeIp(raftPeer.ip);
