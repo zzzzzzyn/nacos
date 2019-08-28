@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.core.remoting.event.reactive;
+
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 
 /**
  * an event pipeline reactive.
@@ -31,7 +34,7 @@ public interface IEventPipelineReactive {
      *
      * @param event
      */
-    void pipelineReactive(Event event);
+    <T extends Event> void reactive(T event);
 
     /**
      * Whether to include a practice type
@@ -45,17 +48,15 @@ public interface IEventPipelineReactive {
      * Add a listener for an event type. An eventType can correspond to multiple object listeners
      *
      * @param pipelineEventListener
-     * @param eventType
      */
-    void addListener(IPipelineEventListener pipelineEventListener, Integer eventType);
+    void addListener(IPipelineEventListener pipelineEventListener);
 
     /**
      * Remove an object listener from the specified event type
      *
      * @param objectListener
-     * @param eventType
      */
-    default void removeListener(IPipelineEventListener objectListener, Integer eventType) {
+    default void removeListener(IPipelineEventListener objectListener) {
 
         // support remove a listener
     }
@@ -72,9 +73,8 @@ public interface IEventPipelineReactive {
      * Add a new object listener after an event type
      *
      * @param objectListener
-     * @param eventType
      */
-    default void addLast(IPipelineEventListener objectListener, Integer eventType) {
+    default void addLast(IPipelineEventListener objectListener) {
 
         // add the listener to the last in the queue
     }
@@ -82,7 +82,7 @@ public interface IEventPipelineReactive {
     /**
      * Add a new event listener in front of an event type
      */
-    default void addFirst(IPipelineEventListener objectListener, Integer eventType) {
+    default void addFirst(IPipelineEventListener objectListener) {
 
         // add the listener to the first in the queue
     }

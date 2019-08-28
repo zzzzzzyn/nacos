@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.reactive;
 
-import com.alibaba.nacos.core.remoting.event.BaseEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.BaseEventPipelineReactive;
 
 /**
  * @author pbting

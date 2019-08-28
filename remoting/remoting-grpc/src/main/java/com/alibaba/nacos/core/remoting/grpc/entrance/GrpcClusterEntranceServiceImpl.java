@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.entrance;
 
-import com.alibaba.nacos.core.remoting.event.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.event.ClientRequestResponseEvent;
 import com.alibaba.nacos.core.remoting.grpc.interactive.AbstractGrpcInteractive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestResponseInteractive;
@@ -67,7 +67,7 @@ public class GrpcClusterEntranceServiceImpl
         AbstractGrpcInteractive wareSwiftInteractive = new GrpcRequestResponseInteractive(
             request, (CallStreamObserver) responseObserver);
         eventPipelineReactive
-            .pipelineReactive(new ClientRequestResponseEvent(this, wareSwiftInteractive, eventType));
+            .reactive(new ClientRequestResponseEvent(this, wareSwiftInteractive, eventType));
     }
 
     @Override
@@ -78,6 +78,6 @@ public class GrpcClusterEntranceServiceImpl
         AbstractGrpcInteractive grpcInteractive = new GrpcRequestStreamInteractive(
             request, (CallStreamObserver) responseObserver);
         eventPipelineReactive
-            .pipelineReactive(new ClientRequestResponseEvent(this, grpcInteractive, eventType));
+            .reactive(new ClientRequestResponseEvent(this, grpcInteractive, eventType));
     }
 }

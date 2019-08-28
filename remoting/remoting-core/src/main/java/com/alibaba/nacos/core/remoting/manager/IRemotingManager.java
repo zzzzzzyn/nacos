@@ -16,7 +16,7 @@
 package com.alibaba.nacos.core.remoting.manager;
 
 import com.alibaba.nacos.core.remoting.Identify;
-import com.alibaba.nacos.core.remoting.event.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 
 /**
  * a remoting manager ,it will use it to Initialize all remotely related behaviors。

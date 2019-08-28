@@ -16,7 +16,7 @@
 package com.alibaba.nacos.core.remoting.grpc.manager;
 
 import com.alibaba.nacos.core.remoting.event.IAttachListenerHook;
-import com.alibaba.nacos.core.remoting.event.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.manager.IRemotingManager;
 import io.grpc.stub.StreamObserver;
 

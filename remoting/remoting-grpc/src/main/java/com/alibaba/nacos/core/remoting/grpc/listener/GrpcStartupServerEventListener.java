@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.listener;
 
-import com.alibaba.nacos.core.remoting.event.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.event.LocalizationEvent;
 import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
 import com.alibaba.nacos.core.remoting.grpc.IGrpcEventReactiveType;

@@ -16,6 +16,7 @@
 package com.alibaba.nacos.core.remoting.grpc.reactive;
 
 import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.reactive.AsyncEventPipelineReactive;
 import io.netty.util.concurrent.EventExecutor;
 
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
 
     @Override
-    public void pipelineReactive(Event event) {
+    public void reactive(Event event) {
         EventExecutor eventExecutor;
         final Lock readLock = readWriteLock.readLock();
 
@@ -48,7 +49,7 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
         }
 
         if (eventExecutor != null) {
-            super.doPipelineReactive(event);
+            super.reactive0(event);
             return;
         }
 
@@ -64,6 +65,6 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
             writeLock.unlock();
         }
         event.setEventExecutor(eventExecutor);
-        super.doPipelineReactive(event);
+        super.reactive0(event);
     }
 }

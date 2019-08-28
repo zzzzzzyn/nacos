@@ -16,7 +16,7 @@
 package com.alibaba.nacos.core.remoting.grpc.observer;
 
 import com.alibaba.nacos.core.remoting.event.ClientRequestResponseEvent;
-import com.alibaba.nacos.core.remoting.event.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
@@ -54,7 +54,7 @@ public class ClusterRequestStreamObserver extends AbstractCallStreamObserver
             logger.debug("receive client request with the event type :" + eventType);
         }
         eventPipelineReactive
-            .pipelineReactive(new ClientRequestResponseEvent(this, remotingGrpcInteractive, eventType));
+            .reactive(new ClientRequestResponseEvent(this, remotingGrpcInteractive, eventType));
     }
 
     @Override

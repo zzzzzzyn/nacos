@@ -15,6 +15,9 @@
  */
 package com.alibaba.nacos.core.remoting.event;
 
+import com.alibaba.nacos.core.remoting.event.reactive.BaseEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+
 import java.util.EventListener;
 
 /**

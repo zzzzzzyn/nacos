@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.grpc.reactive;
+package com.alibaba.nacos.core.remoting.event.reactive;
 
-import com.alibaba.nacos.core.remoting.event.BaseEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.event.Event;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.MultithreadEventExecutorGroup;
@@ -26,19 +25,27 @@ import io.netty.util.concurrent.MultithreadEventExecutorGroup;
  */
 public class AsyncEventPipelineReactive extends BaseEventPipelineReactive {
 
-    protected MultithreadEventExecutorGroup eventExecutorGroup =
+    private static final MultithreadEventExecutorGroup DEFAULT_EVENT_EXECUTOR =
         new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 2,
             (runnable) -> {
-
                 Thread thread = new Thread(runnable);
                 thread.setDaemon(false);
-                thread.setName(GrpcClientEventReactive.class.getName());
+                thread.setName(AsyncEventPipelineReactive.class.getName());
                 return thread;
             });
 
-    @Override
-    public void pipelineReactive(Event event) {
+    protected MultithreadEventExecutorGroup eventExecutorGroup = DEFAULT_EVENT_EXECUTOR;
 
-        eventExecutorGroup.execute(() -> super.doPipelineReactive(event));
+    public AsyncEventPipelineReactive() {
+    }
+
+    public AsyncEventPipelineReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
+        this.eventExecutorGroup = multithreadEventExecutorGroup;
+    }
+
+    @Override
+    public <T extends Event> void reactive(final T event) {
+
+        eventExecutorGroup.execute(() -> super.reactive0(event));
     }
 }

@@ -20,10 +20,11 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.CommonParams;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.core.utils.WebUtils;
+import com.alibaba.nacos.naming.client.ClientInfo;
+import com.alibaba.nacos.naming.client.ClientType;
 import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.ServiceManager;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.web.CanDistro;
 import com.alibaba.nacos.naming.web.OverrideParameterRequestWrapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -63,7 +64,7 @@ public class ApiController extends InstanceController {
         String dnsfVersion = "1.0.1";
         String agent = request.getHeader("Client-Version");
         ClientInfo clientInfo = new ClientInfo(agent);
-        if (clientInfo.type == ClientInfo.ClientType.DNS &&
+        if (clientInfo.type == ClientType.DNS &&
             clientInfo.version.compareTo(VersionUtil.parseVersion(dnsfVersion)) <= 0) {
 
             List<String> doms = new ArrayList<String>();

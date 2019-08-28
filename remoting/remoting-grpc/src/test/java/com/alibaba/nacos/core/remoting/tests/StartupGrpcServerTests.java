@@ -17,6 +17,7 @@ package com.alibaba.nacos.core.remoting.tests;
 
 import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannel;
 import com.alibaba.nacos.core.remoting.event.*;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.grpc.GrpcRemotingChannel;
 import com.alibaba.nacos.core.remoting.grpc.IGrpcEventReactiveType;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
@@ -130,7 +131,7 @@ public class StartupGrpcServerTests {
 
         IEventPipelineReactive eventPipelineReactive = serverRemotingManager.getAbstractEventPipelineReactive(GrpcServerEventReactive.class);
 
-        eventPipelineReactive.pipelineReactive(event);
+        eventPipelineReactive.reactive(event);
 
         System.in.read();
     }

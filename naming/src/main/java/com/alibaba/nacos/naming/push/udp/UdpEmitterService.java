@@ -173,7 +173,6 @@ public class UdpEmitterService extends AbstractEmitterSupport {
             dataBytes = compressIfNecessary(dataBytes);
 
             DatagramPacket packet = new DatagramPacket(dataBytes, dataBytes.length, udpPushClient.getSocketAddr());
-
             // we must store the key be fore send, otherwise there will be a chance the
             // ack returns before we put in
             AckEntry ackEntry = new AckEntry(key, packet);

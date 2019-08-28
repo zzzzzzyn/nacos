@@ -17,6 +17,7 @@ package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
 import com.alibaba.nacos.naming.client.ClientInfo;
+import com.alibaba.nacos.naming.client.ClientType;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
@@ -49,13 +50,15 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     public static final long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10L);
     public static final int MAX_RETRY_TIMES = 1;
+
     private AtomicInteger totalPush = new AtomicInteger();
     private AtomicInteger failedPush = new AtomicInteger();
 
-    private volatile ConcurrentMap<String, AckEntry> ackMap
-        = new ConcurrentHashMap<>();
+    private volatile ConcurrentMap<String, AckEntry> ackMap = new ConcurrentHashMap<>();
+
     private ConcurrentMap<String, ConcurrentMap<String, AbstractPushClientSupport>> clientMap
         = new ConcurrentHashMap<>();
+
     private volatile ConcurrentHashMap<String, Long> pushCostMap = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
@@ -215,16 +218,16 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
         ClientInfo clientInfo = new ClientInfo(agent);
 
-        if (ClientInfo.ClientType.JAVA == clientInfo.type
+        if (ClientType.JAVA == clientInfo.type
             && clientInfo.version.compareTo(VersionUtil.parseVersion(switchDomain.getPushJavaVersion())) >= 0) {
             return true;
-        } else if (ClientInfo.ClientType.DNS == clientInfo.type
+        } else if (ClientType.DNS == clientInfo.type
             && clientInfo.version.compareTo(VersionUtil.parseVersion(switchDomain.getPushPythonVersion())) >= 0) {
             return true;
-        } else if (ClientInfo.ClientType.C == clientInfo.type
+        } else if (ClientType.C == clientInfo.type
             && clientInfo.version.compareTo(VersionUtil.parseVersion(switchDomain.getPushCVersion())) >= 0) {
             return true;
-        } else if (ClientInfo.ClientType.GO == clientInfo.type
+        } else if (ClientType.GO == clientInfo.type
             && clientInfo.version.compareTo(VersionUtil.parseVersion(switchDomain.getPushGoVersion())) >= 0) {
             return true;
         }

@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.core.remoting.event.reactive;
 
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -48,21 +50,22 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
         return listeners.containsKey(eventType);
     }
 
-    public void addLast(IPipelineEventListener objectListener, Integer eventType) {
-        addListener0(objectListener, eventType, 1);
+    @Override
+    public void addLast(IPipelineEventListener objectListener) {
+        addListener0(objectListener, 1);
     }
 
     @Override
-    public void addFirst(IPipelineEventListener objectListener, Integer eventType) {
-        addListener0(objectListener, eventType, 0);
+    public void addFirst(IPipelineEventListener objectListener) {
+        addListener0(objectListener, 0);
     }
 
-    public void addListener(IPipelineEventListener pipelineEventListener, Integer eventType) {
-        addListener0(pipelineEventListener, eventType, 1);
+    @Override
+    public void addListener(IPipelineEventListener pipelineEventListener) {
+        addListener0(pipelineEventListener, 1);
     }
 
-    private void addListener0(IPipelineEventListener objectListener, Integer eventType,
-                              int order) {
+    private void addListener0(IPipelineEventListener pipelineEventListener, int order) {
         if (listeners == null) {
             lock.lock();
             try {
@@ -74,25 +77,29 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
             }
         }
 
-        if (listeners.get(eventType) == null) {
-            ConcurrentLinkedDeque<IPipelineEventListener> tempInfo = new ConcurrentLinkedDeque<>();
-            if (order > 0) {
-                tempInfo.addLast(objectListener);
+        int[] eventTypes = pipelineEventListener.interestEventTypes();
+        for (int eventType : eventTypes) {
+            if (listeners.get(eventType) == null) {
+                ConcurrentLinkedDeque<IPipelineEventListener> tempInfo = new ConcurrentLinkedDeque<>();
+                if (order > 0) {
+                    tempInfo.addLast(pipelineEventListener);
+                } else {
+                    tempInfo.addFirst(pipelineEventListener);
+                }
+                listeners.put(eventType, tempInfo);
             } else {
-                tempInfo.addFirst(objectListener);
+                listeners.get(eventType).add(pipelineEventListener);
             }
-            listeners.put(eventType, tempInfo);
-        } else {
-            listeners.get(eventType).add(objectListener);
+            debugEventMsg("register an event listener,the event type is" + eventType);
         }
-
-        debugEventMsg("注册一个事件,类型为" + eventType);
     }
 
     public void removeListener(IPipelineEventListener objectListener,
                                Integer eventType) {
-        if (listeners == null)
+        if (listeners == null) {
             return;
+        }
+
         lock.lock();
         try {
             Collection<IPipelineEventListener> tempInfo = listeners.get(eventType);
@@ -119,7 +126,7 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
         debugEventMsg("移除一个事件,类型为" + eventType);
     }
 
-    protected final void doPipelineReactive(Event event) {
+    protected <T extends Event> void reactive0(T event) {
         if (event == null || listeners == null) {
             return;
         }
@@ -133,28 +140,29 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
         }
 
         // 3、触发,
-        listenerReactive(tempList, event);
+        listenerPerform(tempList, event);
     }
 
-    public void pipelineReactive(Event event) {
-        doPipelineReactive(event);
+    @Override
+    public <T extends Event> void reactive(T event) {
+        reactive0(event);
     }
 
     /**
      * 处理 单个的事件
      */
-    private void listenerReactive(final Deque<IPipelineEventListener> objectListeners,
-                                  final Event event) {
+    protected <T extends Event> void listenerPerform(final Deque<IPipelineEventListener> objectListeners,
+                                                     final T event) {
         EventExecutor eventExecutor = event.getEventExecutor();
         if (eventExecutor != null) {
-            eventExecutor.execute(() -> doListenerReactive(objectListeners, event));
+            eventExecutor.execute(() -> listenerPerform0(objectListeners, event));
         } else {
-            doListenerReactive(objectListeners, event);
+            listenerPerform0(objectListeners, event);
         }
     }
 
-    protected final void doListenerReactive(
-        Deque<IPipelineEventListener> objectListeners, Event event) {
+    protected <T extends Event> void listenerPerform0(
+        Deque<IPipelineEventListener> objectListeners, T event) {
         int index = 1;
         for (IPipelineEventListener listener : objectListeners) {
             try {

@@ -22,6 +22,8 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.CommonParams;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.core.utils.WebUtils;
+import com.alibaba.nacos.naming.client.ClientInfo;
+import com.alibaba.nacos.naming.client.ClientType;
 import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.Instance;
 import com.alibaba.nacos.naming.core.Service;
@@ -32,7 +34,6 @@ import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.push.AbstractPushClientSupport;
-import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.PushService;
 import com.alibaba.nacos.naming.web.CanDistro;
@@ -134,7 +135,7 @@ public class InstanceController {
 
         ClientInfo clientInfo = new ClientInfo(agent);
 
-        if (clientInfo.type == ClientInfo.ClientType.JAVA &&
+        if (clientInfo.type == ClientType.JAVA &&
             clientInfo.version.compareTo(VersionUtil.parseVersion("1.0.0")) >= 0) {
             serviceManager.updateInstance(namespaceId, serviceName, parseInstance(request));
         } else {
@@ -418,7 +419,7 @@ public class InstanceController {
                 Loggers.SRV_LOG.debug("no instance to serve for service: " + serviceName);
             }
 
-            if (clientInfo.type == ClientInfo.ClientType.JAVA &&
+            if (clientInfo.type == ClientType.JAVA &&
                 clientInfo.version.compareTo(VersionUtil.parseVersion("1.0.0")) >= 0) {
                 result.put("dom", serviceName);
             } else {
@@ -498,7 +499,7 @@ public class InstanceController {
                 ipObj.put("enabled", instance.isEnabled());
                 ipObj.put("weight", instance.getWeight());
                 ipObj.put("clusterName", instance.getClusterName());
-                if (clientInfo.type == ClientInfo.ClientType.JAVA &&
+                if (clientInfo.type == ClientType.JAVA &&
                     clientInfo.version.compareTo(VersionUtil.parseVersion("1.0.0")) >= 0) {
                     ipObj.put("serviceName", instance.getServiceName());
                 } else {
@@ -512,7 +513,7 @@ public class InstanceController {
         }
 
         result.put("hosts", hosts);
-        if (clientInfo.type == ClientInfo.ClientType.JAVA &&
+        if (clientInfo.type == ClientType.JAVA &&
             clientInfo.version.compareTo(VersionUtil.parseVersion("1.0.0")) >= 0) {
             result.put("dom", serviceName);
         } else {
