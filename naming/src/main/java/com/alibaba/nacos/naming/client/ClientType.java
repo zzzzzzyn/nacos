@@ -23,37 +23,44 @@ public enum ClientType {
     /**
      * Go client type
      */
-    GO,
+    GO(ClientTypeDescription.GO_CLIENT),
     /**
      * Java client type
      */
-    JAVA,
+    JAVA(ClientTypeDescription.JAVA_CLIENT),
     /**
      * C client type
      */
-    C,
+    C(ClientTypeDescription.C_CLIENT),
     /**
      * php client type
      */
-    PHP,
+    PHP(ClientTypeDescription.PHP_CLIENT),
     /**
      * dns-f client type
      */
-    DNS,
+    DNS(ClientTypeDescription.DNSF_CLIENT),
     /**
      * nginx client type
      */
-    TENGINE,
+    TENGINE(ClientTypeDescription.NGINX_CLIENT),
     /**
      * sdk client type
      */
-    JAVA_SDK,
+    JAVA_SDK(ClientTypeDescription.SDK_CLIENT),
     /**
      * Server notify each other
      */
-    NACOS_SERVER,
+    NACOS_SERVER(ClientTypeDescription.NACOS_SERVER_HEADER),
     /**
      * Unknown client type
      */
-    UNKNOWN
+    UNKNOWN(ClientTypeDescription.UNKONW_CLIENT);
+
+    String clientName;
+
+    ClientType(String clientName) {
+
+        this.clientName = clientName;
+    }
 }

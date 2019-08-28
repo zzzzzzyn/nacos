@@ -23,7 +23,13 @@ package com.alibaba.nacos.naming.push;
  */
 public interface IEventType {
 
+    /**
+     * an event type which remove push client if zombie
+     */
     int REMOVE_CLIENT_IF_ZOMBIE = 1;
 
+    /**
+     * re-transmitter
+     */
     int RE_TRANSMITTER = 2;
 }

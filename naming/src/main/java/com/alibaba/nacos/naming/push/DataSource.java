@@ -26,5 +26,5 @@ public interface DataSource {
      * @return data to push
      * @throws Exception
      */
-    String getData(AbstractPushClientSupport client) throws Exception;
+    String getData(AbstractPushClient client);
 }

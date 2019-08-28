@@ -17,29 +17,25 @@ package com.alibaba.nacos.naming.push.udp;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
 import com.alibaba.nacos.naming.misc.Loggers;
-import com.alibaba.nacos.naming.push.IReTransmitter;
 import com.alibaba.nacos.naming.push.PushService;
+import com.alibaba.nacos.naming.push.AbstractReTransmitter;
 
 /**
  * @author pbting
  * @date 2019-08-28 9:30 AM
  */
-public class UdpReTransmitter implements IReTransmitter {
+public class UdpReTransmitter extends AbstractReTransmitter {
 
-    private AckEntry ackEntry;
     private UdpEmitterService udpEmitter;
 
-    public UdpReTransmitter(AckEntry ackEntry, UdpEmitterService udpEmitter) {
-        this.ackEntry = ackEntry;
+    public UdpReTransmitter(PushService pushService, AckEntry ackEntry, UdpEmitterService udpEmitter) {
+        super(pushService, ackEntry);
         this.udpEmitter = udpEmitter;
     }
 
     @Override
-    public void reTransmitter() {
-        PushService pushService = udpEmitter.getApplicationContext().getBean(PushService.class);
-        if (pushService.containsAckEntry(ackEntry.getKey())) {
-            Loggers.PUSH.info("retry to push data, key: " + ackEntry.getKey());
-            udpEmitter.udpPush(ackEntry);
-        }
+    public void reTransmitter(PushService pushService) {
+        Loggers.PUSH.info("retry to push data, key: " + ackEntry.getKey());
+        udpEmitter.udpPush(ackEntry);
     }
 }

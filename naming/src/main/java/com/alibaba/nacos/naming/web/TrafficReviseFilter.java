@@ -16,10 +16,10 @@
 package com.alibaba.nacos.naming.web;
 
 import com.alibaba.nacos.common.util.HttpMethod;
+import com.alibaba.nacos.naming.client.ClientTypeDescription;
 import com.alibaba.nacos.naming.cluster.ServerStatus;
 import com.alibaba.nacos.naming.cluster.ServerStatusManager;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
-import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,7 +75,7 @@ public class TrafficReviseFilter implements Filter {
             agent = req.getHeader("User-Agent");
         }
 
-        if (StringUtils.startsWith(agent, UtilsAndCommons.NACOS_SERVER_HEADER)) {
+        if (StringUtils.startsWith(agent, ClientTypeDescription.NACOS_SERVER_HEADER)) {
             filterChain.doFilter(req, resp);
             return;
         }

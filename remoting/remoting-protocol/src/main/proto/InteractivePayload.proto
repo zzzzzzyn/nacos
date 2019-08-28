@@ -8,6 +8,7 @@ option java_outer_classname = "InteractivePayloadProto";
 
 /*
  * Define the service's operations
+ * @author pbting
  */
 service InteractiveService {
     /**

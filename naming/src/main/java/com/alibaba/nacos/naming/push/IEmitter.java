@@ -16,7 +16,6 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.naming.core.Service;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author pbting
@@ -24,20 +23,22 @@ import org.springframework.context.ApplicationContext;
  */
 public interface IEmitter {
 
-    ApplicationContext getApplicationContext();
-
     /**
+     * get an emit source
+     *
      * @param <T>
      * @return
      */
     <T> T getEmitSource();
 
     /**
-     *
+     * initializer emitter
      */
     void initEmitter();
 
     /**
+     * emitter service when service instance is changed
+     *
      * @param service
      */
     void emitter(Service service);

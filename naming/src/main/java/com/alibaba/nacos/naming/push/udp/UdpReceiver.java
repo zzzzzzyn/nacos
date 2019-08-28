@@ -16,7 +16,6 @@
 package com.alibaba.nacos.naming.push.udp;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.naming.push.AckEntry;
 import com.alibaba.nacos.api.naming.push.AckPacket;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.PushService;
@@ -62,16 +61,11 @@ public class UdpReceiver implements Runnable {
                 }
 
                 String ackKey = udpEmitter.getACKKey(ip, port, ackPacket.getLastRefTime());
-                AckEntry ackEntry = pushService.removeAckEntry(ackKey);
-                if (ackEntry == null) {
-                    throw new IllegalStateException("unable to find ackEntry for key: " + ackKey
-                        + ", ack json: " + json);
-                }
-                long pushCost = System.currentTimeMillis() - udpEmitter.getSendTime(ackKey);
+                pushService.removeAckEntry(ackKey);
+                long pushCost = System.currentTimeMillis() - udpEmitter.getAndRemoveSendTime(ackKey, ackPacket.getLastRefTime());
                 Loggers.PUSH.info("received ack: {} from: {}:, cost: {} ms, unacked: {}, total push: {}",
                     json, ip, port, pushCost, pushService.getAckMapSize(), pushService.getTotalPush());
                 pushService.putPushCost(ackKey, pushCost);
-                udpEmitter.removeSendTime(ackKey);
             } catch (Throwable e) {
                 Loggers.PUSH.error("[NACOS-PUSH] error while receiving ack data", e);
             }

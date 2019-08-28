@@ -16,7 +16,6 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
-import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
 import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
 import com.alibaba.nacos.naming.client.ClientInfo;
@@ -26,12 +25,14 @@ import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Subscriber;
+import com.alibaba.nacos.naming.push.listener.PushRelatedPipelineEventListeners;
 import com.alibaba.nacos.naming.push.udp.UdpPushClient;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.codehaus.jackson.util.VersionUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -52,18 +53,23 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     @Autowired
     private SwitchDomain switchDomain;
 
+    @Value("${nacos.naming.push.ack.timeout.seconds:10}")
+    private String ackTimeoutSeconds;
+    @Value("${nacos.naming.push.retry.times:1}")
+    private String maxRetryTimes;
+
     private ApplicationContext applicationContext;
 
-    public static final int ACK_TIMEOUT_SECONDS = 10;
-    public static final long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
-    public static final int MAX_RETRY_TIMES = 1;
+    public static int ACK_TIMEOUT_SECONDS = 10;
+    public static long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
+    public static int MAX_RETRY_TIMES = 1;
 
     private AtomicInteger totalPush = new AtomicInteger();
     private AtomicInteger failedPush = new AtomicInteger();
 
     private volatile ConcurrentMap<String, AckEntry> ackMap = new ConcurrentHashMap<>();
 
-    private ConcurrentMap<String, ConcurrentMap<String, AbstractPushClientSupport>> clientMap
+    private ConcurrentMap<String, ConcurrentMap<String, AbstractPushClient>> clientMap
         = new ConcurrentHashMap<>();
 
     private volatile ConcurrentHashMap<String, Long> pushCostMap = new ConcurrentHashMap<>();
@@ -72,53 +78,28 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         = new EventLoopPipelineReactive(new DefaultEventExecutorGroup(2, runnable -> {
         Thread t = new Thread(runnable);
         t.setDaemon(true);
-        t.setName("com.alibaba.nacos.naming.push.retransmitter");
+        t.setName("com.alibaba.nacos.naming.push.re-transmitter");
         return t;
     }));
 
     @Override
     public void afterSingletonsInstantiated() {
-
-        //1. attach some event loop listener
+        // 1. attach some event loop listener
         initEventLoopListener();
-
-        //2. reactive remove push client id zombie with recycle
+        // 2. init push configuration
+        initPushConfiguration();
+        // 3. reactive remove push client id zombie with recycle
         pushEventLoopReactive.reactive(new RecyclableEvent(this, IEventType.REMOVE_CLIENT_IF_ZOMBIE, 20));
     }
 
+    private void initPushConfiguration() {
+        ACK_TIMEOUT_SECONDS = Integer.parseInt(ackTimeoutSeconds);
+        MAX_RETRY_TIMES = Integer.parseInt(maxRetryTimes);
+    }
+
     private void initEventLoopListener() {
-        pushEventLoopReactive.addListener(new IPipelineEventListener<RecyclableEvent>() {
-            @Override
-            public boolean onEvent(RecyclableEvent event, int listenerIndex) {
-                removeClientIfZombie();
-                return true;
-            }
-
-            @Override
-            public int[] interestEventTypes() {
-                return new int[]{IEventType.REMOVE_CLIENT_IF_ZOMBIE};
-            }
-        });
-
-        pushEventLoopReactive.addListener(new IPipelineEventListener<RecyclableEvent>() {
-            @Override
-            public boolean onEvent(RecyclableEvent event, int listenerIndex) {
-                IReTransmitter reTransmitter = event.getValue();
-                reTransmitter.run();
-                /**
-                 * must cancel ,because The following code will determine whether
-                 * it needs to be executed once, depending on the circumstances.
-                 * so exit current event loop.
-                 */
-                event.cancel();
-                return true;
-            }
-
-            @Override
-            public int[] interestEventTypes() {
-                return new int[]{IEventType.RE_TRANSMITTER};
-            }
-        });
+        pushEventLoopReactive.addListener(new PushRelatedPipelineEventListeners.RemoveClientIfZombieEventListener(this));
+        pushEventLoopReactive.addListener(new PushRelatedPipelineEventListeners.ReTransmitterEventListener());
     }
 
     public Map<String, Long> getPushCostMap() {
@@ -170,34 +151,44 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         addClient(client);
     }
 
-    public void addClient(AbstractPushClientSupport client) {
+    public void addClient(AbstractPushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
         String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getNamespaceId(), client.getServiceName());
-        ConcurrentMap<String, AbstractPushClientSupport> clients = clientMap.get(serviceKey);
+        ConcurrentMap<String, AbstractPushClient> clients = clientMap.get(serviceKey);
+
+        // 1. Existence Judgment for the service
         if (clients == null) {
-            clientMap.putIfAbsent(serviceKey, new ConcurrentHashMap<>(1024));
-            clients = clientMap.get(serviceKey);
+            clients = new ConcurrentHashMap<>(1024);
+            if (clientMap.putIfAbsent(serviceKey, clients) != null) {
+                clients = clientMap.get(serviceKey);
+            }
         }
 
-        AbstractPushClientSupport oldClient = clients.get(client.toString());
-        if (oldClient != null) {
-            oldClient.refresh();
+        // 2. Existence Judgment for the push client
+        String clientKey = client.toString();
+        AbstractPushClient pushClient = clients.get(clientKey);
+        if (pushClient != null) {
+            pushClient.refresh();
+            return;
+        }
+
+        // 3. mapping for push client
+        AbstractPushClient res = clients.putIfAbsent(clientKey, client);
+        if (res != null) {
+            Loggers.PUSH.warn("client: {} already associated with key {}", res.getAddrStr(), clientKey);
         } else {
-            AbstractPushClientSupport res = clients.putIfAbsent(client.toString(), client);
-            if (res != null) {
-                Loggers.PUSH.warn("client: {} already associated with key {}", res.getAddrStr(), res.toString());
-            }
             Loggers.PUSH.debug("client: {} added for serviceName: {}", client.getAddrStr(), client.getServiceName());
         }
     }
 
-    public Map<String, ConcurrentMap<String, AbstractPushClientSupport>> getClientMap() {
-        return Collections.unmodifiableMap(clientMap);
+    public Map<String, AbstractPushClient> getPushClients(String key) {
+
+        return Collections.unmodifiableMap(clientMap.get(key));
     }
 
     public List<Subscriber> getClients(String serviceName, String namespaceId) {
         String serviceKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
-        ConcurrentMap<String, AbstractPushClientSupport> clientConcurrentMap = clientMap.get(serviceKey);
+        ConcurrentMap<String, AbstractPushClient> clientConcurrentMap = clientMap.get(serviceKey);
         if (Objects.isNull(clientConcurrentMap)) {
             return null;
         }
@@ -210,10 +201,10 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     public void removeClientIfZombie() {
         int size = 0;
-        for (Map.Entry<String, ConcurrentMap<String, AbstractPushClientSupport>> entry : clientMap.entrySet()) {
-            ConcurrentMap<String, AbstractPushClientSupport> clientConcurrentMap = entry.getValue();
-            for (Map.Entry<String, AbstractPushClientSupport> entry1 : clientConcurrentMap.entrySet()) {
-                AbstractPushClientSupport client = entry1.getValue();
+        for (Map.Entry<String, ConcurrentMap<String, AbstractPushClient>> entry : clientMap.entrySet()) {
+            ConcurrentMap<String, AbstractPushClient> clientConcurrentMap = entry.getValue();
+            for (Map.Entry<String, AbstractPushClient> entry1 : clientConcurrentMap.entrySet()) {
+                AbstractPushClient client = entry1.getValue();
                 if (client.zombie(switchDomain)) {
                     clientConcurrentMap.remove(entry1.getKey());
                 }
@@ -226,15 +217,15 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         }
     }
 
-    public void schedulerReTransmitter(IReTransmitter reTransmitter) {
+    public void schedulerReTransmitter(AbstractReTransmitter reTransmitter) {
         RecyclableEvent recyclableEvent =
             new RecyclableEvent(this, reTransmitter, IEventType.RE_TRANSMITTER, ACK_TIMEOUT_SECONDS);
         pushEventLoopReactive.reactive(recyclableEvent);
     }
 
-    public void putAckEntry(String key, AckEntry ackEntry) {
+    public AckEntry putAckEntry(String key, AckEntry ackEntry) {
 
-        ackMap.put(key, ackEntry);
+        return ackMap.put(key, ackEntry);
     }
 
     public AckEntry removeAckEntry(String key) {
@@ -250,6 +241,7 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     }
 
     public void serviceChanged(Service service) {
+
         this.applicationContext.publishEvent(new ServiceChangeEvent(this, service));
     }
 

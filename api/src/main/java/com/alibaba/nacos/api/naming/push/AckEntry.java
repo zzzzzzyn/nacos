@@ -17,7 +17,6 @@ package com.alibaba.nacos.api.naming.push;
 
 import java.io.Serializable;
 import java.net.DatagramPacket;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,7 +28,7 @@ public class AckEntry implements Serializable {
     private String key;
     private DatagramPacket origin;
     private AtomicInteger retryTimes = new AtomicInteger(0);
-    private Map<String, Object> data;
+    private AckPacket data;
 
     public AckEntry(String key, DatagramPacket packet) {
         this.key = key;
@@ -64,11 +63,11 @@ public class AckEntry implements Serializable {
         this.retryTimes = retryTimes;
     }
 
-    public Map<String, Object> getData() {
+    public AckPacket getData() {
         return data;
     }
 
-    public void setData(Map<String, Object> data) {
+    public void setData(AckPacket data) {
         this.data = data;
     }
 }

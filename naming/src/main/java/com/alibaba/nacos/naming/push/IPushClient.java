@@ -24,32 +24,42 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
 public interface IPushClient {
 
     /**
+     * get data source will use it to get some push data.
+     *
      * @return
      */
     DataSource getDataSource();
 
     /**
+     * Determine if the current push client is already in a zombie state
+     *
      * @param switchDomain
      * @return
      */
     boolean zombie(SwitchDomain switchDomain);
 
     /**
-     *
+     * refresh the push client of last query list
      */
     void refresh();
 
     /**
+     * get address with ip and port
+     *
      * @return
      */
     String getAddrStr();
 
     /**
+     * get the ip with out port
+     *
      * @return
      */
     String getIp();
 
     /**
+     * get the port with out ip
+     *
      * @return
      */
     int getPort();

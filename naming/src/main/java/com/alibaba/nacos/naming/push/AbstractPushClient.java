@@ -21,7 +21,7 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
  * @author pbting
  * @date 2019-08-28 9:46 AM
  */
-public abstract class AbstractPushClientSupport implements IPushClient {
+public abstract class AbstractPushClient implements IPushClient {
 
     protected String namespaceId;
     protected String serviceName;
@@ -31,13 +31,13 @@ public abstract class AbstractPushClientSupport implements IPushClient {
     protected String app;
     protected long lastRefTime = System.currentTimeMillis();
 
-    public AbstractPushClientSupport() {
+    public AbstractPushClient() {
 
     }
 
-    public AbstractPushClientSupport(String namespaceId, String serviceName,
-                                     String clusters, String agent,
-                                     String tenant, String app) {
+    public AbstractPushClient(String namespaceId, String serviceName,
+                              String clusters, String agent,
+                              String tenant, String app) {
         this.namespaceId = namespaceId;
         this.serviceName = serviceName;
         this.clusters = clusters;

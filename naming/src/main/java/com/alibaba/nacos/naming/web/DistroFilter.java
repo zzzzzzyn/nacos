@@ -17,6 +17,7 @@ package com.alibaba.nacos.naming.web;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.CommonParams;
+import com.alibaba.nacos.naming.client.ClientTypeDescription;
 import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.misc.HttpClient;
 import com.alibaba.nacos.naming.misc.Loggers;
@@ -99,7 +100,7 @@ public class DistroFilter implements Filter {
 
                 String userAgent = req.getHeader("User-Agent");
 
-                if (StringUtils.isNotBlank(userAgent) && userAgent.contains(UtilsAndCommons.NACOS_SERVER_HEADER)) {
+                if (StringUtils.isNotBlank(userAgent) && userAgent.contains(ClientTypeDescription.NACOS_SERVER_HEADER)) {
                     // This request is sent from peer server, should not be redirected again:
                     Loggers.SRV_LOG.error("receive invalid redirect request from peer {}", req.getRemoteAddr());
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST,

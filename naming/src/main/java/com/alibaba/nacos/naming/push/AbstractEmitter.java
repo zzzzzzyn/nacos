@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push;
 
+import com.alibaba.nacos.api.naming.push.AckPacket;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -23,30 +24,30 @@ import org.springframework.context.ApplicationListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * @author pbting
  * @date 2019-08-28 9:01 AM
  */
-public abstract class AbstractEmitterSupport implements IEmitter, ApplicationListener<ServiceChangeEvent>, SmartInitializingSingleton {
+public abstract class AbstractEmitter implements IEmitter,
+    ApplicationListener<ServiceChangeEvent>, SmartInitializingSingleton {
+
+    private Map<String, Future> futureMap = new ConcurrentHashMap<>();
+    protected volatile ConcurrentHashMap<String, Long> sendTimeMap = new ConcurrentHashMap<>();
 
     protected ApplicationContext applicationContext;
 
-    public AbstractEmitterSupport(ApplicationContext applicationContext) {
+    public AbstractEmitter(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
     @Override
     public void afterSingletonsInstantiated() {
         initEmitter();
-    }
-
-    @Override
-    public ApplicationContext getApplicationContext() {
-        return applicationContext;
     }
 
     @Override
@@ -69,15 +70,39 @@ public abstract class AbstractEmitterSupport implements IEmitter, ApplicationLis
         return out.toByteArray();
     }
 
-    public Map<String, Object> prepareHostsData(AbstractPushClientSupport client) throws Exception {
-        Map<String, Object> cmd = new HashMap(2);
-        cmd.put("type", "dom");
-        cmd.put("data", client.getDataSource().getData(client));
-
-        return cmd;
+    /**
+     * this method will return not empty never
+     *
+     * @param client
+     * @return
+     */
+    public AckPacket prepareHostsData(AbstractPushClient client) {
+        AckPacket ackPacket = new AckPacket();
+        ackPacket.setType("dom");
+        ackPacket.setData(client.getDataSource().getData(client));
+        return ackPacket;
     }
 
     public String getPushCacheKey(String serviceName, String agent) {
         return serviceName + UtilsAndCommons.CACHE_KEY_SPLITER + agent;
+    }
+
+    public void removeFutureMap(String key) {
+        futureMap.remove(key);
+    }
+
+    public void putFutureMap(String key, Future future) {
+
+        futureMap.put(key, future);
+    }
+
+    public boolean isContainsFutureMap(String key) {
+
+        return futureMap.containsKey(key);
+    }
+
+    public long getAndRemoveSendTime(String key, long defaultValue) {
+        Long value = sendTimeMap.remove(key);
+        return value != null ? value : defaultValue;
     }
 }

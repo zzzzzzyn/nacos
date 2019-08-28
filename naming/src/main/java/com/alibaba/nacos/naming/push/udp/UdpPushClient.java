@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.naming.push.udp;
 
-import com.alibaba.nacos.naming.push.AbstractPushClientSupport;
+import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 
 import java.net.InetSocketAddress;
@@ -26,7 +26,7 @@ import java.util.Objects;
  * @author pbting
  * @date 2019-08-27 10:23 PM
  */
-public class UdpPushClient extends AbstractPushClientSupport {
+public class UdpPushClient extends AbstractPushClient {
 
     private InetSocketAddress socketAddr;
     private DataSource dataSource;
@@ -64,7 +64,7 @@ public class UdpPushClient extends AbstractPushClientSupport {
 
     @Override
     public String getAddrStr() {
-        return getIp() + ":" + getSocketAddr().getPort();
+        return getIp() + ":" + getPort();
     }
 
     @Override
@@ -98,11 +98,7 @@ public class UdpPushClient extends AbstractPushClientSupport {
 
     @Override
     public String toString() {
-        return "serviceName: " + serviceName
-            + ", clusters: " + clusters
-            + ", ip: " + socketAddr.getAddress().getHostAddress()
-            + ", port: " + socketAddr.getPort()
-            + ", agent: " + agent;
+        return serviceName + "@" + clusters + "@" + getAddrStr() + "@" + agent;
     }
 
 }

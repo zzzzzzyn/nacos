@@ -33,7 +33,7 @@ import com.alibaba.nacos.naming.healthcheck.RsInfo;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.push.AbstractPushClientSupport;
+import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.PushService;
 import com.alibaba.nacos.naming.web.CanDistro;
@@ -74,7 +74,7 @@ public class InstanceController {
     private DataSource pushDataSource = new DataSource() {
 
         @Override
-        public String getData(AbstractPushClientSupport client) throws Exception {
+        public String getData(AbstractPushClient client) {
 
             JSONObject result = new JSONObject();
             try {
@@ -84,10 +84,8 @@ public class InstanceController {
             } catch (Exception e) {
                 Loggers.SRV_LOG.warn("PUSH-SERVICE: service is not modified", e);
             }
-
             // overdrive the cache millis to push mode
             result.put("cacheMillis", switchDomain.getPushCacheMillis(client.getServiceName()));
-
             return result.toJSONString();
         }
     };

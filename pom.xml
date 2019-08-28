@@ -208,6 +208,10 @@
                         <ruleset>rulesets/java/ali-set.xml</ruleset>
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
+                    <excludes>
+                        <exclude>**/remoting/**</exclude>
+                    </excludes>
+
                 </configuration>
                 <executions>
                     <execution>

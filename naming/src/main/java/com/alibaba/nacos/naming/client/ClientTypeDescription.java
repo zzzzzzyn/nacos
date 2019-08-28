@@ -36,7 +36,15 @@ public final class ClientTypeDescription {
     /**
      *
      */
+    public static final String PHP_CLIENT = "Nacos-PHP-Client";
+    /**
+     *
+     */
     public static final String SDK_CLIENT = "Nacos-SDK-Java";
+    /**
+     *
+     */
+    public static final String NACOS_SERVER_HEADER = "Nacos-Server";
     /**
      *
      */
@@ -49,5 +57,9 @@ public final class ClientTypeDescription {
      *
      */
     public static final String GO_CLIENT = "nacos-go-sdk";
+    /**
+     *
+     */
+    public static final String UNKONW_CLIENT = "UnKnow";
 
 }
