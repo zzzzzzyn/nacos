@@ -182,7 +182,7 @@ public class UdpEmitterService extends AbstractEmitter {
         if (ackEntry.getRetryTimes() > PushService.MAX_RETRY_TIMES) {
             Loggers.PUSH.warn("max re-push times reached, retry times {}, key: {}", ackEntry.getRetryTimes(), ackEntry.getKey());
             pushService.removeAckEntry(ackEntry.getKey());
-            getAndRemoveSendTime(ackEntry.getKey());
+            getAndRemoveSendTime(ackEntry.getKey(), -1);
             pushService.increFailedPush();
             return true;
         }

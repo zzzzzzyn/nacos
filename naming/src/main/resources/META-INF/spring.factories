@@ -1,0 +1,1 @@
+com.alibaba.nacos.naming.push.IEmitter=com.alibaba.nacos.naming.push.udp.UdpEmitterService
