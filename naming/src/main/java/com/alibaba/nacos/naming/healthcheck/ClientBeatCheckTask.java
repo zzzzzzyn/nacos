@@ -72,7 +72,6 @@ public class ClientBeatCheckTask implements Runnable {
             }
 
             List<Instance> instances = service.allIPs(true);
-
             // first set health status of instances:
             for (Instance instance : instances) {
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getInstanceHeartBeatTimeOut()) {

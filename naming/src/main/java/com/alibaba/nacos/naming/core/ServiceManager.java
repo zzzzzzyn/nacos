@@ -89,7 +89,6 @@ public class ServiceManager implements RecordListener<Service> {
     public void init() {
 
         UtilsAndCommons.SERVICE_SYNCHRONIZATION_EXECUTOR.schedule(new ServiceReporter(), 60000, TimeUnit.MILLISECONDS);
-
         UtilsAndCommons.SERVICE_UPDATE_EXECUTOR.submit(new UpdatedServiceProcessor());
 
         try {
@@ -123,7 +122,7 @@ public class ServiceManager implements RecordListener<Service> {
     }
 
     @Override
-    public boolean matchUnlistenKey(String key) {
+    public boolean matchUnListenKey(String key) {
         return KeyBuilder.matchServiceMetaKey(key) && !KeyBuilder.matchSwitchKey(key);
     }
 
@@ -175,7 +174,7 @@ public class ServiceManager implements RecordListener<Service> {
 
             consistencyService.remove(KeyBuilder.buildInstanceListKey(namespace, name, false));
 
-            consistencyService.unlisten(KeyBuilder.buildServiceMetaKey(namespace, name), service);
+            consistencyService.unListen(KeyBuilder.buildServiceMetaKey(namespace, name), service);
             Loggers.SRV_LOG.info("[DEAD-SERVICE] {}", service.toJSON());
         }
 

@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Service of Nacos server side
@@ -73,12 +74,7 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
 
     private volatile String checksum;
 
-    /**
-     * TODO set customized push expire time:
-     */
-    private long pushCacheMillis = 0L;
-
-    private Map<String, Cluster> clusterMap = new HashMap<>();
+    private Map<String, Cluster> clusterMap = new ConcurrentHashMap<>();
 
     public Service() {
     }
@@ -145,15 +141,14 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
     }
 
     @Override
-    public boolean matchUnlistenKey(String key) {
+    public boolean matchUnListenKey(String key) {
         return KeyBuilder.matchInstanceListKey(key, namespaceId, getName());
     }
 
     @Override
-    public void onChange(String key, Instances value) throws Exception {
+    public void onChange(String key, Instances value) {
 
         Loggers.SRV_LOG.info("[NACOS-RAFT] datum is changed, key: {}, value: {}", key, value);
-
         for (Instance instance : value.getInstanceList()) {
 
             if (instance == null) {
@@ -169,9 +164,7 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
                 instance.setWeight(0.01D);
             }
         }
-
         updateIPs(value.getInstanceList(), KeyBuilder.matchEphemeralInstanceListKey(key));
-
         recalculateChecksum();
     }
 
@@ -240,14 +233,15 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
 
         setLastModifiedMillis(System.currentTimeMillis());
         getPushService().serviceChanged(this);
-        StringBuilder stringBuilder = new StringBuilder();
 
-        for (Instance instance : allIPs()) {
-            stringBuilder.append(instance.toIPAddr()).append("_").append(instance.isHealthy()).append(",");
+        if (Loggers.EVT_LOG.isDebugEnabled()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Instance instance : allIPs()) {
+                stringBuilder.append(instance.toIPAddr()).append("_").append(instance.isHealthy()).append(",");
+            }
+            Loggers.EVT_LOG.info("[IP-UPDATED] namespace: {}, service: {}, ips: {}",
+                getNamespaceId(), getName(), stringBuilder.toString());
         }
-
-        Loggers.EVT_LOG.info("[IP-UPDATED] namespace: {}, service: {}, ips: {}",
-            getNamespaceId(), getName(), stringBuilder.toString());
 
     }
 
@@ -261,7 +255,7 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
         }
     }
 
-    public void destroy() throws Exception {
+    public void destroy() {
         for (Map.Entry<String, Cluster> entry : clusterMap.entrySet()) {
             entry.getValue().destroy();
         }
@@ -314,11 +308,10 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
 
     @JSONField(serialize = false)
     public String getServiceString() {
-        Map<Object, Object> serviceObject = new HashMap<Object, Object>(10);
+        Map<Object, Object> serviceObject = new HashMap<>(10);
         Service service = this;
 
         serviceObject.put("name", service.getName());
-
         List<Instance> ips = service.allIPs();
         int invalidIPCount = 0;
         int ipCount = 0;
@@ -379,10 +372,6 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
         return clusterMap;
     }
 
-    public void setClusterMap(Map<String, Cluster> clusterMap) {
-        this.clusterMap = clusterMap;
-    }
-
     public String getNamespaceId() {
         return namespaceId;
     }
@@ -436,14 +425,14 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
         return checksum;
     }
 
-    public synchronized void recalculateChecksum() {
+    public void recalculateChecksum() {
         List<Instance> ips = allIPs();
-
+        String serviceString = getServiceString();
         StringBuilder ipsString = new StringBuilder();
-        ipsString.append(getServiceString());
+        ipsString.append(serviceString);
 
         if (Loggers.SRV_LOG.isDebugEnabled()) {
-            Loggers.SRV_LOG.debug("service to json: " + getServiceString());
+            Loggers.SRV_LOG.debug("service to json: " + serviceString);
         }
 
         if (CollectionUtils.isNotEmpty(ips)) {
@@ -457,8 +446,8 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
             ipsString.append(",");
         }
 
+        String result;
         try {
-            String result;
             try {
                 MessageDigest md5 = MessageDigest.getInstance("MD5");
                 result = new BigInteger(1, md5.digest((ipsString.toString()).getBytes(Charset.forName("UTF-8")))).toString(16);
@@ -467,10 +456,13 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
                 result = RandomStringUtils.randomAscii(32);
             }
 
-            checksum = result;
         } catch (Exception e) {
             Loggers.SRV_LOG.error("[NACOS-DOM] error while calculating checksum(md5)", e);
-            checksum = RandomStringUtils.randomAscii(32);
+            result = RandomStringUtils.randomAscii(32);
+        }
+
+        synchronized (this) {
+            checksum = result;
         }
     }
 

@@ -320,7 +320,7 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
     }
 
     @Override
-    public boolean matchUnlistenKey(String key) {
+    public boolean matchUnListenKey(String key) {
         return KeyBuilder.matchSwitchKey(key);
     }
 

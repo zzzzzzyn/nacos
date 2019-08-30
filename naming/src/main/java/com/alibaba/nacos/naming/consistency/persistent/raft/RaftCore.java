@@ -165,22 +165,21 @@ public class RaftCore {
             return;
         }
 
+        long start = System.currentTimeMillis();
+        final Datum datum = new Datum();
+        datum.key = key;
+        datum.value = value;
+        if (getDatum(key) == null) {
+            datum.timestamp.set(1L);
+        } else {
+            datum.timestamp.set(getDatum(key).timestamp.incrementAndGet());
+        }
+        JSONObject json = new JSONObject();
+        json.put("datum", datum);
+        json.put("source", peers.local());
+
         try {
             OPERATE_LOCK.lock();
-            long start = System.currentTimeMillis();
-            final Datum datum = new Datum();
-            datum.key = key;
-            datum.value = value;
-            if (getDatum(key) == null) {
-                datum.timestamp.set(1L);
-            } else {
-                datum.timestamp.set(getDatum(key).timestamp.incrementAndGet());
-            }
-
-            JSONObject json = new JSONObject();
-            json.put("datum", datum);
-            json.put("source", peers.local());
-
             onPublish(datum, peers.local());
 
             final String content = JSON.toJSONString(json);
@@ -299,7 +298,6 @@ public class RaftCore {
         }
 
         datums.put(datum.key, datum);
-
         if (isLeader()) {
             local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);
         } else {
@@ -312,7 +310,6 @@ public class RaftCore {
             }
         }
         raftStore.updateTerm(local.term.get());
-
         notifier.addTask(datum.key, ApplyAction.CHANGE);
 
         Loggers.RAFT.info("data added/updated, key={}, term={}", datum.key, local.term);
@@ -787,7 +784,6 @@ public class RaftCore {
         }
 
         Loggers.RAFT.info("add listener: {}", key);
-
         listenerList.add(listener);
 
         // if data present, notify immediately
@@ -804,7 +800,7 @@ public class RaftCore {
         }
     }
 
-    public void unlisten(String key, RecordListener listener) {
+    public void unListen(String key, RecordListener listener) {
 
         if (!listeners.containsKey(key)) {
             return;

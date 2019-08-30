@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.client.naming.core;
+package com.alibaba.nacos.client.naming.core.udp;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.naming.push.AckPacket;
@@ -32,7 +32,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 /**
  * @author xuanyin
  */
-public class PushReceiver implements Runnable {
+public class UdpPushReceiver implements Runnable {
 
     private ScheduledExecutorService executorService;
 
@@ -40,11 +40,11 @@ public class PushReceiver implements Runnable {
 
     private DatagramSocket udpSocket;
 
-    private HostReactor hostReactor;
+    private UdpServiceChangedAwareStrategy changedAwareStrategy;
 
-    public PushReceiver(HostReactor hostReactor) {
+    public UdpPushReceiver(UdpServiceChangedAwareStrategy changedAwareStrategy) {
         try {
-            this.hostReactor = hostReactor;
+            this.changedAwareStrategy = changedAwareStrategy;
             udpSocket = new DatagramSocket();
 
             executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
@@ -79,13 +79,13 @@ public class PushReceiver implements Runnable {
                 PushPacket pushPacket = JSON.parseObject(json, PushPacket.class);
                 AckPacket pushResponseAck;
                 if ("dom".equals(pushPacket.type) || "service".equals(pushPacket.type)) {
-                    hostReactor.processServiceJSON(pushPacket.data);
+                    changedAwareStrategy.processDataStreamResponse(pushPacket.data);
 
                     // send ack to server
                     pushResponseAck = new AckPacket("push-ack", pushPacket.lastRefTime, StringUtils.EMPTY);
                 } else if ("dump".equals(pushPacket.type)) {
                     // dump data to server
-                    pushResponseAck = new AckPacket("dump-ack", pushPacket.lastRefTime, StringUtils.escapeJavaScript(JSON.toJSONString(hostReactor.getServiceInfoMap())));
+                    pushResponseAck = new AckPacket("dump-ack", pushPacket.lastRefTime, StringUtils.escapeJavaScript(JSON.toJSONString(changedAwareStrategy.getServiceInfoMap())));
                 } else {
                     // do nothing send ack only
                     pushResponseAck = new AckPacket("unknown-ack", pushPacket.lastRefTime, StringUtils.EMPTY);

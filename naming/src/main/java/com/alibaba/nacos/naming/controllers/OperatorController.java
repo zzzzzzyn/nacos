@@ -37,6 +37,9 @@ import com.alibaba.nacos.naming.web.NeedAuth;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -82,6 +85,15 @@ public class OperatorController {
 
     @Autowired
     private RaftPeerSet raftPeerSet;
+
+    @Value("${nacos.support.api.version:v1}")
+    private String apiVersion;
+
+    @GetMapping("/api/version")
+    public ResponseEntity getServerSupportApiVersion() {
+
+        return ResponseEntity.ok(apiVersion);
+    }
 
     @RequestMapping("/push/state")
     public JSONObject pushState(HttpServletRequest request) {

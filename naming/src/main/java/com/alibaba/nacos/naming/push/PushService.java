@@ -61,8 +61,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     private ApplicationContext applicationContext;
 
     public static int ACK_TIMEOUT_SECONDS = 10;
-    public static long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
     public static int MAX_RETRY_TIMES = 1;
+    public static long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
 
     private AtomicInteger totalPush = new AtomicInteger();
     private AtomicInteger failedPush = new AtomicInteger();
@@ -182,8 +182,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     }
 
     public Map<String, AbstractPushClient> getPushClients(String key) {
-
-        return Collections.unmodifiableMap(clientMap.get(key));
+        Map<String, AbstractPushClient> pushClientsSource = clientMap.get(key);
+        return pushClientsSource != null ? Collections.unmodifiableMap(pushClientsSource) : Collections.emptyMap();
     }
 
     public List<Subscriber> getClients(String serviceName, String namespaceId) {

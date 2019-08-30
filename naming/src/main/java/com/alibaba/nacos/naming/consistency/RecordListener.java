@@ -38,7 +38,7 @@ public interface RecordListener<T extends Record> {
      * @param key key to match
      * @return true if match success
      */
-    boolean matchUnlistenKey(String key);
+    boolean matchUnListenKey(String key);
 
     /**
      * Action to do if data of target key has changed

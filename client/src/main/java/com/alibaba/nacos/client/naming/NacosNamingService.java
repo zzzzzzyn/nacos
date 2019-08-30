@@ -29,7 +29,9 @@ import com.alibaba.nacos.client.naming.beat.BeatInfo;
 import com.alibaba.nacos.client.naming.beat.BeatReactor;
 import com.alibaba.nacos.client.naming.core.Balancer;
 import com.alibaba.nacos.client.naming.core.EventDispatcher;
-import com.alibaba.nacos.client.naming.core.HostReactor;
+import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
+import com.alibaba.nacos.client.naming.core.udp.UdpServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import com.alibaba.nacos.client.naming.utils.InitUtils;
@@ -65,7 +67,7 @@ public class NacosNamingService implements NamingService {
 
     private String logName;
 
-    private HostReactor hostReactor;
+    private IServiceChangedAwareStrategy serviceChangedAwareStrategy;
 
     private BeatReactor beatReactor;
 
@@ -95,7 +97,15 @@ public class NacosNamingService implements NamingService {
         serverProxy = new NamingProxy(namespace, endpoint, serverList);
         serverProxy.setProperties(properties);
         beatReactor = new BeatReactor(serverProxy, initClientBeatThreadCount(properties));
-        hostReactor = new HostReactor(eventDispatcher, serverProxy, cacheDir, isLoadCacheAtStart(properties), initPollingThreadCount(properties));
+
+        serviceChangedAwareStrategy =
+            ServiceChangedAwareStrategyBuilder.builder()
+                .setEventDispatcher(eventDispatcher)
+                .setNamingProxy(serverProxy)
+                .setCacheDir(cacheDir)
+                .isLoadCacheAtStart(isLoadCacheAtStart(properties))
+                .setPollingThreadCount(initPollingThreadCount(properties))
+                .build(UdpServiceChangedAwareStrategy.class);
     }
 
     private int initClientBeatThreadCount(Properties properties) {
@@ -284,12 +294,11 @@ public class NacosNamingService implements NamingService {
 
     @Override
     public List<Instance> getAllInstances(String serviceName, String groupName, List<String> clusters, boolean subscribe) throws NacosException {
-
         ServiceInfo serviceInfo;
         if (subscribe) {
-            serviceInfo = hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
+            serviceInfo = serviceChangedAwareStrategy.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
         } else {
-            serviceInfo = hostReactor.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
+            serviceInfo = serviceChangedAwareStrategy.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
         }
         List<Instance> list;
         if (serviceInfo == null || CollectionUtils.isEmpty(list = serviceInfo.getHosts())) {
@@ -341,9 +350,9 @@ public class NacosNamingService implements NamingService {
 
         ServiceInfo serviceInfo;
         if (subscribe) {
-            serviceInfo = hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
+            serviceInfo = serviceChangedAwareStrategy.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
         } else {
-            serviceInfo = hostReactor.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
+            serviceInfo = serviceChangedAwareStrategy.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ","));
         }
         return selectInstances(serviceInfo, healthy);
     }
@@ -389,10 +398,10 @@ public class NacosNamingService implements NamingService {
 
         if (subscribe) {
             return Balancer.RandomByWeight.selectHost(
-                hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")));
+                serviceChangedAwareStrategy.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")));
         } else {
             return Balancer.RandomByWeight.selectHost(
-                hostReactor.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")));
+                serviceChangedAwareStrategy.getServiceInfoDirectlyFromServer(NamingUtils.getGroupedName(serviceName, groupName), StringUtils.join(clusters, ",")));
         }
     }
 
@@ -413,7 +422,7 @@ public class NacosNamingService implements NamingService {
 
     @Override
     public void subscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) throws NacosException {
-        eventDispatcher.addListener(hostReactor.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName),
+        eventDispatcher.addListener(serviceChangedAwareStrategy.getServiceInfo(NamingUtils.getGroupedName(serviceName, groupName),
             StringUtils.join(clusters, ",")), StringUtils.join(clusters, ","), listener);
     }
 

@@ -39,10 +39,6 @@ import java.util.Map;
  */
 public class Instances implements Record {
 
-    private String cachedChecksum;
-
-    private long lastCalculateTime = 0L;
-
     private List<Instance> instanceList = new ArrayList<>();
 
     public List<Instance> getInstanceList() {
@@ -61,15 +57,11 @@ public class Instances implements Record {
     @Override
     @JSONField(serialize = false)
     public String getChecksum() {
-        recalculateChecksum();
-        return cachedChecksum;
+
+        return recalculateChecksum();
     }
 
-    public String getCachedChecksum() {
-        return cachedChecksum;
-    }
-
-    private void recalculateChecksum() {
+    private String recalculateChecksum() {
         StringBuilder sb = new StringBuilder();
         Collections.sort(instanceList);
         for (Instance ip : instanceList) {
@@ -78,16 +70,13 @@ public class Instances implements Record {
             sb.append(string);
             sb.append(",");
         }
-        MessageDigest md5;
         try {
-            md5 = MessageDigest.getInstance("MD5");
-            cachedChecksum =
-                new BigInteger(1, md5.digest((sb.toString()).getBytes(Charset.forName("UTF-8")))).toString(16);
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            return new BigInteger(1, md5.digest((sb.toString()).getBytes(Charset.forName("UTF-8")))).toString(16);
         } catch (NoSuchAlgorithmException e) {
             Loggers.SRV_LOG.error("error while calculating checksum(md5) for instances", e);
-            cachedChecksum = RandomStringUtils.randomAscii(32);
+            return RandomStringUtils.randomAscii(32);
         }
-        lastCalculateTime = System.currentTimeMillis();
     }
 
     public String convertMap2String(Map<String, String> map) {

@@ -43,8 +43,6 @@ public class DiskCache {
 
         try {
             makeSureCacheDirExists(dir);
-
-
             File file = new File(dir, dom.getKeyEncoded());
             if (!file.exists()) {
                 // add another !file.exists() to avoid conflicted creating-new-file from multi-instances

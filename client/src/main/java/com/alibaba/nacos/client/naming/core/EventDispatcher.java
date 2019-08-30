@@ -34,7 +34,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  */
 public class EventDispatcher {
 
-    private ExecutorService executor = null;
+    private ExecutorService executor;
 
     private BlockingQueue<ServiceInfo> changedServices = new LinkedBlockingQueue<ServiceInfo>();
 
@@ -135,12 +135,5 @@ public class EventDispatcher {
                 }
             }
         }
-    }
-
-    public void setExecutor(ExecutorService executor) {
-        ExecutorService oldExecutor = this.executor;
-        this.executor = executor;
-
-        oldExecutor.shutdown();
     }
 }

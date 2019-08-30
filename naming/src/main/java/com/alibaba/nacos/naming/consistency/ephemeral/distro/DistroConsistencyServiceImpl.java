@@ -268,13 +268,10 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 
     public void processData(byte[] data) throws Exception {
         if (data.length > 0) {
-            Map<String, Datum<Instances>> datumMap =
-                serializer.deserializeMap(data, Instances.class);
-
+            Map<String, Datum<Instances>> datumMap = serializer.deserializeMap(data, Instances.class);
 
             for (Map.Entry<String, Datum<Instances>> entry : datumMap.entrySet()) {
                 dataStore.put(entry.getKey(), entry.getValue());
-
                 if (!listeners.containsKey(entry.getKey())) {
                     // pretty sure the service not exist:
                     if (switchDomain.isDefaultInstanceEphemeral()) {
@@ -319,7 +316,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
     }
 
     @Override
-    public void listen(String key, RecordListener listener) throws NacosException {
+    public void listen(String key, RecordListener listener) {
         if (!listeners.containsKey(key)) {
             listeners.put(key, new CopyOnWriteArrayList<>());
         }
@@ -332,7 +329,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
     }
 
     @Override
-    public void unlisten(String key, RecordListener listener) throws NacosException {
+    public void unListen(String key, RecordListener listener) throws NacosException {
         if (!listeners.containsKey(key)) {
             return;
         }
