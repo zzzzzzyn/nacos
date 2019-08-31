@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.manager;
 
+import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
@@ -60,7 +61,7 @@ public class GrpcServerRemotingManager extends AbstractGrpcRemotingManager imple
         }
 
         for (IPipelineEventListener iPipelineEventListener : pipelineEventListeners) {
-            int[] interestEventTypes = iPipelineEventListener.interestEventTypes();
+            Class<? extends Event>[] interestEventTypes = iPipelineEventListener.interestEventTypes();
             if (interestEventTypes == null || interestEventTypes.length == 0) {
                 continue;
             }

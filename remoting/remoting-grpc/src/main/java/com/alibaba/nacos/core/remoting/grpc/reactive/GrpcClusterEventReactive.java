@@ -15,11 +15,12 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.reactive;
 
-import com.alibaba.nacos.core.remoting.event.reactive.BaseEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.AsyncEventPipelineReactive;
 
 /**
  * @author pbting
  * @date 2019-08-23 10:16 AM
  */
-public class GrpcClusterEventReactive extends BaseEventPipelineReactive {
+public class GrpcClusterEventReactive extends AsyncEventPipelineReactive {
+
 }

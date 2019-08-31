@@ -15,8 +15,6 @@
  */
 package com.alibaba.nacos.core.remoting.event;
 
-import com.alibaba.nacos.core.remoting.interactive.IInteractive;
-
 /**
  * Events with remote nature.
  *
@@ -30,7 +28,7 @@ public class RemotingEvent extends Event {
      */
     private String sink;
 
-    public RemotingEvent(Object source, Object value, int eventType) {
+    public RemotingEvent(Object source, Object value, Class<? extends Event> eventType) {
         super(source, value, eventType);
     }
 
@@ -50,8 +48,9 @@ public class RemotingEvent extends Event {
      *
      * @return
      */
+
     @Override
-    public IInteractive getValue() {
+    public <T> T getValue() {
         return super.getValue();
     }
 }

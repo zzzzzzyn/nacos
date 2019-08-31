@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.event;
 
-import com.alibaba.nacos.core.remoting.event.reactive.BaseEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.SimpleEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 
 import java.util.EventListener;
@@ -45,18 +45,18 @@ public interface IPipelineEventListener<T extends Event> extends EventListener {
      *
      * @return
      */
-    int[] interestEventTypes();
+    Class<? extends Event>[] interestEventTypes();
 
     /**
      * event pipeline reactive partition.
      * Multiple eventListeners can be merged into the specified partition according to their respective characteristics
-     * By default, all of the event listeners are under the BaseEventPipelineReactive partition.
+     * By default, all of the event listeners are under the SimpleEventPipelineReactive partition.
      *
      * @return the default event listener partition。
      */
     default Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
 
-        return BaseEventPipelineReactive.class;
+        return SimpleEventPipelineReactive.class;
     }
 
 }

@@ -23,7 +23,7 @@ package com.alibaba.nacos.core.remoting.event;
  */
 public class LocalizationEvent extends Event {
 
-    public LocalizationEvent(Object source, Object value, int eventType) {
+    public LocalizationEvent(Object source, Object value, Class<? extends Event> eventType) {
         super(source, value, eventType);
     }
 }

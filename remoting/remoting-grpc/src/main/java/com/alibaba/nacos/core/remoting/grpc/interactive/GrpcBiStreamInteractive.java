@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.core.remoting.grpc.interactive;
+
+import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
+import io.grpc.stub.CallStreamObserver;
 
 /**
  * @author pbting
- * @date 2019-08-23 2:09 PM
+ * 基于 Grpc 实现的两个节点间的通信模型。默认是异步的
  */
-public class ClientRequestStreamEvent extends RemotingEvent {
+public class GrpcBiStreamInteractive extends GrpcRequestStreamInteractive {
 
-    public ClientRequestStreamEvent(Object source, Object value, Class<? extends Event> eventType) {
-        super(source, value, eventType);
+    public GrpcBiStreamInteractive(InteractivePayload interactivePayload,
+                                   CallStreamObserver responseStream) {
+        super(interactivePayload, responseStream);
     }
 }

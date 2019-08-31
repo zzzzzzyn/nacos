@@ -16,7 +16,6 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
-import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
 import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
 import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.client.ClientType;
@@ -25,6 +24,7 @@ import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Subscriber;
+import com.alibaba.nacos.naming.push.events.PushEvents;
 import com.alibaba.nacos.naming.push.listener.PushRelatedPipelineEventListeners;
 import com.alibaba.nacos.naming.push.udp.UdpPushClient;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
@@ -89,7 +89,7 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         // 2. init push configuration
         initPushConfiguration();
         // 3. reactive remove push client id zombie with recycle
-        pushEventLoopReactive.reactive(new RecyclableEvent(this, IEventType.REMOVE_CLIENT_IF_ZOMBIE, 20));
+        pushEventLoopReactive.reactive(new PushEvents.ZombiePushClientCheckEvent(this, 20));
     }
 
     private void initPushConfiguration() {
@@ -218,9 +218,9 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     }
 
     public void schedulerReTransmitter(AbstractReTransmitter reTransmitter) {
-        RecyclableEvent recyclableEvent =
-            new RecyclableEvent(this, reTransmitter, IEventType.RE_TRANSMITTER, ACK_TIMEOUT_SECONDS);
-        pushEventLoopReactive.reactive(recyclableEvent);
+        PushEvents.ReTransmitterEvent reTransmitterEvent =
+            new PushEvents.ReTransmitterEvent(this, reTransmitter);
+        pushEventLoopReactive.reactive(reTransmitterEvent);
     }
 
     public AckEntry putAckEntry(String key, AckEntry ackEntry) {

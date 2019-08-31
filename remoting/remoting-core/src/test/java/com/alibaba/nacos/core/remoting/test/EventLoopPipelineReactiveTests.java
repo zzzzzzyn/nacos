@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.core.remoting.test;
 
+import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
 import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
@@ -53,12 +54,12 @@ public class EventLoopPipelineReactiveTests {
             }
 
             @Override
-            public int[] interestEventTypes() {
-                return new int[]{1};
+            public Class<? extends Event>[] interestEventTypes() {
+                return new Class[]{RecyclableEvent.class};
             }
         });
 
-        RecyclableEvent recyclableEvent = new RecyclableEvent(eventLoopPipelineReactive, "Event Loop", 1, 1);
+        RecyclableEvent recyclableEvent = new RecyclableEvent(eventLoopPipelineReactive, "Event Loop", RecyclableEvent.class, 1);
         eventLoopPipelineReactive.reactive(recyclableEvent);
 
         System.in.read();

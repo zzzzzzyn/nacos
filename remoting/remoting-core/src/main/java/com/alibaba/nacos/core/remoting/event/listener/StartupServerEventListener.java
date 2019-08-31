@@ -16,7 +16,7 @@
 package com.alibaba.nacos.core.remoting.event.listener;
 
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
-import com.alibaba.nacos.core.remoting.event.LocalizationEvent;
+import com.alibaba.nacos.core.remoting.event.StartupEvent;
 
 /**
  * an event listener to startup server
@@ -24,7 +24,7 @@ import com.alibaba.nacos.core.remoting.event.LocalizationEvent;
  * @author pbting
  * @date 2019-08-22 5:44 PM
  */
-public abstract class StartupServerEventListener implements IPipelineEventListener<LocalizationEvent> {
+public abstract class StartupServerEventListener implements IPipelineEventListener<StartupEvent> {
 
     /**
      * Processing entry in response to an event。
@@ -34,7 +34,7 @@ public abstract class StartupServerEventListener implements IPipelineEventListen
      * @return
      */
     @Override
-    public boolean onEvent(LocalizationEvent event, int listenerIndex) {
+    public boolean onEvent(StartupEvent event, int listenerIndex) {
         return onStartup(event);
     }
 
@@ -44,5 +44,5 @@ public abstract class StartupServerEventListener implements IPipelineEventListen
      * @param event
      * @return
      */
-    public abstract boolean onStartup(LocalizationEvent event);
+    public abstract boolean onStartup(StartupEvent event);
 }

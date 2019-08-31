@@ -15,9 +15,10 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.observer;
 
-import com.alibaba.nacos.core.remoting.event.ClientRequestResponseEvent;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.reactive.SimpleRemotingEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.grpc.event.GrpcBiStreamEvent;
+import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcBiStreamInteractive;
 import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import io.grpc.stub.CallStreamObserver;
@@ -28,33 +29,36 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
  * @author pbting
  * 服务端异步请求的处理入口。即客户端对服务端请求，服务端的处理入口
  */
-public class ClusterRequestStreamObserver extends AbstractCallStreamObserver
+public class ClusterBiStreamObserver extends AbstractCallStreamObserver
     implements IInteractive {
 
-    private IEventPipelineReactive eventPipelineReactive;
+    private SimpleRemotingEventPipelineReactive remotingEventPipelineReactive;
 
     private final static InternalLogger logger = InternalLoggerFactory
-        .getInstance(ClusterRequestStreamObserver.class);
+        .getInstance(ClusterBiStreamObserver.class);
 
-    public ClusterRequestStreamObserver(IEventPipelineReactive eventPipelineReactive,
-                                        CallStreamObserver<InteractivePayload> responseStreamObserver) {
+    public ClusterBiStreamObserver(SimpleRemotingEventPipelineReactive remotingEventPipelineReactive,
+                                   CallStreamObserver<InteractivePayload> responseStreamObserver) {
         super(responseStreamObserver);
-        this.eventPipelineReactive = eventPipelineReactive;
+        this.remotingEventPipelineReactive = remotingEventPipelineReactive;
     }
 
     /**
-     * The Entry of Client Request
+     * The entrance of Client Request
      *
-     * @param remotingGrpcInteractive
+     * @param payload
      */
     @Override
-    public void request(GrpcRequestStreamInteractive remotingGrpcInteractive) {
-        int eventType = remotingGrpcInteractive.getRequestPayload().getEventType();
+    public void onNext(InteractivePayload payload) {
+
+        int eventTypeIndex = payload.getEventType();
         if (logger.isDebugEnabled()) {
-            logger.debug("receive client request with the event type :" + eventType);
+            logger.debug("receive client request with the event type :" + eventTypeIndex);
         }
-        eventPipelineReactive
-            .reactive(new ClientRequestResponseEvent(this, remotingGrpcInteractive, eventType));
+
+        Class<? extends Event> eventType = remotingEventPipelineReactive.getEventType(eventTypeIndex, GrpcBiStreamEvent.class);
+        remotingEventPipelineReactive
+            .reactive(new GrpcBiStreamEvent(this, new GrpcBiStreamInteractive(payload, interactiveStream), eventType));
     }
 
     @Override

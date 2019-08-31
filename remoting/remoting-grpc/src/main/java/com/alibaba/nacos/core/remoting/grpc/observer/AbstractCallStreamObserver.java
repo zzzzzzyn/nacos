@@ -15,7 +15,6 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.observer;
 
-import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import io.grpc.stub.CallStreamObserver;
@@ -66,11 +65,12 @@ public abstract class AbstractCallStreamObserver extends CallStreamObserver<Inte
 
     }
 
-    public void onNext(InteractivePayload value) {
-        request(new GrpcRequestStreamInteractive(value, interactiveStream));
-    }
-
-    public abstract void request(GrpcRequestStreamInteractive wareSwiftInteractive);
+    /**
+     * the entrance for client request
+     *
+     * @param value
+     */
+    public abstract void onNext(InteractivePayload value);
 
     public boolean sendResponsePayload(InteractivePayload responsePayload) {
         if (interactiveStream.isReady()) {

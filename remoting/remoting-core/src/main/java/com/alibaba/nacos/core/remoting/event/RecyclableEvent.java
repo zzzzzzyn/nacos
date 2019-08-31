@@ -24,21 +24,31 @@ package com.alibaba.nacos.core.remoting.event;
 public class RecyclableEvent extends Event {
 
     /**
-     * Unit in seconds
+     * Unit in seconds. the default is zero means will recycle once
      */
     private int recycleInterval;
 
     private volatile boolean isCancel = false;
 
-    public RecyclableEvent(Object source, Object value, int eventType, int recycleInterval) {
+    public RecyclableEvent(Object source, Object value, Class<? extends Event> eventType, int recycleInterval) {
         super(source, value, eventType);
         this.recycleInterval = recycleInterval;
     }
 
-    public RecyclableEvent(Object source, int eventType, int recycleInterval) {
+    public RecyclableEvent(Object source, Object value) {
+        super(source, value, null);
+    }
+
+    public RecyclableEvent(Object source, Class<? extends Event> eventType, int recycleInterval) {
         super(source, Event.EMPTY_VALUE, eventType);
         this.recycleInterval = recycleInterval;
     }
+
+    public RecyclableEvent(Object source, int recycleInterval) {
+        super(source, Event.EMPTY_VALUE, null);
+        this.recycleInterval = recycleInterval;
+    }
+
 
     public int getRecycleInterval() {
         return recycleInterval;

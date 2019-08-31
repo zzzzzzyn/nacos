@@ -41,4 +41,9 @@ public class GrpcRequestStreamInteractive extends AbstractGrpcInteractive {
 
         return false;
     }
+
+    public void onCompleted() {
+
+        this.responseStream.onCompleted();
+    }
 }

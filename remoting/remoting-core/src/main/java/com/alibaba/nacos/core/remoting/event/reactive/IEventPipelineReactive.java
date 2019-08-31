@@ -42,7 +42,7 @@ public interface IEventPipelineReactive {
      * @param eventType
      * @return
      */
-    boolean containsEventType(Integer eventType);
+    boolean containsEventType(Class<? extends Event> eventType);
 
     /**
      * Add a listener for an event type. An eventType can correspond to multiple object listeners

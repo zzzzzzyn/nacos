@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
 
-    private HashMap<Integer, EventExecutor> eventExecutorMapping = new HashMap<>();
+    private HashMap<Class<? extends Event>, EventExecutor> eventExecutorMapping = new HashMap<>();
 
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
 

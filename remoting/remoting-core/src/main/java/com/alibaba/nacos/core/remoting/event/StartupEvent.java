@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push;
+package com.alibaba.nacos.core.remoting.event;
+
+import java.net.InetSocketAddress;
 
 /**
- * The localized event type interval is [1,500]
- *
  * @author pbting
- * @date 2019-08-28 3:37 PM
+ * @date 2019-08-31 12:43 AM
  */
-public interface IEventType {
+public class StartupEvent extends LocalizationEvent {
 
-    /**
-     * an event type which remove push client if zombie
-     */
-    int REMOVE_CLIENT_IF_ZOMBIE = 1;
+    public StartupEvent(Object source, Object value, Class<? extends Event> eventType) {
+        super(source, value, eventType);
+    }
 
-    /**
-     * re-transmitter
-     */
-    int RE_TRANSMITTER = 2;
+    public StartupEvent(Object source, Object value) {
+        super(source, value, null);
+    }
+
+    @Override
+    public InetSocketAddress getValue() {
+        return super.getValue();
+    }
 }

@@ -21,8 +21,7 @@ package com.alibaba.nacos.core.remoting.event;
  */
 public class ClientRequestResponseEvent extends RemotingEvent {
 
-    public ClientRequestResponseEvent(Object source, Object value, int eventType) {
+    public ClientRequestResponseEvent(Object source, Object value, Class<? extends Event> eventType) {
         super(source, value, eventType);
     }
-
 }

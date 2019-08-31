@@ -19,19 +19,18 @@ import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannel;
 import com.alibaba.nacos.core.remoting.event.*;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.grpc.GrpcRemotingChannel;
-import com.alibaba.nacos.core.remoting.grpc.IGrpcEventReactiveType;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
+import com.alibaba.nacos.core.remoting.grpc.event.GrpcBiStreamEvent;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcClientRemotingManager;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcServerRemotingManager;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcServerEventReactive;
+import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
 import com.alibaba.nacos.core.remoting.manager.IServerRemotingManager;
-import com.alibaba.nacos.core.remoting.interactive.IInteractive;
-import com.alibaba.nacos.core.remoting.stream.IRemotingRequestStreamObserver;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
+import com.alibaba.nacos.core.remoting.stream.IRemotingRequestStreamObserver;
 import com.google.protobuf.ByteString;
-import io.grpc.ConnectivityState;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
 import org.junit.Test;
@@ -40,6 +39,7 @@ import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author pbting
@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class StartupGrpcServerTests {
 
-    private static final int DEBUG_EVENT_TYPE = 1;
-    private static final int DEBUG_STREAM_EVENT_TYPE = 2;
+    public static final int DEBUG_EVENT_TYPE = 1;
+    public static final int DEBUG_STREAM_EVENT_TYPE = 2;
 
     @Test
     public void rawStartupServer() throws Exception {
@@ -63,8 +63,7 @@ public class StartupGrpcServerTests {
         System.in.read();
     }
 
-    @Test
-    public void startupServer() throws Exception {
+    public IServerRemotingManager startupServer() throws Exception {
 
         IServerRemotingManager serverRemotingManager = new GrpcServerRemotingManager();
         IAttachListenerHook attachListenerHook = (IAttachListenerHook) serverRemotingManager;
@@ -86,8 +85,8 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public int[] interestEventTypes() {
-                return new int[]{DEBUG_EVENT_TYPE};
+            public Class<? extends Event>[] interestEventTypes() {
+                return new Class[]{ClientRequestResponseEvent.class};
             }
 
             @Override
@@ -102,7 +101,7 @@ public class StartupGrpcServerTests {
             public boolean onEvent(ClientRequestStreamEvent event, int listenerIndex) {
                 IInteractive interactive = event.getValue();
                 System.err.println("receive client request/stream ,payload is " + interactive.getRequestPayload().getPayload().toStringUtf8());
-                for (int i = 0; i < 100000; i++) {
+                for (int i = 0; i < Integer.MAX_VALUE; i++) {
                     InteractivePayload.Builder builder = InteractivePayload.newBuilder();
                     builder.setPayload(ByteString.copyFrom(String.format("data content is the current time [%s]", new Date().toString()).getBytes()));
                     interactive.sendResponsePayload(builder.build());
@@ -115,8 +114,35 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public int[] interestEventTypes() {
-                return new int[]{DEBUG_STREAM_EVENT_TYPE};
+            public Class<? extends Event>[] interestEventTypes() {
+                return new Class[]{ClientRequestStreamEvent.class};
+            }
+
+            @Override
+            public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+                return GrpcClientEventReactive.class;
+            }
+        });
+
+        // 3. attach bi-stream
+        attachListenerHook.attachListeners(new IPipelineEventListener<GrpcBiStreamEvent>() {
+            private final AtomicLong count = new AtomicLong();
+
+            @Override
+            public boolean onEvent(GrpcBiStreamEvent event, int listenerIndex) {
+                IInteractive interactive = event.getValue();
+                System.err.println("receive client request/channel ,payload is " + interactive.getRequestPayload().getPayload().toStringUtf8());
+                if (count.incrementAndGet() > 1) {
+                    InteractivePayload.Builder builder = InteractivePayload.newBuilder();
+                    builder.setPayload(ByteString.copyFrom(String.format("[ Response Server ]data content is the current time [%s]", new Date().toString()).getBytes()));
+                    interactive.sendResponsePayload(builder.build());
+                }
+                return true;
+            }
+
+            @Override
+            public Class<? extends Event>[] interestEventTypes() {
+                return new Class[]{GrpcBiStreamEvent.class};
             }
 
             @Override
@@ -126,13 +152,16 @@ public class StartupGrpcServerTests {
         });
 
         Event event =
-            new LocalizationEvent(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848),
-                IGrpcEventReactiveType.ILocalizationEventReactiveType.STARTUP_EVENT.getEventType());
-
+            new StartupEvent(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848));
         IEventPipelineReactive eventPipelineReactive = serverRemotingManager.getAbstractEventPipelineReactive(GrpcServerEventReactive.class);
-
         eventPipelineReactive.reactive(event);
 
+        return serverRemotingManager;
+    }
+
+    @Test
+    public void startup() throws Exception {
+        startupServer();
         System.in.read();
     }
 
@@ -147,24 +176,14 @@ public class StartupGrpcServerTests {
 
         GrpcRemotingChannel grpcRemotingChannel = (GrpcRemotingChannel) remotingChannel;
 
-        grpcRemotingChannel.getRawChannel().notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
-            System.err.println("xxxxxxxx is entry connectiong ...");
-        });
-        grpcRemotingChannel.getRawChannel().notifyWhenStateChanged(ConnectivityState.TRANSIENT_FAILURE, () -> {
-            System.err.println("xxxxxxxx is entry transient failure ...");
-        });
-        grpcRemotingChannel.getRawChannel().notifyWhenStateChanged(ConnectivityState.READY, () -> {
-            System.err.println("######## is ready....");
-        });
-
         for (int i = 1; i < 10000; i++) {
             InteractivePayload responsePayload;
             try {
                 System.err.println("channel state :" + grpcRemotingChannel.getRawChannel().getState(true));
-//                responsePayload = remotingChannel
-//                    .requestResponse(InteractivePayload.newBuilder().setEventType(DEBUG_EVENT_TYPE)
-//                        .setPayload(ByteString.copyFrom(String.format(" Hello Word %s", i).getBytes())).build());
-//                System.err.println(responsePayload.getPayload().toStringUtf8());
+                responsePayload = remotingChannel
+                    .requestResponse(InteractivePayload.newBuilder().setEventType(DEBUG_EVENT_TYPE)
+                        .setPayload(ByteString.copyFrom(String.format(" Hello Word %s", i).getBytes())).build());
+                System.err.println(responsePayload.getPayload().toStringUtf8());
             } catch (Exception e) {
                 e.printStackTrace();
             }

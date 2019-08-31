@@ -34,22 +34,26 @@ public class Event extends EventObject implements IEventContext {
 
     private String alias;
     private Object value;
-    private int eventType;
+    private Class<? extends Event> eventType;
 
     private EventExecutor eventExecutor;
 
-    public Event(Object source, Object value, int eventType) {
+    public Event(Object source, Object value) {
+        this(source, value, null);
+    }
+
+    public Event(Object source, Object value, Class<? extends Event> eventType) {
         super(source);
         this.value = value;
         this.eventType = eventType;
     }
 
-    public Event(Object source, int eventType) {
+    public Event(Object source, Class<? extends Event> eventType) {
         this(source, EMPTY_VALUE, eventType);
     }
 
-    public int getEventType() {
-        return eventType;
+    public Class<? extends Event> getEventType() {
+        return eventType == null ? this.getClass() : eventType;
     }
 
     public <T> T getValue() {

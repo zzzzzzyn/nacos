@@ -19,9 +19,9 @@ package com.alibaba.nacos.core.remoting.event;
  * @author pbting
  * @date 2019-08-23 2:09 PM
  */
-public class ClientRequestStreamEvent extends RemotingEvent {
+public class ClientBiStreamEvent extends ClientRequestStreamEvent {
 
-    public ClientRequestStreamEvent(Object source, Object value, Class<? extends Event> eventType) {
+    public ClientBiStreamEvent(Object source, Object value, Class<? extends Event> eventType) {
         super(source, value, eventType);
     }
 }

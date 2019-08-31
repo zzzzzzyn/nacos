@@ -23,7 +23,7 @@ import io.netty.util.concurrent.MultithreadEventExecutorGroup;
  * @author pbting
  * @date 2019-08-23 1:48 PM
  */
-public class AsyncEventPipelineReactive extends BaseEventPipelineReactive {
+public class AsyncEventPipelineReactive extends SimpleRemotingEventPipelineReactive {
 
     private static final MultithreadEventExecutorGroup DEFAULT_EVENT_EXECUTOR =
         new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 2,

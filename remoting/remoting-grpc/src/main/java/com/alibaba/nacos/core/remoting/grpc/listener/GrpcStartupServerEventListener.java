@@ -15,10 +15,10 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.listener;
 
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.event.LocalizationEvent;
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.StartupEvent;
 import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
-import com.alibaba.nacos.core.remoting.grpc.IGrpcEventReactiveType;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcServerEventReactive;
@@ -40,13 +40,14 @@ public class GrpcStartupServerEventListener extends StartupServerEventListener {
     private static final InternalLogger log = InternalLoggerFactory.getInstance(GrpcStartupServerEventListener.class);
 
     @Override
-    public boolean onStartup(LocalizationEvent event) {
+    public boolean onStartup(StartupEvent event) {
         IServerRemotingManager source = (IServerRemotingManager) event.getSource();
         InetSocketAddress inetSocketAddress = event.getValue();
         NettyServerBuilder nettyServerBuilder = NettyServerBuilder.forAddress(inetSocketAddress);
         Server server;
         try {
-            IEventPipelineReactive clientEventPipelineReactive = source.getAbstractEventPipelineReactive(GrpcClientEventReactive.class);
+            GrpcClientEventReactive clientEventPipelineReactive =
+                (GrpcClientEventReactive) source.getAbstractEventPipelineReactive(GrpcClientEventReactive.class);
             server = nettyServerBuilder.addService(new GrpcClientEntranceServiceImpl(clientEventPipelineReactive))
                 .flowControlWindow(NettyServerBuilder.DEFAULT_FLOW_CONTROL_WINDOW)
                 .build().start();
@@ -60,8 +61,8 @@ public class GrpcStartupServerEventListener extends StartupServerEventListener {
     }
 
     @Override
-    public int[] interestEventTypes() {
-        return new int[]{IGrpcEventReactiveType.ILocalizationEventReactiveType.STARTUP_EVENT.getEventType()};
+    public Class<? extends Event>[] interestEventTypes() {
+        return new Class[]{StartupEvent.class};
     }
 
     @Override

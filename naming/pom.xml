@@ -157,7 +157,7 @@
         <!-- support long connection -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>nacos-remoting-core</artifactId>
+            <artifactId>nacos-remoting-grpc</artifactId>
             <version>${project.version}</version>
         </dependency>
 

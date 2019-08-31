@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.naming.push.grpc;
+
+import com.alibaba.nacos.core.remoting.event.ClientRequestResponseEvent;
 
 /**
  * @author pbting
- * @date 2019-08-23 2:09 PM
+ * @date 2019-08-30 10:56 PM
  */
-public class ClientRequestStreamEvent extends RemotingEvent {
+public class ClientRequestResponseEventListener extends GrpcClientEventListenerSupport<ClientRequestResponseEvent> {
 
-    public ClientRequestStreamEvent(Object source, Object value, Class<? extends Event> eventType) {
-        super(source, value, eventType);
+    @Override
+    public boolean onRemotingEvent(ClientRequestResponseEvent event, int listenerIndex) {
+
+        return false;
+    }
+
+    @Override
+    public Class[] interestEventTypes() {
+        return new Class[]{ClientRequestResponseEvent.class};
     }
 }

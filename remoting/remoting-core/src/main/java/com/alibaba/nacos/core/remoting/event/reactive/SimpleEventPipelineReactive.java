@@ -30,19 +30,19 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author pbting
  */
-public class BaseEventPipelineReactive implements IEventPipelineReactive {
+public class SimpleEventPipelineReactive implements IEventPipelineReactive {
 
     private static final InternalLogger log =
-        InternalLoggerFactory.getInstance(BaseEventPipelineReactive.class);
+        InternalLoggerFactory.getInstance(SimpleEventPipelineReactive.class);
 
-    protected ConcurrentHashMap<Integer, Collection<IPipelineEventListener>> listeners;
+    protected ConcurrentHashMap<Class<? extends Event>, Collection<IPipelineEventListener>> listeners;
     protected ReentrantLock lock = new ReentrantLock();
 
-    public BaseEventPipelineReactive() {
+    public SimpleEventPipelineReactive() {
     }
 
     @Override
-    public boolean containsEventType(Integer eventType) {
+    public boolean containsEventType(Class<? extends Event> eventType) {
         if (eventType == null || listeners == null) {
             return false;
         }
@@ -77,8 +77,8 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
             }
         }
 
-        int[] eventTypes = pipelineEventListener.interestEventTypes();
-        for (int eventType : eventTypes) {
+        Class<? extends Event>[] eventTypes = pipelineEventListener.interestEventTypes();
+        for (Class eventType : eventTypes) {
             if (listeners.get(eventType) == null) {
                 ConcurrentLinkedDeque<IPipelineEventListener> tempInfo = new ConcurrentLinkedDeque<>();
                 if (order > 0) {
@@ -131,16 +131,29 @@ public class BaseEventPipelineReactive implements IEventPipelineReactive {
             return;
         }
 
-        int eventType = event.getEventType();
+        Class<? extends Event> eventType = event.getEventType();
         Deque tempList = (Deque<IPipelineEventListener>) listeners.get(eventType);
-
-        if (tempList == null || tempList.isEmpty()) {
-            log.warn("event type {}, alias {} No event listener。");
-            return;
+        if (tempList == null) {
+            tempList = (Deque<IPipelineEventListener>) listeners.get(event.getClass());
         }
 
-        // 3、触发,
-        listenerPerform(tempList, event);
+        if (tempList == null || tempList.isEmpty()) {
+            boolean isEmpty = true;
+            for (Class<? extends Event> eventTypeClazz : listeners.keySet()) {
+                if (eventTypeClazz.isAssignableFrom(eventType) ||
+                    eventTypeClazz.isAssignableFrom(event.getClass())) {
+                    tempList = (Deque<IPipelineEventListener>) listeners.get(eventTypeClazz);
+                    listenerPerform(tempList, event);
+                    isEmpty = false;
+                }
+            }
+            if (isEmpty) {
+                log.warn("event type {}, alias {} No event listener。");
+            }
+        } else {
+            // 3、触发,
+            listenerPerform(tempList, event);
+        }
     }
 
     @Override

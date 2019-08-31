@@ -17,11 +17,11 @@ package com.alibaba.nacos.core.remoting.grpc;
 
 import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannelModel;
 import com.alibaba.nacos.core.remoting.grpc.observer.AbstractGrpcRequestStreamObserver;
-import com.alibaba.nacos.core.remoting.stream.IRemotingRequestStreamObserver;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import com.alibaba.nacos.core.remoting.proto.InteractiveServiceGrpc;
+import com.alibaba.nacos.core.remoting.stream.IRemotingRequestStreamObserver;
 import io.grpc.ManagedChannel;
-import io.grpc.stub.StreamObserver;
+import io.grpc.stub.CallStreamObserver;
 
 /**
  * @author pbting
@@ -104,8 +104,7 @@ public class GrpcRemotingChannel extends AbstractRemotingChannelModel {
 
     @Override
     public <OUT_BOUND, IN_BOUND> OUT_BOUND requestChannel(IN_BOUND inBound) {
-
-        return (OUT_BOUND) getStub()
-            .requestChannel((StreamObserver<InteractivePayload>) inBound);
+        CallStreamObserver<InteractivePayload> inBoundStreamObserver = (CallStreamObserver<InteractivePayload>) inBound;
+        return (OUT_BOUND) getStub().requestChannel(inBoundStreamObserver);
     }
 }

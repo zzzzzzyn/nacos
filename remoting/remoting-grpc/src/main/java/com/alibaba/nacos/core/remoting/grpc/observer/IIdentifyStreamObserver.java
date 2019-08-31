@@ -22,7 +22,7 @@ public interface IIdentifyStreamObserver {
 
     String getIdentify();
 
-    void setIdentify(String indendity);
+    void setIdentify(String identify);
 
     AbstractCallStreamObserver getAbstractCallStreamObserver();
 }
