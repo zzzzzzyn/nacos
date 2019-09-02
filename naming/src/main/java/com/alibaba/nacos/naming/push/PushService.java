@@ -24,9 +24,8 @@ import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Subscriber;
-import com.alibaba.nacos.naming.push.events.PushEvents;
+import com.alibaba.nacos.naming.push.events.LocalizationEvents;
 import com.alibaba.nacos.naming.push.listener.PushRelatedPipelineEventListeners;
-import com.alibaba.nacos.naming.push.udp.UdpPushClient;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.codehaus.jackson.util.VersionUtil;
 import org.springframework.beans.BeansException;
@@ -37,7 +36,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
-import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -89,7 +87,7 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         // 2. init push configuration
         initPushConfiguration();
         // 3. reactive remove push client id zombie with recycle
-        pushEventLoopReactive.reactive(new PushEvents.ZombiePushClientCheckEvent(this, 20));
+        pushEventLoopReactive.reactive(new LocalizationEvents.ZombiePushClientCheckEvent(this, 20));
     }
 
     private void initPushConfiguration() {
@@ -131,29 +129,9 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         this.totalPush.set(totalPush);
     }
 
-    public void addUdpPushClient(String namespaceId,
-                                 String serviceName,
-                                 String clusters,
-                                 String agent,
-                                 InetSocketAddress socketAddr,
-                                 DataSource dataSource,
-                                 String tenant,
-                                 String app) {
-
-        UdpPushClient client = new UdpPushClient(namespaceId,
-            serviceName,
-            clusters,
-            agent,
-            socketAddr,
-            dataSource,
-            tenant,
-            app);
-        addClient(client);
-    }
-
     public void addClient(AbstractPushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
-        String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getNamespaceId(), client.getServiceName());
+        String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getSubscribeMetadata().getNamespaceId(), client.getSubscribeMetadata().getServiceName());
         ConcurrentMap<String, AbstractPushClient> clients = clientMap.get(serviceKey);
 
         // 1. Existence Judgment for the service
@@ -177,7 +155,7 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         if (res != null) {
             Loggers.PUSH.warn("client: {} already associated with key {}", res.getAddrStr(), clientKey);
         } else {
-            Loggers.PUSH.debug("client: {} added for serviceName: {}", client.getAddrStr(), client.getServiceName());
+            Loggers.PUSH.debug("client: {} added for serviceName: {}", client.getAddrStr(), client.getSubscribeMetadata().getServiceName());
         }
     }
 
@@ -194,7 +172,9 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         }
         List<Subscriber> clients = new ArrayList<>();
         clientConcurrentMap.forEach((key, client) ->
-            clients.add(new Subscriber(client.getAddrStr(), client.getAgent(), client.getApp(), client.getIp(), namespaceId, serviceName))
+            clients.add(new Subscriber(client.getAddrStr(),
+                client.getSubscribeMetadata().getAgent(),
+                client.getSubscribeMetadata().getApp(), client.getIp(), namespaceId, serviceName))
         );
         return clients;
     }
@@ -218,8 +198,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     }
 
     public void schedulerReTransmitter(AbstractReTransmitter reTransmitter) {
-        PushEvents.ReTransmitterEvent reTransmitterEvent =
-            new PushEvents.ReTransmitterEvent(this, reTransmitter);
+        LocalizationEvents.ReTransmitterEvent reTransmitterEvent =
+            new LocalizationEvents.ReTransmitterEvent(this, reTransmitter);
         pushEventLoopReactive.reactive(reTransmitterEvent);
     }
 

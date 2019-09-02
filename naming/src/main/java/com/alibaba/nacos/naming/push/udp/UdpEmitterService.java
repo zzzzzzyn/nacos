@@ -79,7 +79,7 @@ public class UdpEmitterService extends AbstractEmitter {
     }
 
     @Override
-    public DatagramSocket getEmitSource() {
+    public DatagramSocket getEmitSource(String sourceKey) {
         return udpSocket;
     }
 

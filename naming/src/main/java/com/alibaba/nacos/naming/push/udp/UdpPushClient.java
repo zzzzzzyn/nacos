@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push.udp;
 
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 
@@ -29,8 +30,12 @@ import java.util.Objects;
 public class UdpPushClient extends AbstractPushClient {
 
     private InetSocketAddress socketAddr;
-    private DataSource dataSource;
     private Map<String, String[]> params;
+
+    public UdpPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
+        super(subscribeMetadata, dataSource);
+        this.socketAddr = new InetSocketAddress(subscribeMetadata.getClientIp(), subscribeMetadata.getPort());
+    }
 
     public Map<String, String[]> getParams() {
         return params;
@@ -40,27 +45,6 @@ public class UdpPushClient extends AbstractPushClient {
         this.params = params;
     }
 
-    public UdpPushClient(String namespaceId,
-                         String serviceName,
-                         String clusters,
-                         String agent,
-                         InetSocketAddress socketAddr,
-                         DataSource dataSource,
-                         String tenant,
-                         String app) {
-        super(namespaceId, serviceName, clusters, agent, tenant, app);
-        this.socketAddr = socketAddr;
-        this.dataSource = dataSource;
-    }
-
-    @Override
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public UdpPushClient(InetSocketAddress socketAddr) {
-        this.socketAddr = socketAddr;
-    }
 
     @Override
     public String getAddrStr() {
@@ -83,7 +67,7 @@ public class UdpPushClient extends AbstractPushClient {
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceName, clusters, socketAddr);
+        return Objects.hash(getSubscribeMetadata().getServiceName(), getSubscribeMetadata().getClusters(), socketAddr);
     }
 
     @Override
@@ -93,12 +77,16 @@ public class UdpPushClient extends AbstractPushClient {
         }
 
         UdpPushClient other = (UdpPushClient) obj;
-        return serviceName.equals(other.serviceName) && clusters.equals(other.clusters) && socketAddr.equals(other.socketAddr);
+        SubscribeMetadata otherSubscribeMetadata = other.getSubscribeMetadata();
+        SubscribeMetadata thisSubscribeMetadata = getSubscribeMetadata();
+        return thisSubscribeMetadata.getServiceName().equals(otherSubscribeMetadata.getServiceName())
+            && thisSubscribeMetadata.getClusters().equals(otherSubscribeMetadata.getClusters())
+            && socketAddr.equals(other.socketAddr);
     }
 
     @Override
     public String toString() {
-        return serviceName + "@" + clusters + "@" + getAddrStr() + "@" + agent;
+        return getSubscribeMetadata().getServiceName() + "@" + getSubscribeMetadata().getClusters() + "@" + getAddrStr() + "@" + getSubscribeMetadata().getAgent();
     }
 
 }

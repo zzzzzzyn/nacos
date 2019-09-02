@@ -56,7 +56,7 @@ public class UdpEmitterAction implements Runnable {
         try {
             pushClients.forEach(client -> {
                 // 2. start to push
-                String key = udpEmitterService.getPushCacheKey(service.getName(), client.getAgent());
+                String key = udpEmitterService.getPushCacheKey(service.getName(), client.getSubscribeMetadata().getAgent());
 
                 AckEntry ackEntry = null;
                 {
@@ -82,7 +82,9 @@ public class UdpEmitterAction implements Runnable {
                 // 2.3. push by the ack entry
                 udpEmitterService.udpPush(ackEntry);
                 Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
-                    client.getServiceName(), client.getAddrStr(), client.getAgent(), (ackEntry == null ? null : ackEntry.getKey()));
+                    client.getSubscribeMetadata().getServiceName(),
+                    client.getAddrStr(),
+                    client.getSubscribeMetadata().getAgent(), (ackEntry == null ? null : ackEntry.getKey()));
             });
         } finally {
             udpEmitterService.removeFutureMap(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));

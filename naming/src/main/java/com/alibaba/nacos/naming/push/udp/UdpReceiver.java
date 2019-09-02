@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.naming.push.AckPacket;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.PushService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -41,7 +42,7 @@ public class UdpReceiver implements Runnable {
 
     @Override
     public void run() {
-        DatagramSocket source = udpEmitter.getEmitSource();
+        DatagramSocket source = udpEmitter.getEmitSource(StringUtils.EMPTY);
         while (true) {
             byte[] buffer = new byte[1024 * 64];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

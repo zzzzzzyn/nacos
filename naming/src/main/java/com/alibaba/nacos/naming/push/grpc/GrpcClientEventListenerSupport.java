@@ -15,8 +15,6 @@
  */
 package com.alibaba.nacos.naming.push.grpc;
 
-import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
-import com.alibaba.nacos.core.remoting.event.RemotingEvent;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
 
@@ -24,19 +22,15 @@ import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
  * @author pbting
  * @date 2019-08-30 10:43 PM
  */
-public abstract class GrpcClientEventListenerSupport<T extends RemotingEvent>
-    implements IPipelineEventListener<RemotingEvent> {
+public abstract class GrpcClientEventListenerSupport {
 
-    @Override
+    private GrpcEmitterService grpcEmitterService;
+
+    public GrpcClientEventListenerSupport(GrpcEmitterService grpcEmitterService) {
+        this.grpcEmitterService = grpcEmitterService;
+    }
+
     public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
         return GrpcClientEventReactive.class;
     }
-
-    @Override
-    public boolean onEvent(RemotingEvent event, int listenerIndex) {
-
-        return onRemotingEvent((T) event, listenerIndex);
-    }
-
-    public abstract boolean onRemotingEvent(T event, int listenerIndex);
 }

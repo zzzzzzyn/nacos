@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.api.naming.push;
+
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.grpc.event.GrpcClientRequestStreamEvent;
 
 /**
  * @author pbting
- * @date 2019-08-30 10:18 PM
+ * @date 2019-08-31 4:32 PM
  */
-public final class GrpcServer {
+public class GrpcClientSubscribeEvent extends GrpcClientRequestStreamEvent {
 
+    public GrpcClientSubscribeEvent(Object source, Object value, Class<? extends Event> eventType) {
+        super(source, value, eventType);
+    }
 }

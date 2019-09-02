@@ -21,7 +21,7 @@ import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
  * @author pbting
  * @date 2019-08-31 12:50 AM
  */
-public final class PushEvents {
+public final class LocalizationEvents {
 
     /**
      * zombie push client check recycle event

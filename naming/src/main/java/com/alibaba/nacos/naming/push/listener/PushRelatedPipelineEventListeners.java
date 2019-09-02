@@ -18,7 +18,7 @@ package com.alibaba.nacos.naming.push.listener;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.naming.push.AbstractReTransmitter;
 import com.alibaba.nacos.naming.push.PushService;
-import com.alibaba.nacos.naming.push.events.PushEvents;
+import com.alibaba.nacos.naming.push.events.LocalizationEvents;
 
 /**
  * some pipeline event listeners for push related
@@ -31,7 +31,7 @@ public final class PushRelatedPipelineEventListeners {
     /**
      * an event listener for remove client if zombie
      */
-    public static class RemoveClientIfZombieEventListener implements IPipelineEventListener<PushEvents.ZombiePushClientCheckEvent> {
+    public static class RemoveClientIfZombieEventListener implements IPipelineEventListener<LocalizationEvents.ZombiePushClientCheckEvent> {
 
         private PushService pushService;
 
@@ -40,24 +40,24 @@ public final class PushRelatedPipelineEventListeners {
         }
 
         @Override
-        public boolean onEvent(PushEvents.ZombiePushClientCheckEvent event, int listenerIndex) {
+        public boolean onEvent(LocalizationEvents.ZombiePushClientCheckEvent event, int listenerIndex) {
             pushService.removeClientIfZombie();
             return true;
         }
 
         @Override
         public Class[] interestEventTypes() {
-            return new Class[]{PushEvents.ZombiePushClientCheckEvent.class};
+            return new Class[]{LocalizationEvents.ZombiePushClientCheckEvent.class};
         }
     }
 
     /**
      * an event listener for push time check and maybe re-transmitter
      */
-    public static class ReTransmitterEventListener implements IPipelineEventListener<PushEvents.ReTransmitterEvent> {
+    public static class ReTransmitterEventListener implements IPipelineEventListener<LocalizationEvents.ReTransmitterEvent> {
 
         @Override
-        public boolean onEvent(PushEvents.ReTransmitterEvent event, int listenerIndex) {
+        public boolean onEvent(LocalizationEvents.ReTransmitterEvent event, int listenerIndex) {
             AbstractReTransmitter reTransmitter = event.getValue();
             reTransmitter.run();
             event.cancel();
@@ -66,7 +66,7 @@ public final class PushRelatedPipelineEventListeners {
 
         @Override
         public Class[] interestEventTypes() {
-            return new Class[]{PushEvents.ReTransmitterEvent.class};
+            return new Class[]{LocalizationEvents.ReTransmitterEvent.class};
         }
     }
 }

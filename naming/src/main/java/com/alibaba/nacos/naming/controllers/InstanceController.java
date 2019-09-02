@@ -20,11 +20,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.CommonParams;
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.core.utils.WebUtils;
 import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.client.ClientType;
-import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.Instance;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.core.ServiceManager;
@@ -36,6 +36,7 @@ import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.PushService;
+import com.alibaba.nacos.naming.push.udp.UdpPushClient;
 import com.alibaba.nacos.naming.web.CanDistro;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -47,7 +48,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
@@ -58,9 +58,6 @@ import java.util.*;
 @RestController
 @RequestMapping(UtilsAndCommons.NACOS_NAMING_CONTEXT + "/instance")
 public class InstanceController {
-
-    @Autowired
-    private DistroMapper distroMapper;
 
     @Autowired
     private SwitchDomain switchDomain;
@@ -77,15 +74,19 @@ public class InstanceController {
         public String getData(AbstractPushClient client) {
 
             JSONObject result = new JSONObject();
+            SubscribeMetadata subscribeMetadata = client.getSubscribeMetadata();
             try {
-                result = doSrvIPXT(client.getNamespaceId(), client.getServiceName(), client.getAgent(),
-                    client.getClusters(), client.getIp(), 0, StringUtils.EMPTY,
+                result = doSrvIPXT(subscribeMetadata.getNamespaceId(),
+                    subscribeMetadata.getServiceName(),
+                    subscribeMetadata.getAgent(),
+                    subscribeMetadata.getClusters(),
+                    client.getIp(), 0, StringUtils.EMPTY,
                     false, StringUtils.EMPTY, StringUtils.EMPTY, false);
             } catch (Exception e) {
                 Loggers.SRV_LOG.warn("PUSH-SERVICE: service is not modified", e);
             }
             // overdrive the cache millis to push mode
-            result.put("cacheMillis", switchDomain.getPushCacheMillis(client.getServiceName()));
+            result.put("cacheMillis", switchDomain.getPushCacheMillis(subscribeMetadata.getServiceName()));
             return result.toJSONString();
         }
     };
@@ -388,13 +389,10 @@ public class InstanceController {
         // now try to enable the push
         try {
             if (udpPort > 0 && pushService.canEnablePush(agent)) {
-                pushService.addUdpPushClient(namespaceId, serviceName,
-                    clusters,
-                    agent,
-                    new InetSocketAddress(clientIP, udpPort),
-                    pushDataSource,
-                    tid,
-                    app);
+                SubscribeMetadata subscribeMetadata =
+                    new SubscribeMetadata(namespaceId, serviceName, clusters,
+                        agent, clientIP, udpPort, tid, app);
+                pushService.addClient(new UdpPushClient(subscribeMetadata, pushDataSource));
                 cacheMillis = switchDomain.getPushCacheMillis(serviceName);
             }
         } catch (Exception e) {
@@ -526,5 +524,9 @@ public class InstanceController {
         result.put("env", env);
         result.put("metadata", service.getMetadata());
         return result;
+    }
+
+    public DataSource getPushDataSource() {
+        return pushDataSource;
     }
 }

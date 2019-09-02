@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push;
 
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 
 /**
@@ -22,81 +23,34 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
  * @date 2019-08-28 9:46 AM
  */
 public abstract class AbstractPushClient implements IPushClient {
-
-    protected String namespaceId;
-    protected String serviceName;
-    protected String clusters;
-    protected String agent;
-    protected String tenant;
-    protected String app;
+    private SubscribeMetadata subscribeMetadata;
     protected long lastRefTime = System.currentTimeMillis();
+    protected DataSource dataSource;
 
-    public AbstractPushClient() {
-
+    /**
+     * the Necessary structural parameters
+     *
+     * @param subscribeMetadata
+     * @param dataSource
+     */
+    public AbstractPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
+        this.subscribeMetadata = subscribeMetadata;
+        this.dataSource = dataSource;
     }
 
-    public AbstractPushClient(String namespaceId, String serviceName,
-                              String clusters, String agent,
-                              String tenant, String app) {
-        this.namespaceId = namespaceId;
-        this.serviceName = serviceName;
-        this.clusters = clusters;
-        this.agent = agent;
-        this.tenant = tenant;
-        this.app = app;
+    @Override
+    public SubscribeMetadata getSubscribeMetadata() {
+        return subscribeMetadata;
     }
 
-    public String getNamespaceId() {
-        return namespaceId;
-    }
-
-    public void setNamespaceId(String namespaceId) {
-        this.namespaceId = namespaceId;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getClusters() {
-        return clusters;
-    }
-
-    public void setClusters(String clusters) {
-        this.clusters = clusters;
-    }
-
-    public String getAgent() {
-        return agent;
-    }
-
-    public void setAgent(String agent) {
-        this.agent = agent;
-    }
-
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     @Override
     public boolean zombie(SwitchDomain switchDomain) {
-        return System.currentTimeMillis() - lastRefTime > switchDomain.getPushCacheMillis(serviceName);
+        return System.currentTimeMillis() - lastRefTime > switchDomain.getPushCacheMillis(subscribeMetadata.getServiceName());
     }
 
     @Override

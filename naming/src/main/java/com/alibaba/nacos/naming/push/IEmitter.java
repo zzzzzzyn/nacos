@@ -29,7 +29,7 @@ public interface IEmitter {
      * @param <T>
      * @return
      */
-    <T> T getEmitSource();
+    <T> T getEmitSource(String sourceKey);
 
     /**
      * initializer emitter

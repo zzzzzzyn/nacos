@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push;
 
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 
 /**
@@ -22,6 +23,11 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
  * @date 2019-08-28 9:45 AM
  */
 public interface IPushClient {
+
+    /**
+     * @return
+     */
+    SubscribeMetadata getSubscribeMetadata();
 
     /**
      * get data source will use it to get some push data.
