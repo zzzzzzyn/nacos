@@ -369,12 +369,17 @@ public class NamingProxy {
 
     public String reqAPI(String api, Map<String, String> params) throws NacosException {
 
+
+        return reqAPI(api, params, getServers());
+    }
+
+    public List<String> getServers() {
         List<String> snapshot = serversFromEndpoint;
         if (!CollectionUtils.isEmpty(serverList)) {
             snapshot = serverList;
         }
 
-        return reqAPI(api, params, snapshot);
+        return snapshot;
     }
 
     public String reqAPI(String api, Map<String, String> params, String method) throws NacosException {
@@ -559,6 +564,6 @@ public class NamingProxy {
             this.serverPort = Integer.parseInt(sp);
         }
     }
-    
+
 }
 

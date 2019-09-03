@@ -44,14 +44,16 @@ class ServiceUpdateTask implements Runnable {
             ServiceInfo serviceObj = udpServiceChangedAwareStrategy.getServiceInfo0(serviceName, clusters);
 
             if (serviceObj == null) {
-                ServiceInfo serviceInfo = udpServiceChangedAwareStrategy.updateServiceAndNotify(serviceName, clusters);
+                udpServiceChangedAwareStrategy.updateServiceAndNotify(serviceName, clusters);
+                ServiceInfo serviceInfo = udpServiceChangedAwareStrategy.getServiceInfo0(serviceName, clusters);
                 long delayMillis = serviceInfo != null ? serviceInfo.getCacheMillis() : AbstractServiceChangedAwareStrategy.DEFAULT_DELAY;
                 udpServiceChangedAwareStrategy.reScheduleServiceUpdateTask(this, delayMillis);
                 return;
             }
 
             if (serviceObj.getLastRefTime() <= lastRefTime) {
-                serviceObj = udpServiceChangedAwareStrategy.updateServiceAndNotify(serviceName, clusters);
+                udpServiceChangedAwareStrategy.updateServiceAndNotify(serviceName, clusters);
+                serviceObj = udpServiceChangedAwareStrategy.getServiceInfo0(serviceName, clusters);
             } else {
                 // if serviceName already updated by push, we should not override it
                 // since the push data may be different from pull through force push

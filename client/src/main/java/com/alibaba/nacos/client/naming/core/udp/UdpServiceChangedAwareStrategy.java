@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.client.naming.core.udp;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.client.naming.core.AbstractServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
@@ -92,30 +93,18 @@ public class UdpServiceChangedAwareStrategy extends AbstractServiceChangedAwareS
     }
 
     /**
-     * will query service info from server and notify all of wait with oldService
+     * will query service info from server
      *
      * @param serviceName
      * @param clusters
      * @return
      */
     @Override
-    public ServiceInfo updateServiceAndNotify(String serviceName, String clusters) {
-        ServiceInfo oldService = getServiceInfo0(serviceName, clusters);
-        try {
-            String result = serverProxy.queryList(serviceName, clusters, pushReceiver.getUDPPort(), false);
-            if (StringUtils.isNotEmpty(result)) {
-                return processDataStreamResponse(result);
-            }
-        } catch (Exception e) {
-            NAMING_LOGGER.error("[NA] failed to update serviceName: " + serviceName, e);
-        } finally {
-            if (oldService != null) {
-                synchronized (oldService) {
-                    oldService.notifyAll();
-                }
-            }
+    public void updateService(String serviceName, String clusters) throws NacosException {
+        String result = serverProxy.queryList(serviceName, clusters, pushReceiver.getUDPPort(), false);
+        if (StringUtils.isNotEmpty(result)) {
+            processDataStreamResponse(result);
         }
-        return null;
     }
 
     /**

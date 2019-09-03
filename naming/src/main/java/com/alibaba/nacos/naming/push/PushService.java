@@ -131,7 +131,9 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     public void addClient(AbstractPushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
-        String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getSubscribeMetadata().getNamespaceId(), client.getSubscribeMetadata().getServiceName());
+        String serviceKey =
+            UtilsAndCommons.assembleFullServiceName(client.getSubscribeMetadata().getNamespaceId(),
+                client.getSubscribeMetadata().getServiceName());
         ConcurrentMap<String, AbstractPushClient> clients = clientMap.get(serviceKey);
 
         // 1. Existence Judgment for the service

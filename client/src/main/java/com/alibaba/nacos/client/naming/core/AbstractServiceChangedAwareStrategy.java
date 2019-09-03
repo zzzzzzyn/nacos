@@ -200,5 +200,20 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
      * @param clusters
      * @return
      */
-    public abstract ServiceInfo updateServiceAndNotify(String serviceName, String clusters);
+    public void updateServiceAndNotify(String serviceName, String clusters) {
+        ServiceInfo oldService = getServiceInfo0(serviceName, clusters);
+        try {
+            updateService(serviceName, clusters);
+        } catch (Exception e) {
+            NAMING_LOGGER.error("[NA] failed to update serviceName: " + serviceName, e);
+        } finally {
+            if (oldService != null) {
+                synchronized (oldService) {
+                    oldService.notifyAll();
+                }
+            }
+        }
+    }
+
+    public abstract void updateService(String serviceName, String clusters) throws NacosException;
 }
