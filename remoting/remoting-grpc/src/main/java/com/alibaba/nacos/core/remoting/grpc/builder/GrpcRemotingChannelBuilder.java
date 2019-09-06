@@ -34,7 +34,6 @@ public final class GrpcRemotingChannelBuilder {
     }
 
     public GrpcRemotingChannelBuilder setAddressPort(String addressPort) {
-
         this.addressPort = addressPort;
         return this;
     }

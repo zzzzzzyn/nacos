@@ -25,7 +25,7 @@ import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
  */
 public class GrpcClientRemotingManager extends AbstractGrpcRemotingManager implements IClientRemotingManager {
 
-    private IRemotingChannelFactory remotingChannelFactory = new GrpcRemotingChannelFactory(this);
+    private IRemotingChannelFactory remotingChannelFactory = new GrpcRemotingChannelFactory();
 
     @Override
     public IRemotingChannelFactory getRemotingChannelFactory() {

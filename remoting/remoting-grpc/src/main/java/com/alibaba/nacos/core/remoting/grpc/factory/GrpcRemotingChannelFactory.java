@@ -17,37 +17,24 @@ package com.alibaba.nacos.core.remoting.grpc.factory;
 
 import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannel;
 import com.alibaba.nacos.core.remoting.channel.IRemotingChannelFactory;
-import com.alibaba.nacos.core.remoting.grpc.GrpcRemotingChannel;
-import com.alibaba.nacos.core.remoting.manager.IRemotingManager;
-import io.grpc.ManagedChannel;
-import io.grpc.netty.NettyChannelBuilder;
+import com.alibaba.nacos.core.remoting.grpc.builder.GrpcRemotingChannelBuilder;
 
 /**
  * @author pbting
  */
 public class GrpcRemotingChannelFactory implements IRemotingChannelFactory {
 
-    private IRemotingManager remotingManager;
-
-    public GrpcRemotingChannelFactory(IRemotingManager remotingManager) {
-        this.remotingManager = remotingManager;
+    public GrpcRemotingChannelFactory() {
     }
 
     @Override
     public AbstractRemotingChannel newRemotingChannel(String addressPort,
                                                       String clusterName) {
         // 初始化指定节点连接
-        String[] addressPortArr = addressPort.split("[:]");
-        NettyChannelBuilder nettyChannelBuilder = NettyChannelBuilder.forAddress(
-            addressPortArr[0].trim(), Integer.valueOf(addressPortArr[1].trim()));
 
-        ManagedChannel channel = nettyChannelBuilder.usePlaintext()
-            .flowControlWindow(NettyChannelBuilder.DEFAULT_FLOW_CONTROL_WINDOW)
-            .build();
-        GrpcRemotingChannel remotingChannel = new GrpcRemotingChannel(channel, addressPort);
-        remotingChannel.setIdentify(remotingManager.builderIdentify(addressPort + "@" + clusterName));
-
-        return remotingChannel;
+        return GrpcRemotingChannelBuilder.newBuilder()
+            .setAddressPort(addressPort)
+            .setClusterName(clusterName).build();
     }
 
 }
