@@ -77,7 +77,6 @@ public class GrpcEmitterService extends AbstractEmitter {
             Collection<IEventReactive> eventReactiveList = this.applicationContext.getBeansOfType(IEventReactive.class).values();
             eventReactiveList.forEach(eventReactive -> serverRemotingManager.initEventReactive(eventReactive));
         } catch (BeansException e) {
-            e.printStackTrace();
         }
 
         // 2. attach some event pipeline listenersSinkRegistry

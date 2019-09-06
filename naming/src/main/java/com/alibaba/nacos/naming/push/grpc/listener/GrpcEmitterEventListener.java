@@ -20,6 +20,7 @@ import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.core.remoting.grpc.GrpcNetExceptionUtils;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
 import com.alibaba.nacos.naming.push.grpc.GrpcPushClient;
@@ -59,6 +60,8 @@ public class GrpcEmitterEventListener extends AbstractGrpcEmitterEventListener {
                 if (GrpcNetExceptionUtils.isNetUnavailable(e, null)) {
                     pushFailure.put(key, pushClient);
                 }
+
+                Loggers.GRPC_PUSH.error("gRPC push cause an exception.", e);
             }
         }
         event.setParameter(PUSH_FAILURE, pushFailure);

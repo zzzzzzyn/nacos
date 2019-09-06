@@ -52,9 +52,9 @@ public class EventLoopReactive extends AsyncEventReactive {
     }
 
     @Override
-    protected <T extends Event> void listenerPerform(final List<IPipelineEventListener> objectListeners, final T event) {
+    protected <T extends Event> void listenerPerform(final List<IPipelineEventListener> pipelineEventListeners, final T event) {
 
-        this.listenerPerform0(objectListeners, event);
+        this.listenerPerform0(pipelineEventListeners, event);
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.naming.controllers.InstanceController;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.grpc.GrpcPushClient;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,7 @@ public class GrpcClientSubscribeEventListener extends AbstractGrpcClientEventLis
 
         GrpcPushClient abstractPushClient =
             (GrpcPushClient) grpcEmitterService.getPushClientFactory().newPushClient(subscribeMetadata, dataSource, requestStreamInteractive);
+        Loggers.GRPC_PUSH.info("add gRPC push client for {}", abstractPushClient.toString());
         pushService.addClient(abstractPushClient);
         return true;
     }

@@ -16,9 +16,8 @@
 package com.alibaba.nacos.naming.push.grpc.filter.impl;
 
 import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.grpc.filter.IClientPushFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,8 +26,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ClientPushRtFilter implements IClientPushFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClientPushRtFilter.class);
 
     @Override
     public boolean aheadFilter(Event event) {
@@ -39,7 +36,7 @@ public class ClientPushRtFilter implements IClientPushFilter {
     @Override
     public boolean backFilter(Event event) {
         long startTime = event.getParameter("start");
-        logger.info(event.getSink() + " => push cost time " + (System.currentTimeMillis() - startTime));
+        Loggers.GRPC_PUSH.info(event.getSink() + " => push cost time " + (System.currentTimeMillis() - startTime));
         return true;
     }
 

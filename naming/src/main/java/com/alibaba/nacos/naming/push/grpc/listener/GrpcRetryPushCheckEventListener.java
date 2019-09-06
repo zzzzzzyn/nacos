@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push.grpc.listener;
 
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class GrpcRetryPushCheckEventListener extends AbstractGrpcEmitterEventLis
             int pushMaxRetryTimes = event.getParameter(PUSH_MAX_RETRY_TIMES, 1);
             if (pushTimes > pushMaxRetryTimes) {
                 for (AbstractPushClient abstractPushClient : pushFailure.values()) {
-                    logger.warn("{} => push failure after max push retry time {}", abstractPushClient.getSubscribeMetadata().toString(), pushMaxRetryTimes);
+                    Loggers.GRPC_PUSH.info("{} => push failure after max push retry time {}", abstractPushClient.getSubscribeMetadata().toString(), pushMaxRetryTimes);
                 }
                 event.setCancel(true);
             }

@@ -17,6 +17,7 @@ package com.alibaba.nacos.naming.push.grpc;
 
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 
@@ -38,6 +39,7 @@ public class GrpcPushClient extends AbstractPushClient<GrpcRequestStreamInteract
 
     @Override
     public void destroy() {
+        Loggers.GRPC_PUSH.info("destroy an gRPC push client for {}", this.toString());
         /**
          * must be call this method to tell http/2 the HttpStream is complete and will recover .
          *  Otherwise it may cause a memory leak
@@ -46,6 +48,7 @@ public class GrpcPushClient extends AbstractPushClient<GrpcRequestStreamInteract
         try {
             grpcRequestStreamInteractive.onCompleted();
         } catch (Exception e) {
+            Loggers.GRPC_PUSH.error("destroy a gRPC push client cause an exception.", e);
         }
     }
 }

@@ -26,6 +26,8 @@ public class Loggers {
 
     public static final Logger PUSH = LoggerFactory.getLogger("com.alibaba.nacos.naming.push");
 
+    public static final Logger GRPC_PUSH = LoggerFactory.getLogger("com.alibaba.nacos.naming.push.grpc");
+
     public static final Logger CHECK_RT = LoggerFactory.getLogger("com.alibaba.nacos.naming.rt");
 
     public static final Logger SRV_LOG = LoggerFactory.getLogger("com.alibaba.nacos.naming.main");

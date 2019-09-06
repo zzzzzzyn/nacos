@@ -16,6 +16,7 @@
 package com.alibaba.nacos.naming.push.grpc.filter.impl;
 
 import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.grpc.filter.IClientProcessFilter;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class ClientProcessRtFilter implements IClientProcessFilter {
     @Override
     public boolean backFilter(Event event) {
         long start = event.getParameter(START_PROCESS_TIME);
-        System.err.println("[" + event.getSink() + "] cost time =>" + (System.currentTimeMillis() - start) + " Ms.");
+        Loggers.GRPC_PUSH.info("[" + event.getSink() + "] cost time =>" + (System.currentTimeMillis() - start) + " Ms.");
         return true;
     }
 

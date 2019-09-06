@@ -16,13 +16,12 @@
 package com.alibaba.nacos.naming.push.grpc.filter.impl;
 
 import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.push.AbstractEmitter;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.grpc.filter.IClientPushFilter;
 import com.alibaba.nacos.naming.push.grpc.listener.GrpcEmitterEventListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -33,8 +32,6 @@ import java.util.Map;
  */
 @Component
 public class ClientPushStateFilter implements IClientPushFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClientPushStateFilter.class);
 
     @Override
     public boolean aheadFilter(Event event) {
@@ -54,13 +51,13 @@ public class ClientPushStateFilter implements IClientPushFilter {
 
         if (pushFailure.size() > 0) {
             for (Map.Entry<String, AbstractPushClient> entry : pushFailure.entrySet()) {
-                logger.info(" [push failure] " + " => " + entry.getValue().getSubscribeMetadata().toString());
+                Loggers.GRPC_PUSH.info(" [push failure] " + " => " + entry.getValue().getSubscribeMetadata().toString());
             }
         } else {
             Map<String, AbstractPushClient> pushClient = event.getValue();
-            logger.info(" [ push success] ,push client size " + pushClient.size());
-            for (Map.Entry<String, AbstractPushClient> entry : pushFailure.entrySet()) {
-                logger.info(" [success client] " + " => " + entry.getValue().getSubscribeMetadata().toString());
+            Loggers.GRPC_PUSH.info(" [ push success] ,push client size " + pushClient.size());
+            for (Map.Entry<String, AbstractPushClient> entry : pushClient.entrySet()) {
+                Loggers.GRPC_PUSH.info(" [success client] " + " => " + entry.getValue().getSubscribeMetadata().toString());
             }
         }
         return true;

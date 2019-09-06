@@ -53,12 +53,7 @@ public class DefaultEventReactive implements IEventReactive, IEventReactiveHelm 
 
         synchronized (eventReactiveFilters) {
             this.eventReactiveFilters.addAll(reactiveFilters);
-            Collections.sort((List) eventReactiveFilters, new Comparator<IEventReactiveFilter>() {
-                @Override
-                public int compare(IEventReactiveFilter o1, IEventReactiveFilter o2) {
-                    return o1.order() - o2.order();
-                }
-            });
+            Collections.sort((List<IEventReactiveFilter>) eventReactiveFilters, (o1, o2) -> (o1.order() - o2.order()));
         }
 
     }
@@ -90,10 +85,12 @@ public class DefaultEventReactive implements IEventReactive, IEventReactiveHelm 
             if (order == ahead) {
                 if (!filter.aheadFilter(event)) {
                     result = false;
+                    break;
                 }
             } else if (order == back) {
                 if (!filter.backFilter(event)) {
                     result = false;
+                    break;
                 }
             }
         }
@@ -202,10 +199,6 @@ public class DefaultEventReactive implements IEventReactive, IEventReactiveHelm 
             return;
         }
         List tempList = getAndSortEventListeners(event);
-        if (Objects.isNull(tempList)) {
-            log.warn("event sink {}, alias {} No event listenersSinkRegistry。", event.getSink());
-            return;
-        }
         listenerPerform(tempList, event);
     }
 
@@ -255,13 +248,13 @@ public class DefaultEventReactive implements IEventReactive, IEventReactiveHelm 
     /**
      * 处理 单个的事件
      */
-    protected <T extends Event> void listenerPerform(final List<IPipelineEventListener> objectListeners,
+    protected <T extends Event> void listenerPerform(final List<IPipelineEventListener> pipelineEventListeners,
                                                      final T event) {
         EventExecutor eventExecutor = event.getEventExecutor();
         if (eventExecutor != null) {
-            eventExecutor.execute(() -> listenerPerform0(objectListeners, event));
+            eventExecutor.execute(() -> listenerPerform0(pipelineEventListeners, event));
         } else {
-            listenerPerform0(objectListeners, event);
+            listenerPerform0(pipelineEventListeners, event);
         }
     }
 
@@ -277,15 +270,19 @@ public class DefaultEventReactive implements IEventReactive, IEventReactiveHelm 
         }
     }
 
-    private <T extends Event> void drain(List<IPipelineEventListener> objectListeners, T event) {
+    private <T extends Event> void drain(List<IPipelineEventListener> pipelineEventListeners, T event) {
+        if (Objects.isNull(pipelineEventListeners)) {
+            return;
+        }
+
         int index = 1;
-        for (IPipelineEventListener listener : objectListeners) {
+        for (IPipelineEventListener listener : pipelineEventListeners) {
             try {
                 boolean isSuccessor = listener.onEvent(event, index);
                 if (!isSuccessor || event.isInterrupt()) {
                     break;
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("handler the event cause an exception."
                     + event.getValue().toString(), e);
             }

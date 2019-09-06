@@ -45,6 +45,23 @@
         </encoder>
     </appender>
 
+    <appender name="naming-grpc-push"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/naming-grpc-push.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/naming-gprs-push.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <MaxHistory>7</MaxHistory>
+            <totalSizeCap>7GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <Pattern>%date %level %msg%n%n</Pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <appender name="async-naming-server" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
         <queueSize>1024</queueSize>
@@ -388,6 +405,10 @@
     <logger name="com.alibaba.nacos.naming.push" additivity="false">
         <level value="INFO"/>
         <appender-ref ref="naming-push"/>
+    </logger>
+    <logger name="com.alibaba.nacos.naming.push.grpc" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="naming-grpc-push"/>
     </logger>
     <logger name="com.alibaba.nacos.naming.rt" additivity="false">
         <level value="INFO"/>
