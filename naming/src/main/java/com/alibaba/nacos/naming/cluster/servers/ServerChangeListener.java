@@ -18,7 +18,7 @@ package com.alibaba.nacos.naming.cluster.servers;
 import java.util.List;
 
 /**
- * Nacos cluster member change event listener
+ * Nacos cluster member change event listenersSinkRegistry
  *
  * @author nkorange
  * @since 1.0.0

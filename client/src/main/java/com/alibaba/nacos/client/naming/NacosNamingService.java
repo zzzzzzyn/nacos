@@ -31,7 +31,7 @@ import com.alibaba.nacos.client.naming.core.Balancer;
 import com.alibaba.nacos.client.naming.core.EventDispatcher;
 import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
-import com.alibaba.nacos.client.naming.core.udp.UdpServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.grpc.GrpcServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import com.alibaba.nacos.client.naming.utils.InitUtils;
@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("PMD.ServiceOrDaoClassShouldEndWithImplRule")
 public class NacosNamingService implements NamingService {
-    private static final String DEFAULT_PORT = "8080";
+
     private static final long DEFAULT_HEART_BEAT_INTERVAL = TimeUnit.SECONDS.toMillis(5);
 
     /**
@@ -105,7 +105,7 @@ public class NacosNamingService implements NamingService {
                 .setCacheDir(cacheDir)
                 .isLoadCacheAtStart(isLoadCacheAtStart(properties))
                 .setPollingThreadCount(initPollingThreadCount(properties))
-                .build(UdpServiceChangedAwareStrategy.class);
+                .build(GrpcServiceChangedAwareStrategy.class);
     }
 
     private int initClientBeatThreadCount(Properties properties) {

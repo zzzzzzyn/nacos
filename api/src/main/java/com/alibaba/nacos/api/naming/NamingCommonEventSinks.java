@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
-
-import java.net.InetSocketAddress;
+package com.alibaba.nacos.api.naming;
 
 /**
  * @author pbting
- * @date 2019-08-31 12:43 AM
+ * @date 2019-09-05 10:46 AM
  */
-public class StartupEvent extends LocalizationEvent {
+public interface NamingCommonEventSinks {
 
-    public StartupEvent(Object source, Object value, Class<? extends Event> eventType) {
-        super(source, value, eventType);
-    }
+    String SUBSCRIBE_SINK = "/v2/ns/subscribe";
 
-    public StartupEvent(Object source, Object value) {
-        super(source, value, null);
-    }
-
-    @Override
-    public InetSocketAddress getValue() {
-        return super.getValue();
-    }
+    String SUBSCRIBE_DURATION_SINK = "/v2/ns/subscribe/duration";
 }

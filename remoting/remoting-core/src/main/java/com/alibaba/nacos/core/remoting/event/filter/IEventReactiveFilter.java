@@ -13,15 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.core.remoting.event.filter;
+
+import com.alibaba.nacos.core.remoting.event.Event;
 
 /**
  * @author pbting
- * @date 2019-08-22 5:53 PM
+ * @date 2019-09-05 11:14 AM
  */
-public class ClientRequestResponseEvent extends RemotingEvent {
+public interface IEventReactiveFilter {
 
-    public ClientRequestResponseEvent(Object source, Object value, Class<? extends Event> eventType) {
-        super(source, value, eventType);
+    /**
+     * @param event
+     * @return
+     */
+    default boolean aheadFilter(Event event) {
+        return true;
+    }
+
+    /**
+     * @param event
+     * @return
+     */
+    default boolean backFilter(Event event) {
+
+        return true;
+    }
+
+    default int order() {
+
+        return Integer.MAX_VALUE;
     }
 }

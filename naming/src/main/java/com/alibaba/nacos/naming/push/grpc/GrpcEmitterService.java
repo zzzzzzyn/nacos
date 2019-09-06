@@ -15,22 +15,30 @@
  */
 package com.alibaba.nacos.naming.push.grpc;
 
-import com.alibaba.nacos.core.remoting.event.IAttachListenerHook;
-import com.alibaba.nacos.core.remoting.event.StartupEvent;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.naming.push.PushPacket;
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
+import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
+import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcServerRemotingManager;
-import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcServerEventReactive;
-import com.alibaba.nacos.core.remoting.manager.IServerRemotingManager;
-import com.alibaba.nacos.core.utils.InetUtils;
-import com.alibaba.nacos.naming.controllers.InstanceController;
+import com.alibaba.nacos.core.remoting.manager.AbstractRemotingManager;
+import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import com.alibaba.nacos.naming.core.Service;
+import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.push.AbstractEmitter;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
-import com.alibaba.nacos.naming.push.DataSource;
+import com.alibaba.nacos.naming.push.IPushClientFactory;
 import com.alibaba.nacos.naming.push.PushService;
+import com.google.protobuf.ByteString;
+import org.apache.commons.collections.MapUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -45,12 +53,12 @@ public class GrpcEmitterService extends AbstractEmitter {
      * the grpc server port
      */
     private static final int GRPC_SERVER_PORT = 28848;
-    private PushService pushService;
+
+    private final IPushClientFactory grpcPushClientFactory = new GrpcPushClientFactory();
 
     public GrpcEmitterService(ApplicationContext applicationContext,
-                              PushService pushServic) {
-        super(applicationContext);
-        this.pushService = pushServic;
+                              PushService pushService) {
+        super(applicationContext, pushService);
     }
 
     /**
@@ -66,26 +74,62 @@ public class GrpcEmitterService extends AbstractEmitter {
     public void initEmitter() {
 
         // 1. initialize a gRPC server remoting manager
-        IServerRemotingManager serverRemotingManager = new GrpcServerRemotingManager();
+        final AbstractRemotingManager serverRemotingManager = new GrpcServerRemotingManager();
 
-        // 2. attach some event pipeline listener
-        IAttachListenerHook attachListenerHook = (IAttachListenerHook) serverRemotingManager;
-        attachListenerHook.attachListeners(serverRemotingManager.initStartupServerEventListener());
-        attachListenerHook.attachListeners(new StartupEventMappingListener());
+        // 2. Assembly event reactive
+        try {
+            Collection<IEventReactive> eventReactiveList = this.applicationContext.getBeansOfType(IEventReactive.class).values();
+            eventReactiveList.forEach(eventReactive -> serverRemotingManager.initEventReactive(eventReactive));
+        } catch (BeansException e) {
+            e.printStackTrace();
+        }
 
-        DataSource dataSource = this.applicationContext.getBean(InstanceController.class).getPushDataSource();
-        attachListenerHook.attachListeners(new GrpcClientSubscribeEventListener(this, pushService, dataSource));
+        // 3. attach some event pipeline listenersSinkRegistry
+        serverRemotingManager.attachListeners(((GrpcServerRemotingManager) serverRemotingManager).initStartupServerEventListener());
+        // 4. Assembly event listener
+        try {
+            Collection<IPipelineEventListener> eventListeners = this.applicationContext.getBeansOfType(IPipelineEventListener.class).values();
+            eventListeners.forEach(eventListener -> serverRemotingManager.attachListeners(eventListener));
+        } catch (BeansException e) {
+            e.printStackTrace();
+        }
+        // 5. notify some event listeners
+        Event event = new Event(serverRemotingManager, new InetSocketAddress("0.0.0.0", GRPC_SERVER_PORT), StartupServerEventListener.SINK);
+        event.setParameter(StartupServerEventListener.CLIENT_EVENT_REACTIVE, NamingGrpcClientEventReactive.class);
+        serverRemotingManager.notifyListeners(event);
+    }
 
-        // 3. get the type of gRPC server event reactive partition。
-        IEventPipelineReactive serverEventPipelineReactive =
-            serverRemotingManager.getAbstractEventPipelineReactive(GrpcServerEventReactive.class);
-
-        // 4. reactive a startup server event to the grpc server
-        serverEventPipelineReactive.reactive(new StartupEvent(serverRemotingManager, new InetSocketAddress(InetUtils.getSelfIp(), GRPC_SERVER_PORT)));
+    @Override
+    public IPushClientFactory getPushClientFactory() {
+        return grpcPushClientFactory;
     }
 
     @Override
     public void emitter(Service service) {
+        final String namespaceId = service.getNamespaceId();
+        final String serviceName = service.getName();
+        // merge some change events to reduce the push frequency:
+        String emitterKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
+        if (isContainsFutureMap(emitterKey)) {
+            return;
+        }
 
+        final Map<String, AbstractPushClient> clients = pushService.getPushClients(emitterKey);
+        if (MapUtils.isEmpty(clients)) {
+            return;
+        }
+
+        for (AbstractPushClient pushClient : clients.values()) {
+            if (!(pushClient instanceof GrpcPushClient)) {
+                continue;
+            }
+
+            PushPacket pushPacket = prepareHostsData(pushClient);
+            pushPacket.setLastRefTime(System.currentTimeMillis());
+            GrpcPushClient grpcPushClient = (GrpcPushClient) pushClient;
+            GrpcRequestStreamInteractive pusher = grpcPushClient.getPusher();
+            pusher.sendResponsePayload(InteractivePayload.newBuilder()
+                .setPayload(ByteString.copyFrom(JSON.toJSONString(pushPacket).getBytes(Charset.forName("utf-8")))).build());
+        }
     }
 }

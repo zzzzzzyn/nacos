@@ -16,13 +16,12 @@
 package com.alibaba.nacos.core.remoting.grpc.entrance;
 
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.reactive.SimpleRemotingEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.grpc.event.GrpcClientRequestResponseEvent;
-import com.alibaba.nacos.core.remoting.grpc.event.GrpcClientRequestStreamEvent;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.AbstractGrpcInteractive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestResponseInteractive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.core.remoting.grpc.observer.ClientBiStreamObserver;
+import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import com.alibaba.nacos.core.remoting.proto.InteractiveServiceGrpc;
 import io.grpc.stub.CallStreamObserver;
@@ -39,10 +38,10 @@ public class GrpcClientEntranceServiceImpl
     private final static InternalLogger logger = InternalLoggerFactory
         .getInstance(GrpcClientEntranceServiceImpl.class);
 
-    private SimpleRemotingEventPipelineReactive eventPipelineReactive;
+    private IEventReactive clientEventReactive;
 
-    public GrpcClientEntranceServiceImpl(SimpleRemotingEventPipelineReactive eventPipelineReactive) {
-        this.eventPipelineReactive = eventPipelineReactive;
+    public GrpcClientEntranceServiceImpl(GrpcClientEventReactive clientEventReactive) {
+        this.clientEventReactive = clientEventReactive;
     }
 
     /**
@@ -54,37 +53,35 @@ public class GrpcClientEntranceServiceImpl
     public StreamObserver<InteractivePayload> requestChannel(
         StreamObserver<InteractivePayload> responseObserver) {
 
-        return new ClientBiStreamObserver(this.eventPipelineReactive,
+        return new ClientBiStreamObserver(this.clientEventReactive,
             (CallStreamObserver<InteractivePayload>) responseObserver);
     }
 
     @Override
     public void requestResponse(InteractivePayload request,
                                 StreamObserver<InteractivePayload> responseObserver) {
-        int eventTypeIndex = request.getEventType();
-        logger.info("receive client request with the event type :" + eventTypeIndex);
+
+        String sink = request.getSink();
+        logger.info("receive client request with the event type :" + sink);
         AbstractGrpcInteractive grpcInteractive = new GrpcRequestResponseInteractive(
             request, (CallStreamObserver) responseObserver);
-        Class<? extends Event> eventType =
-            eventPipelineReactive.getEventType(eventTypeIndex, GrpcClientRequestResponseEvent.class);
-        eventPipelineReactive
-            .reactive(new GrpcClientRequestResponseEvent(eventPipelineReactive, grpcInteractive, eventType));
+
+        Event event = new Event(clientEventReactive, grpcInteractive, sink);
+        clientEventReactive.reactive(event);
     }
 
     @Override
     public void requestStream(InteractivePayload request,
                               StreamObserver<InteractivePayload> responseObserver) {
-        int eventTypeIndex = request.getEventType();
+        String sink = request.getSink();
         if (logger.isDebugEnabled()) {
-            logger.debug("receive client request with the event type :" + eventTypeIndex);
+            logger.debug("receive client request with the event type :" + sink);
         }
-
         AbstractGrpcInteractive grpcRequestStreamInteractive = new GrpcRequestStreamInteractive(
             request, (CallStreamObserver) responseObserver);
-        Class<? extends Event> eventType =
-            eventPipelineReactive.getEventType(eventTypeIndex, GrpcClientRequestStreamEvent.class);
-        eventPipelineReactive
-            .reactive(new GrpcClientRequestStreamEvent(eventPipelineReactive, grpcRequestStreamInteractive, eventType));
+
+        Event event = new Event(clientEventReactive, grpcRequestStreamInteractive, sink);
+        clientEventReactive.reactive(event);
     }
 
 }

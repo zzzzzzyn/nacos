@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.naming.push;
 
-import com.alibaba.nacos.api.naming.push.AckPacket;
+import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -40,9 +40,11 @@ public abstract class AbstractEmitter implements IEmitter,
     protected volatile ConcurrentHashMap<String, Long> sendTimeMap = new ConcurrentHashMap<>();
 
     protected ApplicationContext applicationContext;
+    protected PushService pushService;
 
-    public AbstractEmitter(ApplicationContext applicationContext) {
+    public AbstractEmitter(ApplicationContext applicationContext, PushService pushService) {
         this.applicationContext = applicationContext;
+        this.pushService = pushService;
     }
 
     @Override
@@ -76,10 +78,11 @@ public abstract class AbstractEmitter implements IEmitter,
      * @param client
      * @return
      */
-    public AckPacket prepareHostsData(AbstractPushClient client) {
-        AckPacket ackPacket = new AckPacket();
+    public PushPacket prepareHostsData(AbstractPushClient client) {
+        PushPacket ackPacket = new PushPacket();
         ackPacket.setType("dom");
         ackPacket.setData(client.getDataSource().getData(client));
+
         return ackPacket;
     }
 

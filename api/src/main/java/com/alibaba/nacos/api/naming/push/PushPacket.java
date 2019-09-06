@@ -21,17 +21,17 @@ import java.io.Serializable;
  * @author pbting
  * @date 2019-08-27 5:53 PM
  */
-public class AckPacket implements Serializable {
+public class PushPacket implements Serializable {
 
     private String type;
     private long lastRefTime;
     private String data;
 
-    public AckPacket() {
+    public PushPacket() {
 
     }
 
-    public AckPacket(String type, long lastRefTime, String data) {
+    public PushPacket(String type, long lastRefTime, String data) {
         this.type = type;
         this.lastRefTime = lastRefTime;
         this.data = data;

@@ -16,7 +16,7 @@
 package com.alibaba.nacos.api.selector;
 
 /**
- * The selector to filter resource with flexible expression.
+ * The selector to aheadFilter resource with flexible expression.
  *
  * @author nkorange
  * @since 0.7.0

@@ -36,7 +36,6 @@ import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.PushService;
-import com.alibaba.nacos.naming.push.udp.UdpPushClient;
 import com.alibaba.nacos.naming.web.CanDistro;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -80,7 +79,7 @@ public class InstanceController {
                     subscribeMetadata.getServiceName(),
                     subscribeMetadata.getAgent(),
                     subscribeMetadata.getClusters(),
-                    client.getIp(), 0, StringUtils.EMPTY,
+                    client.getIp(), Constants.PORT_IDENTIFY_NNTS, StringUtils.EMPTY,
                     false, StringUtils.EMPTY, StringUtils.EMPTY, false);
             } catch (Exception e) {
                 Loggers.SRV_LOG.warn("PUSH-SERVICE: service is not modified", e);
@@ -388,11 +387,11 @@ public class InstanceController {
 
         // now try to enable the push
         try {
-            if (udpPort > 0 && pushService.canEnablePush(agent)) {
+            if (pushService.canEnablePush(agent)) {
                 SubscribeMetadata subscribeMetadata =
                     new SubscribeMetadata(namespaceId, serviceName, clusters,
                         agent, clientIP, udpPort, tid, app);
-                pushService.addClient(new UdpPushClient(subscribeMetadata, pushDataSource));
+                pushService.addClient(subscribeMetadata, pushDataSource);
                 cacheMillis = switchDomain.getPushCacheMillis(serviceName);
             }
         } catch (Exception e) {
@@ -404,7 +403,7 @@ public class InstanceController {
 
         srvedIPs = service.srvIPs(Arrays.asList(StringUtils.split(clusters, ",")));
 
-        // filter ips using selector:
+        // aheadFilter ips using selector:
         if (service.getSelector() != null && StringUtils.isNotBlank(clientIP)) {
             srvedIPs = service.getSelector().select(clientIP, srvedIPs);
         }

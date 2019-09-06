@@ -15,12 +15,19 @@
  */
 package com.alibaba.nacos.core.remoting.grpc;
 
+import io.grpc.ConnectivityState;
+import io.grpc.ManagedChannel;
+
 /**
  * @author pbting
  */
 public class GrpcNetExceptionUtils {
 
-    public static boolean isNetUnavailable(Exception e) {
+    public static boolean isNetUnavailable(Exception e, ManagedChannel managedChannel) {
+        if (managedChannel.getState(true) == ConnectivityState.TRANSIENT_FAILURE) {
+            return true;
+        }
+
         if (e.getMessage() == null) {
             return false;
         }

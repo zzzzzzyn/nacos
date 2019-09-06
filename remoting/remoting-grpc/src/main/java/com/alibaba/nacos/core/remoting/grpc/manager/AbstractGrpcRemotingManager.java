@@ -15,24 +15,19 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.manager;
 
-import com.alibaba.nacos.core.remoting.event.IAttachListenerHook;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.manager.IRemotingManager;
+import com.alibaba.nacos.core.remoting.manager.AbstractRemotingManager;
 import io.grpc.stub.StreamObserver;
 
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author pbting
  * @date 2019-08-22 10:55 PM
  */
-public abstract class AbstractGrpcRemotingManager implements IRemotingManager, IAttachListenerHook {
+public abstract class AbstractGrpcRemotingManager extends AbstractRemotingManager {
 
     private ConcurrentHashMap<String, StreamObserver> stringStreamObserverConcurrentHashMap =
         new ConcurrentHashMap<>();
-
-    private HashMap<Class<? extends IEventPipelineReactive>, IEventPipelineReactive> eventReactivePartition = new HashMap<>();
 
     public <V> void mappingStreamReplayProcessor(String streamTopicIdentify,
                                                  V streamReplayProcessor) {
@@ -44,13 +39,4 @@ public abstract class AbstractGrpcRemotingManager implements IRemotingManager, I
             (StreamObserver) streamReplayProcessor);
     }
 
-    @Override
-    public IEventPipelineReactive getAbstractEventPipelineReactive(Class<? extends IEventPipelineReactive> eventReactivePartition) {
-        return this.eventReactivePartition.get(eventReactivePartition);
-    }
-
-    @Override
-    public void initEventPipelineReactive(IEventPipelineReactive eventReactive) {
-        eventReactivePartition.put(eventReactive.getClass(), eventReactive);
-    }
 }

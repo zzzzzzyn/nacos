@@ -420,7 +420,7 @@ public interface NamingService {
      * Subscribe service to receive events of instances alteration
      *
      * @param serviceName name of service
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void subscribe(String serviceName, EventListener listener) throws NacosException;
@@ -430,7 +430,7 @@ public interface NamingService {
      *
      * @param serviceName name of service
      * @param groupName   group of service
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void subscribe(String serviceName, String groupName, EventListener listener) throws NacosException;
@@ -440,7 +440,7 @@ public interface NamingService {
      *
      * @param serviceName name of service
      * @param clusters    list of cluster
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void subscribe(String serviceName, List<String> clusters, EventListener listener) throws NacosException;
@@ -451,47 +451,47 @@ public interface NamingService {
      * @param serviceName name of service
      * @param groupName   group of service
      * @param clusters    list of cluster
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void subscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) throws NacosException;
 
     /**
-     * Unsubscribe event listener of service
+     * Unsubscribe event listenersSinkRegistry of service
      *
      * @param serviceName name of service
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void unsubscribe(String serviceName, EventListener listener) throws NacosException;
 
     /**
-     * unsubscribe event listener of service
+     * unsubscribe event listenersSinkRegistry of service
      *
      * @param serviceName name of service
      * @param groupName   group of service
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void unsubscribe(String serviceName, String groupName, EventListener listener) throws NacosException;
 
     /**
-     * Unsubscribe event listener of service
+     * Unsubscribe event listenersSinkRegistry of service
      *
      * @param serviceName name of service
      * @param clusters    list of cluster
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void unsubscribe(String serviceName, List<String> clusters, EventListener listener) throws NacosException;
 
     /**
-     * Unsubscribe event listener of service
+     * Unsubscribe event listenersSinkRegistry of service
      *
      * @param serviceName name of service
      * @param groupName   group of service
      * @param clusters    list of cluster
-     * @param listener    event listener
+     * @param listener    event listenersSinkRegistry
      * @throws NacosException
      */
     void unsubscribe(String serviceName, String groupName, List<String> clusters, EventListener listener) throws NacosException;
@@ -522,7 +522,7 @@ public interface NamingService {
      *
      * @param pageNo   page index
      * @param pageSize page size
-     * @param selector selector to filter the resource
+     * @param selector selector to aheadFilter the resource
      * @return list of service names
      * @throws NacosException
      * @since 0.7.0
@@ -535,7 +535,7 @@ public interface NamingService {
      * @param pageNo    page index
      * @param pageSize  page size
      * @param groupName group name
-     * @param selector  selector to filter the resource
+     * @param selector  selector to aheadFilter the resource
      * @return list of service names
      * @throws NacosException
      */

@@ -18,22 +18,22 @@ package com.alibaba.nacos.naming.consistency;
 import com.alibaba.nacos.naming.pojo.Record;
 
 /**
- * Data listener public interface
+ * Data listenersSinkRegistry public interface
  *
  * @author nacos
  */
 public interface RecordListener<T extends Record> {
 
     /**
-     * Determine if the listener was registered with this key
+     * Determine if the listenersSinkRegistry was registered with this key
      *
      * @param key candidate key
-     * @return true if the listener was registered with this key
+     * @return true if the listenersSinkRegistry was registered with this key
      */
     boolean interests(String key);
 
     /**
-     * Determine if the listener is to be removed by matching the 'key'
+     * Determine if the listenersSinkRegistry is to be removed by matching the 'key'
      *
      * @param key key to match
      * @return true if match success

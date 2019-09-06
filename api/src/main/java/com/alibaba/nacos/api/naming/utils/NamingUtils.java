@@ -16,6 +16,7 @@
 package com.alibaba.nacos.api.naming.utils;
 
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 
 /**
  * @author nkorange
@@ -39,5 +40,10 @@ public class NamingUtils {
             return Constants.DEFAULT_GROUP;
         }
         return serviceNameWithGroup.split(Constants.SERVICE_INFO_SPLITER)[0];
+    }
+
+    public static String getPushClientKey(SubscribeMetadata subscribeMetadata) {
+
+        return subscribeMetadata.getServiceName() + "@" + subscribeMetadata.getClusters() + "@" + subscribeMetadata.getAddrStr() + "@" + subscribeMetadata.getAgent();
     }
 }

@@ -16,7 +16,8 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
-import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
+import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
+import com.alibaba.nacos.core.remoting.event.reactive.EventLoopReactive;
 import com.alibaba.nacos.naming.client.ClientInfo;
 import com.alibaba.nacos.naming.client.ClientType;
 import com.alibaba.nacos.naming.core.Service;
@@ -72,8 +73,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     private volatile ConcurrentHashMap<String, Long> pushCostMap = new ConcurrentHashMap<>();
 
-    private final EventLoopPipelineReactive pushEventLoopReactive
-        = new EventLoopPipelineReactive(new DefaultEventExecutorGroup(2, runnable -> {
+    private final EventLoopReactive pushEventLoopReactive
+        = new EventLoopReactive(new DefaultEventExecutorGroup(2, runnable -> {
         Thread t = new Thread(runnable);
         t.setDaemon(true);
         t.setName("com.alibaba.nacos.naming.push.re-transmitter");
@@ -82,12 +83,13 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
 
     @Override
     public void afterSingletonsInstantiated() {
-        // 1. attach some event loop listener
+        // 1. attach some event loop listenersSinkRegistry
         initEventLoopListener();
         // 2. init push configuration
         initPushConfiguration();
         // 3. reactive remove push client id zombie with recycle
-        pushEventLoopReactive.reactive(new LocalizationEvents.ZombiePushClientCheckEvent(this, 20));
+        pushEventLoopReactive.reactive(new LocalizationEvents.ZombiePushClientCheckEvent(this,
+            (int) TimeUnit.MILLISECONDS.toSeconds(switchDomain.getPushCacheMillis("") * 2)));
     }
 
     private void initPushConfiguration() {
@@ -129,6 +131,25 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         this.totalPush.set(totalPush);
     }
 
+    /**
+     * @param subscribeMetadata
+     * @param pushDataSource
+     */
+    public void addClient(final SubscribeMetadata subscribeMetadata, final DataSource pushDataSource) {
+        Collection<IEmitter> emittersServices = this.applicationContext.getBeansOfType(IEmitter.class).values();
+        if (emittersServices == null || emittersServices.isEmpty()) {
+            return;
+        }
+
+        emittersServices.forEach(emitter -> {
+            AbstractPushClient abstractPushClient =
+                emitter.getPushClientFactory().newPushClient(subscribeMetadata, pushDataSource);
+            if (abstractPushClient != null) {
+                this.addClient(abstractPushClient);
+            }
+        });
+    }
+
     public void addClient(AbstractPushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
         String serviceKey =
@@ -166,6 +187,14 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         return pushClientsSource != null ? Collections.unmodifiableMap(pushClientsSource) : Collections.emptyMap();
     }
 
+    public AbstractPushClient getPushClient(String key, String clientKey) {
+        Map<String, AbstractPushClient> pushClientsSource = clientMap.get(key);
+        if (pushClientsSource == null || pushClientsSource.isEmpty()) {
+            return null;
+        }
+        return pushClientsSource.get(clientKey);
+    }
+
     public List<Subscriber> getClients(String serviceName, String namespaceId) {
         String serviceKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
         ConcurrentMap<String, AbstractPushClient> clientConcurrentMap = clientMap.get(serviceKey);
@@ -188,7 +217,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
             for (Map.Entry<String, AbstractPushClient> entry1 : clientConcurrentMap.entrySet()) {
                 AbstractPushClient client = entry1.getValue();
                 if (client.zombie(switchDomain)) {
-                    clientConcurrentMap.remove(entry1.getKey());
+                    AbstractPushClient abstractPushClient = clientConcurrentMap.remove(entry1.getKey());
+                    abstractPushClient.destroy();
                 }
             }
 

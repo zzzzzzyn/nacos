@@ -19,6 +19,7 @@ import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Objects;
@@ -27,14 +28,16 @@ import java.util.Objects;
  * @author pbting
  * @date 2019-08-27 10:23 PM
  */
-public class UdpPushClient extends AbstractPushClient {
+public class UdpPushClient extends AbstractPushClient<DatagramSocket> {
 
     private InetSocketAddress socketAddr;
     private Map<String, String[]> params;
 
-    public UdpPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
-        super(subscribeMetadata, dataSource);
-        this.socketAddr = new InetSocketAddress(subscribeMetadata.getClientIp(), subscribeMetadata.getPort());
+    public UdpPushClient(SubscribeMetadata subscribeMetadata,
+                         DataSource dataSource,
+                         DatagramSocket pusher) {
+        super(subscribeMetadata, dataSource, pusher);
+        this.socketAddr = new InetSocketAddress(subscribeMetadata.getClientIp(), (int) subscribeMetadata.getPort());
     }
 
     public Map<String, String[]> getParams() {
@@ -45,21 +48,6 @@ public class UdpPushClient extends AbstractPushClient {
         this.params = params;
     }
 
-
-    @Override
-    public String getAddrStr() {
-        return getIp() + ":" + getPort();
-    }
-
-    @Override
-    public String getIp() {
-        return getSocketAddr().getAddress().getHostAddress();
-    }
-
-    @Override
-    public int getPort() {
-        return getSocketAddr().getPort();
-    }
 
     public InetSocketAddress getSocketAddr() {
         return socketAddr;
@@ -82,11 +70,6 @@ public class UdpPushClient extends AbstractPushClient {
         return thisSubscribeMetadata.getServiceName().equals(otherSubscribeMetadata.getServiceName())
             && thisSubscribeMetadata.getClusters().equals(otherSubscribeMetadata.getClusters())
             && socketAddr.equals(other.socketAddr);
-    }
-
-    @Override
-    public String toString() {
-        return getSubscribeMetadata().getServiceName() + "@" + getSubscribeMetadata().getClusters() + "@" + getAddrStr() + "@" + getSubscribeMetadata().getAgent();
     }
 
 }

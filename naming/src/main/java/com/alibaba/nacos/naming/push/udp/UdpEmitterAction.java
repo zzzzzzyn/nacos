@@ -16,7 +16,7 @@
 package com.alibaba.nacos.naming.push.udp;
 
 import com.alibaba.nacos.api.naming.push.AckEntry;
-import com.alibaba.nacos.api.naming.push.AckPacket;
+import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
@@ -64,7 +64,7 @@ public class UdpEmitterAction implements Runnable {
                     if (pushCacheMillis >= pushThreshodCacheMillis && cache.containsKey(key)) {
                         Pair pair = cache.get(key);
                         byte[] cacheRawDatum = (byte[]) pair.getValue0();
-                        AckPacket ackPacket = (AckPacket) pair.getValue1();
+                        PushPacket ackPacket = (PushPacket) pair.getValue1();
                         ackEntry = udpEmitterService.prepareAckEntry(client, cacheRawDatum, ackPacket, lastRefTime);
                     }
                 }

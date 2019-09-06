@@ -46,7 +46,7 @@ public class EventDispatcher {
         executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r, "com.alibaba.nacos.naming.client.listener");
+                Thread thread = new Thread(r, "com.alibaba.nacos.naming.client.listenersSinkRegistry");
                 thread.setDaemon(true);
 
                 return thread;
@@ -58,7 +58,7 @@ public class EventDispatcher {
 
     public void addListener(ServiceInfo serviceInfo, String clusters, EventListener listener) {
 
-        NAMING_LOGGER.info("[LISTENER] adding " + serviceInfo.getName() + " with " + clusters + " to listener map");
+        NAMING_LOGGER.info("[LISTENER] adding " + serviceInfo.getName() + " with " + clusters + " to listenersSinkRegistry map");
         List<EventListener> observers = Collections.synchronizedList(new ArrayList<EventListener>());
         observers.add(listener);
 
@@ -72,7 +72,7 @@ public class EventDispatcher {
 
     public void removeListener(String serviceName, String clusters, EventListener listener) {
 
-        NAMING_LOGGER.info("[LISTENER] removing " + serviceName + " with " + clusters + " from listener map");
+        NAMING_LOGGER.info("[LISTENER] removing " + serviceName + " with " + clusters + " from listenersSinkRegistry map");
 
         List<EventListener> observers = observerMap.get(ServiceInfo.getKey(serviceName, clusters));
         if (observers != null) {

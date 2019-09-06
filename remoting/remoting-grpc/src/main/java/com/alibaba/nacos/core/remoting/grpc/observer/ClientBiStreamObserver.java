@@ -16,8 +16,7 @@
 package com.alibaba.nacos.core.remoting.grpc.observer;
 
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.reactive.SimpleRemotingEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.grpc.event.GrpcBiStreamEvent;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcBiStreamInteractive;
 import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
@@ -32,15 +31,15 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 public class ClientBiStreamObserver extends AbstractCallStreamObserver
     implements IInteractive {
 
-    private SimpleRemotingEventPipelineReactive remotingEventPipelineReactive;
+    private IEventReactive clientEventReactive;
 
     private final static InternalLogger logger = InternalLoggerFactory
         .getInstance(ClientBiStreamObserver.class);
 
-    public ClientBiStreamObserver(SimpleRemotingEventPipelineReactive remotingEventPipelineReactive,
+    public ClientBiStreamObserver(IEventReactive clientEventReactive,
                                   CallStreamObserver<InteractivePayload> responseStreamObserver) {
         super(responseStreamObserver);
-        this.remotingEventPipelineReactive = remotingEventPipelineReactive;
+        this.clientEventReactive = clientEventReactive;
     }
 
     /**
@@ -50,18 +49,14 @@ public class ClientBiStreamObserver extends AbstractCallStreamObserver
      */
     @Override
     public void onNext(InteractivePayload payload) {
-        int eventTypeIndex = payload.getEventType();
+        String sink = payload.getSink();
         if (logger.isDebugEnabled()) {
-            logger.debug("receive client request with the event type :" + eventTypeIndex);
+            logger.debug("receive client request with the event type :" + sink);
         }
 
-        System.out.println("interactive " + this.interactiveStream);
-
-        Class<? extends Event> eventType =
-            remotingEventPipelineReactive.getEventType(eventTypeIndex, GrpcBiStreamEvent.class);
-        remotingEventPipelineReactive
-            .reactive(new GrpcBiStreamEvent(this,
-                new GrpcBiStreamInteractive(payload, this.interactiveStream), eventType));
+        Event event = new Event(this,
+            new GrpcBiStreamInteractive(payload, this.interactiveStream), sink);
+        clientEventReactive.reactive(event);
     }
 
 

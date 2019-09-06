@@ -16,39 +16,23 @@
 package com.alibaba.nacos.core.remoting.event;
 
 /**
- * Recyclable Event
- *
  * @author pbting
- * @date 2019-08-28 2:41 PM
+ * @date 2019-09-05 10:20 AM
  */
 public class RecyclableEvent extends Event {
 
-    /**
-     * Unit in seconds. the default is zero means will recycle once
-     */
     private int recycleInterval;
+    private boolean isCancel;
 
-    private volatile boolean isCancel = false;
-
-    public RecyclableEvent(Object source, Object value, Class<? extends Event> eventType, int recycleInterval) {
-        super(source, value, eventType);
+    public RecyclableEvent(Object source, Object value, String sink, int recycleInterval) {
+        super(source, value, sink);
         this.recycleInterval = recycleInterval;
     }
 
-    public RecyclableEvent(Object source, Object value) {
-        super(source, value, null);
-    }
-
-    public RecyclableEvent(Object source, Class<? extends Event> eventType, int recycleInterval) {
-        super(source, Event.EMPTY_VALUE, eventType);
+    public RecyclableEvent(Object source, int recycleInterval, String sink) {
+        super(source, EMPTY_VALUE, sink);
         this.recycleInterval = recycleInterval;
     }
-
-    public RecyclableEvent(Object source, int recycleInterval) {
-        super(source, Event.EMPTY_VALUE, null);
-        this.recycleInterval = recycleInterval;
-    }
-
 
     public int getRecycleInterval() {
         return recycleInterval;
@@ -58,11 +42,11 @@ public class RecyclableEvent extends Event {
         this.recycleInterval = recycleInterval;
     }
 
-    public void cancel() {
-        isCancel = true;
-    }
-
     public boolean isCancel() {
         return isCancel;
+    }
+
+    public void setCancel(boolean cancel) {
+        isCancel = cancel;
     }
 }

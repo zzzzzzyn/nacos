@@ -40,17 +40,10 @@ public interface IServerRemotingManager extends IRemotingManager {
     <T> T getServer();
 
     /**
-     * initialize a startup server event listener
+     * initialize a startup server event listenersSinkRegistry
      *
      * @return
      */
     StartupServerEventListener initStartupServerEventListener();
 
-    /**
-     * @param streamTopicIdentify
-     * @param streamReplayProcessor
-     * @param <V>
-     */
-    <V> void mappingStreamReplayProcessor(String streamTopicIdentify,
-                                          V streamReplayProcessor);
 }

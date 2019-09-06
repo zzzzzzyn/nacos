@@ -23,7 +23,7 @@ package com.alibaba.nacos.api.config.filter;
 public interface IFilterConfig {
 
     /**
-     * get filter name
+     * get aheadFilter name
      *
      * @return
      */

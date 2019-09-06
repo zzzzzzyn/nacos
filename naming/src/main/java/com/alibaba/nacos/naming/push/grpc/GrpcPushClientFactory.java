@@ -15,37 +15,34 @@
  */
 package com.alibaba.nacos.naming.push.grpc;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
+import com.alibaba.nacos.naming.push.IPushClientFactory;
 
 /**
  * @author pbting
- * @date 2019-08-31 6:21 PM
+ * @date 2019-09-04 2:24 PM
  */
-public class GrpcPushClient extends AbstractPushClient<GrpcRequestStreamInteractive> {
-
-    public GrpcPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource,
-                          GrpcRequestStreamInteractive responseStream) {
-        super(subscribeMetadata, dataSource, responseStream);
-    }
+public class GrpcPushClientFactory implements IPushClientFactory {
 
     @Override
-    public GrpcRequestStreamInteractive getPusher() {
-        return super.getPusher();
-    }
+    public AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
 
-    @Override
-    public void destroy() {
-        /**
-         * must be call this method to tell http/2 the HttpStream is complete and will recover .
-         *  Otherwise it may cause a memory leak
-         */
-        GrpcRequestStreamInteractive grpcRequestStreamInteractive = getPusher();
-        try {
-            grpcRequestStreamInteractive.onCompleted();
-        } catch (Exception e) {
+        if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
+            return new GrpcPushClient(subscribeMetadata, dataSource, null);
         }
+        return null;
+    }
+
+    @Override
+    public <T> AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource, T pusher) {
+
+        if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
+            return new GrpcPushClient(subscribeMetadata, dataSource, (GrpcRequestStreamInteractive) pusher);
+        }
+        return null;
     }
 }

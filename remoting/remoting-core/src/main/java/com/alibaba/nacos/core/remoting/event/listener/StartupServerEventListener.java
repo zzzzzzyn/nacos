@@ -16,33 +16,21 @@
 package com.alibaba.nacos.core.remoting.event.listener;
 
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
-import com.alibaba.nacos.core.remoting.event.StartupEvent;
 
 /**
- * an event listener to startup server
+ * an event listenersSinkRegistry to startup server
  *
  * @author pbting
  * @date 2019-08-22 5:44 PM
  */
-public abstract class StartupServerEventListener implements IPipelineEventListener<StartupEvent> {
+public abstract class StartupServerEventListener implements IPipelineEventListener {
 
-    /**
-     * Processing entry in response to an event。
-     *
-     * @param event         Localization Event
-     * @param listenerIndex The eventListener index of the current response event
-     * @return
-     */
+    public static final String SINK = "startup";
+
+    public static final String CLIENT_EVENT_REACTIVE = "clientEventReactive";
+
     @Override
-    public boolean onEvent(StartupEvent event, int listenerIndex) {
-        return onStartup(event);
+    public String[] interestSinks() {
+        return new String[]{SINK};
     }
-
-    /**
-     * startup a server
-     *
-     * @param event
-     * @return
-     */
-    public abstract boolean onStartup(StartupEvent event);
 }

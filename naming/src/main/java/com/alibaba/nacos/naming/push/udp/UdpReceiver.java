@@ -16,7 +16,7 @@
 package com.alibaba.nacos.naming.push.udp;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.naming.push.AckPacket;
+import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.PushService;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +51,7 @@ public class UdpReceiver implements Runnable {
                 source.receive(packet);
 
                 String json = new String(packet.getData(), 0, packet.getLength(), Charset.forName("UTF-8")).trim();
-                AckPacket ackPacket = JSON.parseObject(json, AckPacket.class);
+                PushPacket ackPacket = JSON.parseObject(json, PushPacket.class);
 
                 InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
                 String ip = socketAddress.getAddress().getHostAddress();

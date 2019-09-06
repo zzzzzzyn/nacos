@@ -384,12 +384,7 @@ public class NamingProxy {
 
     public String reqAPI(String api, Map<String, String> params, String method) throws NacosException {
 
-        List<String> snapshot = serversFromEndpoint;
-        if (!CollectionUtils.isEmpty(serverList)) {
-            snapshot = serverList;
-        }
-
-        return reqAPI(api, params, snapshot, method);
+        return reqAPI(api, params, getServers(), method);
     }
 
     public String callServer(String api, Map<String, String> params, String curServer) throws NacosException {
@@ -399,7 +394,7 @@ public class NamingProxy {
     public String callServer(String api, Map<String, String> params, String curServer, String method)
         throws NacosException {
         long start = System.currentTimeMillis();
-        long end = 0;
+        long end;
         checkSignature(params);
         List<String> headers = builderHeaders();
 

@@ -16,7 +16,7 @@
 package com.alibaba.nacos.client.naming.core.udp;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.naming.push.AckPacket;
+import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.client.naming.utils.IoUtils;
 import com.alibaba.nacos.client.utils.StringUtils;
 
@@ -77,18 +77,18 @@ public class UdpPushReceiver implements Runnable {
                 NAMING_LOGGER.info("received push data: " + json + " from " + packet.getAddress().toString());
 
                 PushPacket pushPacket = JSON.parseObject(json, PushPacket.class);
-                AckPacket pushResponseAck;
-                if ("dom".equals(pushPacket.type) || "service".equals(pushPacket.type)) {
-                    changedAwareStrategy.processDataStreamResponse(pushPacket.data);
+                PushPacket pushResponseAck;
+                if ("dom".equals(pushPacket.getType()) || "service".equals(pushPacket.getType())) {
+                    changedAwareStrategy.processDataStreamResponse(pushPacket.getData());
 
                     // send ack to server
-                    pushResponseAck = new AckPacket("push-ack", pushPacket.lastRefTime, StringUtils.EMPTY);
-                } else if ("dump".equals(pushPacket.type)) {
+                    pushResponseAck = new PushPacket("push-ack", pushPacket.getLastRefTime(), StringUtils.EMPTY);
+                } else if ("dump".equals(pushPacket.getType())) {
                     // dump data to server
-                    pushResponseAck = new AckPacket("dump-ack", pushPacket.lastRefTime, StringUtils.escapeJavaScript(JSON.toJSONString(changedAwareStrategy.getServiceInfoMap())));
+                    pushResponseAck = new PushPacket("dump-ack", pushPacket.getLastRefTime(), StringUtils.escapeJavaScript(JSON.toJSONString(changedAwareStrategy.getServiceInfoMap())));
                 } else {
                     // do nothing send ack only
-                    pushResponseAck = new AckPacket("unknown-ack", pushPacket.lastRefTime, StringUtils.EMPTY);
+                    pushResponseAck = new PushPacket("unknown-ack", pushPacket.getLastRefTime(), StringUtils.EMPTY);
                 }
 
                 byte[] ack = JSON.toJSONString(pushResponseAck).getBytes(Charset.forName("UTF-8"));
@@ -97,12 +97,6 @@ public class UdpPushReceiver implements Runnable {
                 NAMING_LOGGER.error("[NA] error while receiving push data", e);
             }
         }
-    }
-
-    public static class PushPacket {
-        public String type;
-        public long lastRefTime;
-        public String data;
     }
 
     public int getUDPPort() {

@@ -16,33 +16,27 @@
 package com.alibaba.nacos.naming.push.grpc;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.naming.push.GrpcClientSubscribeEvent;
+import com.alibaba.nacos.api.naming.NamingCommonEventSinks;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
+import com.alibaba.nacos.naming.controllers.InstanceController;
 import com.alibaba.nacos.naming.push.DataSource;
-import com.alibaba.nacos.naming.push.PushService;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
 
 /**
  * @author pbting
  * @date 2019-08-31 4:17 PM
  */
-public class GrpcClientSubscribeEventListener extends GrpcClientEventListenerSupport
-    implements IPipelineEventListener<GrpcClientSubscribeEvent> {
+@Component
+public class GrpcClientSubscribeEventListener extends AbstractGrpcClientEventListener {
 
-    private PushService pushService;
     private DataSource dataSource;
 
-    public GrpcClientSubscribeEventListener(GrpcEmitterService grpcEmitterService,
-                                            PushService pushService, DataSource dataSource) {
-        super(grpcEmitterService);
-        this.pushService = pushService;
-        this.dataSource = dataSource;
-    }
-
     @Override
-    public boolean onEvent(GrpcClientSubscribeEvent event, int listenerIndex) {
+    public boolean onEvent(Event event, int listenerIndex) {
 
         GrpcRequestStreamInteractive requestStreamInteractive = event.getValue();
 
@@ -51,14 +45,23 @@ public class GrpcClientSubscribeEventListener extends GrpcClientEventListenerSup
 
         SubscribeMetadata subscribeMetadata =
             JSON.parseObject(subscribeMetadataJson, SubscribeMetadata.class);
-        this.pushService.addClient(new GrpcPushClient(subscribeMetadata, dataSource,
-            requestStreamInteractive));
+
+        GrpcPushClient abstractPushClient =
+            (GrpcPushClient) grpcEmitterService.getPushClientFactory().newPushClient(subscribeMetadata, dataSource, requestStreamInteractive);
+        pushService.addClient(abstractPushClient);
         return true;
     }
 
     @Override
-    public Class<? extends Event>[] interestEventTypes() {
+    public void afterSingletonsInstantiated() {
+        Collection<InstanceController> instanceControllers = this.applicationContext.getBeansOfType(InstanceController.class).values();
+        this.dataSource = instanceControllers.iterator().next().getPushDataSource();
+        super.afterSingletonsInstantiated();
+    }
 
-        return new Class[]{GrpcClientSubscribeEvent.class};
+    @Override
+    public String[] interestSinks() {
+
+        return new String[]{NamingCommonEventSinks.SUBSCRIBE_SINK};
     }
 }

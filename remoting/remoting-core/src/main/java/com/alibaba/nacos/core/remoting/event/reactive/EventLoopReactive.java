@@ -29,19 +29,19 @@ import java.util.concurrent.TimeUnit;
  * @author pbting
  * @date 2019-08-28 2:39 PM
  */
-public class EventLoopPipelineReactive extends AsyncEventPipelineReactive {
+public class EventLoopReactive extends AsyncEventReactive {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(EventLoopPipelineReactive.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(EventLoopReactive.class);
 
-    public EventLoopPipelineReactive() {
+    public EventLoopReactive() {
     }
 
-    public EventLoopPipelineReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
+    public EventLoopReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
         super(multithreadEventExecutorGroup);
     }
 
     @Override
-    public <T extends Event> void reactive(final T event) {
+    public void reactive(final Event event) {
         if (!(event instanceof RecyclableEvent)) {
             logger.error("the event in loop does not matcher the recycle type . {}", event.getClass().getCanonicalName());
             return;
@@ -63,7 +63,7 @@ public class EventLoopPipelineReactive extends AsyncEventPipelineReactive {
         super.listenerPerform0(objectListeners, event);
 
         RecyclableEvent recyclableEvent = (RecyclableEvent) event;
-        if (recyclableEvent.isCancel()) {
+        if (recyclableEvent.isInterrupt()) {
             // exit event loop
             return;
         }

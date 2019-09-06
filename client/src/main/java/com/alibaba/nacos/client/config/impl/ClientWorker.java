@@ -149,7 +149,7 @@ public class ClientWorker {
         synchronized (cacheMap) {
             CacheData cacheFromMap = getCache(dataId, group);
             // multiple listeners on the same dataid+group and race condition,so double check again
-            //other listener thread beat me to set to cacheMap
+            //other listenersSinkRegistry thread beat me to set to cacheMap
             if (null != cacheFromMap) {
                 cache = cacheFromMap;
                 //reset so that server not hang this check
@@ -181,7 +181,7 @@ public class ClientWorker {
             CacheData cacheFromMap = getCache(dataId, group, tenant);
             // multiple listeners on the same dataid+group and race condition,so
             // double check again
-            // other listener thread beat me to set to cacheMap
+            // other listenersSinkRegistry thread beat me to set to cacheMap
             if (null != cacheFromMap) {
                 cache = cacheFromMap;
                 // reset so that server not hang this check
@@ -374,7 +374,7 @@ public class ClientWorker {
         }
 
         try {
-            HttpResult result = agent.httpPost(Constants.CONFIG_CONTROLLER_PATH + "/listener", headers, params,
+            HttpResult result = agent.httpPost(Constants.CONFIG_CONTROLLER_PATH + "/listenersSinkRegistry", headers, params,
                 agent.getEncode(), timeout);
 
             if (HttpURLConnection.HTTP_OK == result.code) {

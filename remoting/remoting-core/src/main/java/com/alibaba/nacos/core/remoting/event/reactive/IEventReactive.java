@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.remoting.event;
+package com.alibaba.nacos.core.remoting.event.reactive;
+
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.filter.IEventReactiveFilter;
 
 /**
  * @author pbting
- * @date 2019-08-23 2:09 PM
+ * @date 2019-09-05 9:47 AM
  */
-public class ClientRequestStreamEvent extends RemotingEvent {
+public interface IEventReactive extends IEventReactiveFilter {
 
-    public ClientRequestStreamEvent(Object source, Object value, Class<? extends Event> eventType) {
-        super(source, value, eventType);
-    }
+    /**
+     * @param event
+     */
+    void reactive(Event event);
+
 }

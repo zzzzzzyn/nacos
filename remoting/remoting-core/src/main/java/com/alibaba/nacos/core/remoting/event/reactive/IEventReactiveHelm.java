@@ -15,8 +15,10 @@
  */
 package com.alibaba.nacos.core.remoting.event.reactive;
 
-import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
+import com.alibaba.nacos.core.remoting.event.filter.IEventReactiveFilter;
+
+import java.util.Collection;
 
 /**
  * an event pipeline reactive.
@@ -27,38 +29,38 @@ import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
  * @author pbting
  * @date 2019-08-22 5:14 PM
  */
-public interface IEventPipelineReactive {
+public interface IEventReactiveHelm {
 
     /**
-     * Wake up a set of event listeners. This set of event listeners is executed in order
+     * register event reactive filter
      *
-     * @param event
+     * @param reactiveFilters
      */
-    <T extends Event> void reactive(T event);
+    void registerEventReactiveFilter(Collection<IEventReactiveFilter> reactiveFilters);
 
     /**
      * Whether to include a practice type
      *
-     * @param eventType
+     * @param eventSink
      * @return
      */
-    boolean containsEventType(Class<? extends Event> eventType);
+    boolean containsEventSink(String eventSink);
 
     /**
-     * Add a listener for an event type. An eventType can correspond to multiple object listeners
+     * Add a listenersSinkRegistry for an event type. An eventType can correspond to multiple object listeners
      *
      * @param pipelineEventListener
      */
     void addListener(IPipelineEventListener pipelineEventListener);
 
     /**
-     * Remove an object listener from the specified event type
+     * Remove an object listenersSinkRegistry from the specified event type
      *
      * @param objectListener
      */
     default void removeListener(IPipelineEventListener objectListener) {
 
-        // support remove a listener
+        // support remove a listenersSinkRegistry
     }
 
     /**
@@ -70,20 +72,20 @@ public interface IEventPipelineReactive {
     }
 
     /**
-     * Add a new object listener after an event type
+     * Add a new object listenersSinkRegistry after an event type
      *
      * @param objectListener
      */
     default void addLast(IPipelineEventListener objectListener) {
 
-        // add the listener to the last in the queue
+        // add the listenersSinkRegistry to the last in the queue
     }
 
     /**
-     * Add a new event listener in front of an event type
+     * Add a new event listenersSinkRegistry in front of an event type
      */
     default void addFirst(IPipelineEventListener objectListener) {
 
-        // add the listener to the first in the queue
+        // add the listenersSinkRegistry to the first in the queue
     }
 }

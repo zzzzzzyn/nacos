@@ -296,7 +296,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 
                 if (!listeners.containsKey(entry.getKey())) {
                     // Should not happen:
-                    Loggers.DISTRO.warn("listener of {} not found.", entry.getKey());
+                    Loggers.DISTRO.warn("listenersSinkRegistry of {} not found.", entry.getKey());
                     continue;
                 }
 
@@ -305,11 +305,11 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
                         listener.onChange(entry.getKey(), entry.getValue().value);
                     }
                 } catch (Exception e) {
-                    Loggers.DISTRO.error("[NACOS-DISTRO] error while execute listener of key: {}", entry.getKey(), e);
+                    Loggers.DISTRO.error("[NACOS-DISTRO] error while execute listenersSinkRegistry of key: {}", entry.getKey(), e);
                     continue;
                 }
 
-                // Update data store if listener executed successfully:
+                // Update data store if listenersSinkRegistry executed successfully:
                 dataStore.put(entry.getKey(), entry.getValue());
             }
         }
@@ -410,12 +410,12 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
                                 continue;
                             }
                         } catch (Throwable e) {
-                            Loggers.DISTRO.error("[NACOS-DISTRO] error while notifying listener of key: {}", datumKey, e);
+                            Loggers.DISTRO.error("[NACOS-DISTRO] error while notifying listenersSinkRegistry of key: {}", datumKey, e);
                         }
                     }
 
                     if (Loggers.DISTRO.isDebugEnabled()) {
-                        Loggers.DISTRO.debug("[NACOS-DISTRO] datum change notified, key: {}, listener count: {}, action: {}",
+                        Loggers.DISTRO.debug("[NACOS-DISTRO] datum change notified, key: {}, listenersSinkRegistry count: {}, action: {}",
                             datumKey, count, action.name());
                     }
                 } catch (Throwable e) {

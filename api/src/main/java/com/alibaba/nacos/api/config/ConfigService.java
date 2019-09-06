@@ -54,8 +54,8 @@ public interface ConfigService {
     String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener) throws NacosException;
 
     /**
-     * Add a listener to the configuration, after the server modified the
-     * configuration, the client will use the incoming listener callback.
+     * Add a listenersSinkRegistry to the configuration, after the server modified the
+     * configuration, the client will use the incoming listenersSinkRegistry callback.
      * Recommended asynchronous processing, the application can implement the
      * getExecutor method in the ManagerListener, provide a thread pool of
      * execution. If provided, use the main thread callback, May block other
@@ -63,7 +63,7 @@ public interface ConfigService {
      *
      * @param dataId   dataId
      * @param group    group
-     * @param listener listener
+     * @param listener listenersSinkRegistry
      * @throws NacosException NacosException
      */
     void addListener(String dataId, String group, Listener listener) throws NacosException;
@@ -90,11 +90,11 @@ public interface ConfigService {
     boolean removeConfig(String dataId, String group) throws NacosException;
 
     /**
-     * Remove listener
+     * Remove listenersSinkRegistry
      *
      * @param dataId   dataId
      * @param group    group
-     * @param listener listener
+     * @param listener listenersSinkRegistry
      */
     void removeListener(String dataId, String group, Listener listener);
 

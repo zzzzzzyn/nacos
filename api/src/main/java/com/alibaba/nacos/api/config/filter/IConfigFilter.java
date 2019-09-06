@@ -31,11 +31,11 @@ public interface IConfigFilter {
     void init(IFilterConfig filterConfig);
 
     /**
-     * do filter
+     * do aheadFilter
      *
      * @param request     request
      * @param response    response
-     * @param filterChain filter Chain
+     * @param filterChain aheadFilter Chain
      * @throws NacosException exception
      */
     void doFilter(IConfigRequest request, IConfigResponse response, IConfigFilterChain filterChain)
@@ -56,7 +56,7 @@ public interface IConfigFilter {
     /**
      * Get filterName
      *
-     * @return filter name
+     * @return aheadFilter name
      */
     String getFilterName();
 

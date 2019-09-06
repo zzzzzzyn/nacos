@@ -15,12 +15,12 @@
  */
 package com.alibaba.nacos.core.remoting.test;
 
-import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
-import com.alibaba.nacos.core.remoting.event.reactive.EventLoopPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.EventLoopReactive;
 import org.junit.Test;
 
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,8 +33,8 @@ public class EventLoopPipelineReactiveTests {
     @Test
     public void eventLoopTest() throws Exception {
 
-        EventLoopPipelineReactive eventLoopPipelineReactive =
-            new EventLoopPipelineReactive();
+        EventLoopReactive eventLoopPipelineReactive =
+            new EventLoopReactive();
 
         eventLoopPipelineReactive.addListener(new IPipelineEventListener<RecyclableEvent>() {
             @Override
@@ -46,20 +46,21 @@ public class EventLoopPipelineReactiveTests {
                 }
                 if (loopCount.incrementAndGet() > 10) {
                     System.err.println("[exit]event loop count is " + loopCount.get());
-                    event.cancel();
+                    event.setCancel(true);
                 } else {
+                    event.setRecycleInterval(new Random().nextInt(10));
                     System.err.println("event loop count is " + loopCount.get());
                 }
                 return true;
             }
 
             @Override
-            public Class<? extends Event>[] interestEventTypes() {
-                return new Class[]{RecyclableEvent.class};
+            public String[] interestSinks() {
+                return new String[]{"test"};
             }
         });
 
-        RecyclableEvent recyclableEvent = new RecyclableEvent(eventLoopPipelineReactive, "Event Loop", RecyclableEvent.class, 1);
+        RecyclableEvent recyclableEvent = new RecyclableEvent(eventLoopPipelineReactive, "Event Loop", "test", 1);
         eventLoopPipelineReactive.reactive(recyclableEvent);
 
         System.in.read();

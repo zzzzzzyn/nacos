@@ -597,7 +597,7 @@ public class ConfigAPI_ITCase {
         Listener ml1 = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
-                //System.out.println("ml1 remove listener recieve:" + configInfo);
+                //System.out.println("ml1 remove listenersSinkRegistry recieve:" + configInfo);
                 count.incrementAndGet();
                 Assert.assertEquals(contentRemove, configInfo);
             }

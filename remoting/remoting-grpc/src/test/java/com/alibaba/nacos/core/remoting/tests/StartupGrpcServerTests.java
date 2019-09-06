@@ -16,15 +16,15 @@
 package com.alibaba.nacos.core.remoting.tests;
 
 import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannel;
-import com.alibaba.nacos.core.remoting.event.*;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactiveHelm;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.GrpcRemotingChannel;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
-import com.alibaba.nacos.core.remoting.grpc.event.GrpcBiStreamEvent;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcClientRemotingManager;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcServerRemotingManager;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
-import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcServerEventReactive;
 import com.alibaba.nacos.core.remoting.interactive.IInteractive;
 import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
 import com.alibaba.nacos.core.remoting.manager.IServerRemotingManager;
@@ -66,14 +66,12 @@ public class StartupGrpcServerTests {
     public IServerRemotingManager startupServer() throws Exception {
 
         IServerRemotingManager serverRemotingManager = new GrpcServerRemotingManager();
-        IAttachListenerHook attachListenerHook = (IAttachListenerHook) serverRemotingManager;
-        attachListenerHook.attachListeners(serverRemotingManager.initStartupServerEventListener());
+        serverRemotingManager.attachListeners(serverRemotingManager.initStartupServerEventListener());
 
-        // 1. register request/response event listener
-        attachListenerHook.attachListeners(new IPipelineEventListener<ClientRequestResponseEvent>() {
+        // 1. register request/response event listenersSinkRegistry
+        serverRemotingManager.attachListeners(new IPipelineEventListener() {
             @Override
-            public boolean onEvent(ClientRequestResponseEvent event, int listenerIndex) {
-
+            public boolean onEvent(Event event, int listenerIndex) {
                 IInteractive interactive = event.getValue();
                 InteractivePayload requestPayload = interactive.getRequestPayload();
                 System.err.println("----> receive request payload " + requestPayload.getPayload().toStringUtf8());
@@ -85,20 +83,20 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends Event>[] interestEventTypes() {
-                return new Class[]{ClientRequestResponseEvent.class};
+            public String[] interestSinks() {
+                return new String[]{""};
             }
 
             @Override
-            public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+            public Class<? extends IEventReactive> pipelineReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });
 
-        // 2. register request/stream event listener
-        attachListenerHook.attachListeners(new IPipelineEventListener<ClientRequestStreamEvent>() {
+        // 2. register request/stream event listenersSinkRegistry
+        serverRemotingManager.attachListeners(new IPipelineEventListener() {
             @Override
-            public boolean onEvent(ClientRequestStreamEvent event, int listenerIndex) {
+            public boolean onEvent(Event event, int listenerIndex) {
                 IInteractive interactive = event.getValue();
                 System.err.println("receive client request/stream ,payload is " + interactive.getRequestPayload().getPayload().toStringUtf8());
                 for (int i = 0; i < Integer.MAX_VALUE; i++) {
@@ -114,22 +112,22 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends Event>[] interestEventTypes() {
-                return new Class[]{ClientRequestStreamEvent.class};
+            public String[] interestSinks() {
+                return new String[]{""};
             }
 
             @Override
-            public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+            public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });
 
         // 3. attach bi-stream
-        attachListenerHook.attachListeners(new IPipelineEventListener<GrpcBiStreamEvent>() {
+        serverRemotingManager.attachListeners(new IPipelineEventListener() {
             private final AtomicLong count = new AtomicLong();
 
             @Override
-            public boolean onEvent(GrpcBiStreamEvent event, int listenerIndex) {
+            public boolean onEvent(Event event, int listenerIndex) {
                 IInteractive interactive = event.getValue();
                 System.err.println("receive client request/channel ,payload is " + interactive.getRequestPayload().getPayload().toStringUtf8());
                 if (count.incrementAndGet() > 1) {
@@ -141,21 +139,19 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends Event>[] interestEventTypes() {
-                return new Class[]{GrpcBiStreamEvent.class};
+            public String[] interestSinks() {
+                return new String[]{""};
             }
 
             @Override
-            public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+            public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });
 
         Event event =
-            new StartupEvent(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848));
-        IEventPipelineReactive eventPipelineReactive = serverRemotingManager.getAbstractEventPipelineReactive(GrpcServerEventReactive.class);
-        eventPipelineReactive.reactive(event);
-
+            new Event(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848));
+        serverRemotingManager.notifyListeners(event);
         return serverRemotingManager;
     }
 

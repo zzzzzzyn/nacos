@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Basic methods for filter to use
+ * Basic methods for aheadFilter to use
  *
  * @author nkorange
  * @since 1.0.0

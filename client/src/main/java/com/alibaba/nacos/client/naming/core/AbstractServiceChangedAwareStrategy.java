@@ -16,6 +16,7 @@
 package com.alibaba.nacos.client.naming.core;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
@@ -110,7 +111,7 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
 
     @Override
     public ServiceInfo getServiceInfoDirectlyFromServer(String serviceName, String clusters) throws NacosException {
-        String result = serverProxy.queryList(serviceName, clusters, 0, false);
+        String result = serverProxy.queryList(serviceName, clusters, Constants.PORT_IDENTIFY_NNTS, false);
         if (StringUtils.isNotEmpty(result)) {
             return JSON.parseObject(result, ServiceInfo.class);
         }
@@ -164,10 +165,14 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
      * @param oldService
      * @return
      */
-    private boolean checkServiceIsChanged(ServiceInfo serviceInfo, ServiceInfo oldService) {
+    protected boolean checkServiceIsChanged(ServiceInfo serviceInfo, ServiceInfo oldService) {
 
         // checksum is not equals ,must hosts is add or delete
         if (!serviceInfo.getChecksum().equals(oldService.getChecksum())) {
+            return true;
+        }
+
+        if (serviceInfo.getHosts().size() != oldService.getHosts().size()) {
             return true;
         }
 
@@ -182,15 +187,20 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
             newHostMap.put(host.toInetAddr(), host);
         }
 
-        for (Map.Entry<String, Instance> entry : newHostMap.entrySet()) {
+        checkStateIsChanged(modHosts, newHostMap, oldHostMap);
+        checkStateIsChanged(modHosts, oldHostMap, newHostMap);
+        return modHosts.size() > 0;
+    }
+
+    private void checkStateIsChanged(Set<Instance> modHosts, Map<String, Instance> oldHostMap, Map<String, Instance> newHostMap) {
+        for (Map.Entry<String, Instance> entry : oldHostMap.entrySet()) {
             Instance host = entry.getValue();
             String key = entry.getKey();
-            if (oldHostMap.containsKey(key) &&
-                !StringUtils.equals(host.toString(), oldHostMap.get(key).toString())) {
+            if (newHostMap.containsKey(key) &&
+                !StringUtils.equals(host.toString(), newHostMap.get(key).toString())) {
                 modHosts.add(host);
             }
         }
-        return modHosts.size() > 0;
     }
 
     /**
@@ -215,5 +225,13 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
         }
     }
 
+    /**
+     * update service
+     *
+     * @param serviceName
+     * @param clusters
+     * @throws NacosException
+     */
     public abstract void updateService(String serviceName, String clusters) throws NacosException;
+
 }

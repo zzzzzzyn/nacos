@@ -23,28 +23,28 @@ import io.netty.util.concurrent.MultithreadEventExecutorGroup;
  * @author pbting
  * @date 2019-08-23 1:48 PM
  */
-public class AsyncEventPipelineReactive extends SimpleRemotingEventPipelineReactive {
+public class AsyncEventReactive extends DefaultEventReactive {
 
     private static final MultithreadEventExecutorGroup DEFAULT_EVENT_EXECUTOR =
         new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 2,
             (runnable) -> {
                 Thread thread = new Thread(runnable);
                 thread.setDaemon(false);
-                thread.setName(AsyncEventPipelineReactive.class.getName());
+                thread.setName(AsyncEventReactive.class.getName());
                 return thread;
             });
 
     protected MultithreadEventExecutorGroup eventExecutorGroup = DEFAULT_EVENT_EXECUTOR;
 
-    public AsyncEventPipelineReactive() {
+    public AsyncEventReactive() {
     }
 
-    public AsyncEventPipelineReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
+    public AsyncEventReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
         this.eventExecutorGroup = multithreadEventExecutorGroup;
     }
 
     @Override
-    public <T extends Event> void reactive(final T event) {
+    public void reactive(final Event event) {
 
         eventExecutorGroup.execute(() -> super.reactive0(event));
     }

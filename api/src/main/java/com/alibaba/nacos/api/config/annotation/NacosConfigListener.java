@@ -25,7 +25,7 @@ import java.lang.annotation.*;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 
 /**
- * Annotation that marks a method as a listener for Nacos Config change.
+ * Annotation that marks a method as a listenersSinkRegistry for Nacos Config change.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 0.2.0

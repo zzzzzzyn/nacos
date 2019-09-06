@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * jwt auth token filter
+ * jwt auth token aheadFilter
  *
  * @author wfnuser
  */

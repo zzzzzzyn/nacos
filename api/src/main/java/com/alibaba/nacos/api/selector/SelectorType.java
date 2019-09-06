@@ -27,7 +27,7 @@ public enum SelectorType {
      */
     unknown,
     /**
-     * not filter out any entity
+     * not aheadFilter out any entity
      */
     none,
     /**

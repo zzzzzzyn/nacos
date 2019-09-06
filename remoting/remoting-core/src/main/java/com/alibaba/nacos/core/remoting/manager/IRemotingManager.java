@@ -16,7 +16,9 @@
 package com.alibaba.nacos.core.remoting.manager;
 
 import com.alibaba.nacos.core.remoting.Identify;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.Event;
+import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 
 /**
  * a remoting manager ,it will use it to Initialize all remotely related behaviors。
@@ -31,9 +33,9 @@ public interface IRemotingManager extends Identify {
     /**
      * get an event pipeline reactive by the given event reactive partion.
      *
-     * @return an IEventPipelineReactive instance  If there is a specific by the input parameter or return null.
+     * @return an IEventReactiveHelm instance  If there is a specific by the input parameter or return null.
      */
-    IEventPipelineReactive getAbstractEventPipelineReactive(Class<? extends IEventPipelineReactive> eventReactivePartition);
+    IEventReactive getAbstractEventReactive(Class<? extends IEventReactive> eventReactivePartition);
 
     /**
      * init  an event pipeline reactive.
@@ -41,7 +43,21 @@ public interface IRemotingManager extends Identify {
      * @param eventReactive
      * @param eventReactive
      */
-    void initEventPipelineReactive(IEventPipelineReactive eventReactive);
+    void initEventReactive(IEventReactive eventReactive);
+
+    /**
+     * @param pipelineEventListener
+     */
+    default void attachListeners(IPipelineEventListener... pipelineEventListener) {
+        //nothing to do
+    }
+
+    /**
+     * @param event
+     */
+    default void notifyListeners(Event event) {
+        // nothing to do
+    }
 
     /**
      * @param key

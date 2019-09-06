@@ -16,16 +16,18 @@
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
+import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 
 /**
  * @author pbting
  * @date 2019-08-28 9:46 AM
  */
-public abstract class AbstractPushClient implements IPushClient {
+public abstract class AbstractPushClient<T> implements IPushClient {
     private SubscribeMetadata subscribeMetadata;
     protected long lastRefTime = System.currentTimeMillis();
     protected DataSource dataSource;
+    protected T pusher;
 
     /**
      * the Necessary structural parameters
@@ -33,14 +35,35 @@ public abstract class AbstractPushClient implements IPushClient {
      * @param subscribeMetadata
      * @param dataSource
      */
-    public AbstractPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
+    public AbstractPushClient(SubscribeMetadata subscribeMetadata,
+                              DataSource dataSource, T pusher) {
         this.subscribeMetadata = subscribeMetadata;
         this.dataSource = dataSource;
+        this.pusher = pusher;
     }
 
     @Override
     public SubscribeMetadata getSubscribeMetadata() {
         return subscribeMetadata;
+    }
+
+    @Override
+    public String getAddrStr() {
+        return subscribeMetadata.getAddrStr();
+    }
+
+    @Override
+    public String getIp() {
+        return subscribeMetadata.getClientIp();
+    }
+
+    @Override
+    public long getPort() {
+        return subscribeMetadata.getPort();
+    }
+
+    public T getPusher() {
+        return pusher;
     }
 
     @Override
@@ -56,5 +79,10 @@ public abstract class AbstractPushClient implements IPushClient {
     @Override
     public void refresh() {
         lastRefTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public String toString() {
+        return NamingUtils.getPushClientKey(subscribeMetadata);
     }
 }

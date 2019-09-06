@@ -15,13 +15,13 @@
  */
 package com.alibaba.nacos.core.remoting.grpc.reactive;
 
-import com.alibaba.nacos.core.remoting.event.reactive.SimpleEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.DefaultEventReactive;
 
 /**
  * @author pbting
  * @date 2019-08-22 10:31 PM
  */
-public class GrpcServerEventReactive extends SimpleEventPipelineReactive {
+public class GrpcServerEventReactive extends DefaultEventReactive {
 
     public GrpcServerEventReactive() {
     }

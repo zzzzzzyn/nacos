@@ -44,7 +44,7 @@ import java.util.Set;
  * it to a higher level strategy: same-label-prior.
  * <p>
  * So the idea is that presumed we have built a self-defined or integrated a third-party idc CMDB
- * which stores all the labels of all IPs. Then we can filter provider IPs by the consumer IP and
+ * which stores all the labels of all IPs. Then we can aheadFilter provider IPs by the consumer IP and
  * we only return the providers who have the same label values with consumer. We can define the
  * labels we want to include in the comparison.
  * <p>

@@ -25,6 +25,8 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
 public interface IPushClient {
 
     /**
+     * get subscribe metadata.the {@SubscribeMetadata} will attach When  construct a push client instance,
+     *
      * @return
      */
     SubscribeMetadata getSubscribeMetadata();
@@ -68,5 +70,12 @@ public interface IPushClient {
      *
      * @return
      */
-    int getPort();
+    long getPort();
+
+    /**
+     * zombie will destroy
+     */
+    default void destroy() {
+
+    }
 }

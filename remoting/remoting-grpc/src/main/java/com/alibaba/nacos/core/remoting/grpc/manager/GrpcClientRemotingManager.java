@@ -16,7 +16,6 @@
 package com.alibaba.nacos.core.remoting.grpc.manager;
 
 import com.alibaba.nacos.core.remoting.channel.IRemotingChannelFactory;
-import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.grpc.factory.GrpcRemotingChannelFactory;
 import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
 
@@ -26,16 +25,11 @@ import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
  */
 public class GrpcClientRemotingManager extends AbstractGrpcRemotingManager implements IClientRemotingManager {
 
-    private IRemotingChannelFactory remotingChannelFactory = new GrpcRemotingChannelFactory(
-        this);
+    private IRemotingChannelFactory remotingChannelFactory = new GrpcRemotingChannelFactory(this);
 
     @Override
     public IRemotingChannelFactory getRemotingChannelFactory() {
         return remotingChannelFactory;
     }
 
-    @Override
-    public void attachListeners(IPipelineEventListener... pipelineEventListener) {
-
-    }
 }

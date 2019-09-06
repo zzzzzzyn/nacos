@@ -28,13 +28,14 @@ public class SubscribeMetadata implements Serializable {
     private String clusters;
     private String agent;
     private String clientIp;
-    private int port;
+    private long port;
     private String tid;
     private String app;
+    private boolean success = true;
 
     public SubscribeMetadata(String namespaceId, String serviceName,
                              String clusters, String agent,
-                             String clientIp, int port,
+                             String clientIp, long port,
                              String tid, String app) {
         this.namespaceId = namespaceId;
         this.serviceName = serviceName;
@@ -86,11 +87,11 @@ public class SubscribeMetadata implements Serializable {
         this.clientIp = clientIp;
     }
 
-    public int getPort() {
+    public long getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(long port) {
         this.port = port;
     }
 
@@ -108,5 +109,18 @@ public class SubscribeMetadata implements Serializable {
 
     public void setApp(String app) {
         this.app = app;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getAddrStr() {
+
+        return this.clientIp + ":" + this.port;
     }
 }

@@ -26,7 +26,7 @@ public interface IEmitter {
     /**
      * get an emit source
      *
-     * @param <T>
+     * @param sourceKey the key of source
      * @return
      */
     <T> T getEmitSource(String sourceKey);
@@ -42,4 +42,11 @@ public interface IEmitter {
      * @param service
      */
     void emitter(Service service);
+
+    /**
+     * get push client factory.will use it to construct a push client.
+     *
+     * @return
+     */
+    IPushClientFactory getPushClientFactory();
 }

@@ -29,7 +29,7 @@ import com.alibaba.nacos.naming.push.events.LocalizationEvents;
 public final class PushRelatedPipelineEventListeners {
 
     /**
-     * an event listener for remove client if zombie
+     * an event listenersSinkRegistry for remove client if zombie
      */
     public static class RemoveClientIfZombieEventListener implements IPipelineEventListener<LocalizationEvents.ZombiePushClientCheckEvent> {
 
@@ -46,13 +46,13 @@ public final class PushRelatedPipelineEventListeners {
         }
 
         @Override
-        public Class[] interestEventTypes() {
-            return new Class[]{LocalizationEvents.ZombiePushClientCheckEvent.class};
+        public String[] interestSinks() {
+            return new String[]{LocalizationEvents.ZombiePushClientCheckEvent.class.getName()};
         }
     }
 
     /**
-     * an event listener for push time check and maybe re-transmitter
+     * an event listenersSinkRegistry for push time check and maybe re-transmitter
      */
     public static class ReTransmitterEventListener implements IPipelineEventListener<LocalizationEvents.ReTransmitterEvent> {
 
@@ -60,13 +60,12 @@ public final class PushRelatedPipelineEventListeners {
         public boolean onEvent(LocalizationEvents.ReTransmitterEvent event, int listenerIndex) {
             AbstractReTransmitter reTransmitter = event.getValue();
             reTransmitter.run();
-            event.cancel();
             return true;
         }
 
         @Override
-        public Class[] interestEventTypes() {
-            return new Class[]{LocalizationEvents.ReTransmitterEvent.class};
+        public String[] interestSinks() {
+            return new String[]{LocalizationEvents.ReTransmitterEvent.class.getName()};
         }
     }
 }

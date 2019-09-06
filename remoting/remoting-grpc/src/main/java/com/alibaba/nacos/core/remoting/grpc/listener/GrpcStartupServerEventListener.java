@@ -16,9 +16,8 @@
 package com.alibaba.nacos.core.remoting.grpc.listener;
 
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.StartupEvent;
 import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactiveHelm;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
 import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcServerEventReactive;
@@ -40,14 +39,15 @@ public class GrpcStartupServerEventListener extends StartupServerEventListener {
     private static final InternalLogger log = InternalLoggerFactory.getInstance(GrpcStartupServerEventListener.class);
 
     @Override
-    public boolean onStartup(StartupEvent event) {
+    public boolean onEvent(Event event, int listenerIndex) {
         IServerRemotingManager source = (IServerRemotingManager) event.getSource();
+        Class reactiveClass = event.getParameter(CLIENT_EVENT_REACTIVE);
         InetSocketAddress inetSocketAddress = event.getValue();
         NettyServerBuilder nettyServerBuilder = NettyServerBuilder.forAddress(inetSocketAddress);
         Server server;
         try {
             GrpcClientEventReactive clientEventPipelineReactive =
-                (GrpcClientEventReactive) source.getAbstractEventPipelineReactive(GrpcClientEventReactive.class);
+                (GrpcClientEventReactive) source.getAbstractEventReactive(reactiveClass);
             server = nettyServerBuilder.addService(new GrpcClientEntranceServiceImpl(clientEventPipelineReactive))
                 .flowControlWindow(NettyServerBuilder.DEFAULT_FLOW_CONTROL_WINDOW)
                 .build().start();
@@ -61,12 +61,7 @@ public class GrpcStartupServerEventListener extends StartupServerEventListener {
     }
 
     @Override
-    public Class<? extends Event>[] interestEventTypes() {
-        return new Class[]{StartupEvent.class};
-    }
-
-    @Override
-    public Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+    public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
         return GrpcServerEventReactive.class;
     }
 }

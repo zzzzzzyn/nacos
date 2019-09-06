@@ -65,29 +65,29 @@ public class CacheData {
     }
 
     /**
-     * Add listener
+     * Add listenersSinkRegistry
      * if CacheData already set new content, Listener should init lastCallMd5 by CacheData.md5
      *
-     * @param listener listener
+     * @param listener listenersSinkRegistry
      */
     public void addListener(Listener listener) {
         if (null == listener) {
-            throw new IllegalArgumentException("listener is null");
+            throw new IllegalArgumentException("listenersSinkRegistry is null");
         }
         ManagerListenerWrap wrap = new ManagerListenerWrap(listener, md5);
         if (listeners.addIfAbsent(wrap)) {
-            LOGGER.info("[{}] [add-listener] ok, tenant={}, dataId={}, group={}, cnt={}", name, tenant, dataId, group,
+            LOGGER.info("[{}] [add-listenersSinkRegistry] ok, tenant={}, dataId={}, group={}, cnt={}", name, tenant, dataId, group,
                 listeners.size());
         }
     }
 
     public void removeListener(Listener listener) {
         if (null == listener) {
-            throw new IllegalArgumentException("listener is null");
+            throw new IllegalArgumentException("listenersSinkRegistry is null");
         }
         ManagerListenerWrap wrap = new ManagerListenerWrap(listener);
         if (listeners.remove(wrap)) {
-            LOGGER.info("[{}] [remove-listener] ok, dataId={}, group={}, cnt={}", name, dataId, group, listeners.size());
+            LOGGER.info("[{}] [remove-listenersSinkRegistry] ok, dataId={}, group={}, cnt={}", name, dataId, group, listeners.size());
         }
     }
 
@@ -189,13 +189,13 @@ public class CacheData {
                     String contentTmp = cr.getContent();
                     listener.receiveConfigInfo(contentTmp);
                     listenerWrap.lastCallMd5 = md5;
-                    LOGGER.info("[{}] [notify-ok] dataId={}, group={}, md5={}, listener={} ", name, dataId, group, md5,
+                    LOGGER.info("[{}] [notify-ok] dataId={}, group={}, md5={}, listenersSinkRegistry={} ", name, dataId, group, md5,
                         listener);
                 } catch (NacosException de) {
-                    LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listener={} errCode={} errMsg={}", name,
+                    LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listenersSinkRegistry={} errCode={} errMsg={}", name,
                         dataId, group, md5, listener, de.getErrCode(), de.getErrMsg());
                 } catch (Throwable t) {
-                    LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listener={} tx={}", name, dataId, group,
+                    LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listenersSinkRegistry={} tx={}", name, dataId, group,
                         md5, listener, t.getCause());
                 } finally {
                     Thread.currentThread().setContextClassLoader(myClassLoader);
@@ -211,11 +211,11 @@ public class CacheData {
                 job.run();
             }
         } catch (Throwable t) {
-            LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listener={} throwable={}", name, dataId, group,
+            LOGGER.error("[{}] [notify-error] dataId={}, group={}, md5={}, listenersSinkRegistry={} throwable={}", name, dataId, group,
                 md5, listener, t.getCause());
         }
         final long finishNotify = System.currentTimeMillis();
-        LOGGER.info("[{}] [notify-listener] time cost={}ms in ClientWorker, dataId={}, group={}, md5={}, listener={} ",
+        LOGGER.info("[{}] [notify-listenersSinkRegistry] time cost={}ms in ClientWorker, dataId={}, group={}, md5={}, listenersSinkRegistry={} ",
             name, (finishNotify - startNotify), dataId, group, md5, listener);
     }
 

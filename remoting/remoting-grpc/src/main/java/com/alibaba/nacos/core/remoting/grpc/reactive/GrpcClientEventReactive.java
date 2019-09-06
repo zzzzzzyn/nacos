@@ -16,7 +16,7 @@
 package com.alibaba.nacos.core.remoting.grpc.reactive;
 
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.reactive.AsyncEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.AsyncEventReactive;
 import io.netty.util.concurrent.EventExecutor;
 
 import java.util.HashMap;
@@ -30,9 +30,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author pbting
  * @date 2019-08-23 12:08 AM
  */
-public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
+public class GrpcClientEventReactive extends AsyncEventReactive {
 
-    private HashMap<Class<? extends Event>, EventExecutor> eventExecutorMapping = new HashMap<>();
+    private HashMap<String, EventExecutor> eventExecutorMapping = new HashMap<>();
 
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
 
@@ -43,7 +43,7 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
 
         readLock.lock();
         try {
-            eventExecutor = eventExecutorMapping.get(event.getEventType());
+            eventExecutor = eventExecutorMapping.get(event.getSink());
         } finally {
             readLock.unlock();
         }
@@ -56,10 +56,10 @@ public class GrpcClientEventReactive extends AsyncEventPipelineReactive {
         Lock writeLock = readWriteLock.writeLock();
         try {
             writeLock.lock();
-            eventExecutor = eventExecutorMapping.get(event.getEventType());
+            eventExecutor = eventExecutorMapping.get(event.getSink());
             if (eventExecutor == null) {
                 eventExecutor = eventExecutorGroup.next();
-                eventExecutorMapping.put(event.getEventType(), eventExecutor);
+                eventExecutorMapping.put(event.getSink(), eventExecutor);
             }
         } finally {
             writeLock.unlock();

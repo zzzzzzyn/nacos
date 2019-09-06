@@ -61,7 +61,7 @@ public class GrpcRemotingChannel extends AbstractRemotingChannelModel {
 
     @Override
     public boolean isNetUnavailable(Exception e) {
-        return GrpcNetExceptionUtils.isNetUnavailable(e);
+        return GrpcNetExceptionUtils.isNetUnavailable(e, this.managedChannel);
     }
 
     @Override

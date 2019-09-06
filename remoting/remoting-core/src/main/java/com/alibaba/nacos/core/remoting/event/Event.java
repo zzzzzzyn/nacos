@@ -27,6 +27,7 @@ import java.util.HashMap;
 public class Event extends EventObject implements IEventContext {
 
     public static final Object EMPTY_VALUE = new Object();
+    public static final String EMPTY_SINK = "";
 
     protected HashMap<String, Object> eventContext = null;
 
@@ -34,30 +35,36 @@ public class Event extends EventObject implements IEventContext {
 
     private String alias;
     private Object value;
-    private Class<? extends Event> eventType;
-
+    /**
+     * the sink of event from remoting request
+     */
+    private String sink;
     private EventExecutor eventExecutor;
 
-    public Event(Object source, Object value) {
-        this(source, value, null);
-    }
-
-    public Event(Object source, Object value, Class<? extends Event> eventType) {
+    public Event(Object source, Object value, String sink) {
         super(source);
         this.value = value;
-        this.eventType = eventType;
+        this.sink = sink;
     }
 
-    public Event(Object source, Class<? extends Event> eventType) {
-        this(source, EMPTY_VALUE, eventType);
+    public Event(Object source, Object value) {
+        this(source, value, EMPTY_SINK);
     }
 
-    public Class<? extends Event> getEventType() {
-        return eventType == null ? this.getClass() : eventType;
+    public Event(Object source) {
+        this(source, EMPTY_VALUE, EMPTY_SINK);
     }
 
     public <T> T getValue() {
         return (T) value;
+    }
+
+    public void setSink(String sink) {
+        this.sink = sink;
+    }
+
+    public String getSink() {
+        return sink;
     }
 
     @Override
@@ -74,8 +81,8 @@ public class Event extends EventObject implements IEventContext {
     }
 
     @Override
-    public void setInterrupt(boolean isBroken) {
-        this.isInterrupt = isBroken;
+    public void setInterrupt(boolean isInterrupt) {
+        this.isInterrupt = isInterrupt;
     }
 
     @Override

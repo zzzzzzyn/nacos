@@ -17,13 +17,14 @@ package com.alibaba.nacos.naming.push.udp;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.naming.push.AckEntry;
-import com.alibaba.nacos.api.naming.push.AckPacket;
+import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.push.AbstractEmitter;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
+import com.alibaba.nacos.naming.push.IPushClientFactory;
 import com.alibaba.nacos.naming.push.PushService;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,8 +53,8 @@ public class UdpEmitterService extends AbstractEmitter {
         return t;
     });
 
-    public UdpEmitterService(ApplicationContext applicationContext) {
-        super(applicationContext);
+    public UdpEmitterService(ApplicationContext applicationContext, PushService pushService) {
+        super(applicationContext, pushService);
     }
 
     @Override
@@ -84,6 +85,11 @@ public class UdpEmitterService extends AbstractEmitter {
     }
 
     @Override
+    public IPushClientFactory getPushClientFactory() {
+        return new UdpPushClientFactory(udpSocket);
+    }
+
+    @Override
     public void emitter(Service service) {
         final String serviceName = service.getName();
         final String namespaceId = service.getNamespaceId();
@@ -93,7 +99,6 @@ public class UdpEmitterService extends AbstractEmitter {
             return;
         }
 
-        final PushService pushService = applicationContext.getBean(PushService.class);
         final SwitchDomain switchDomain = applicationContext.getBean(SwitchDomain.class);
         final Map<String, AbstractPushClient> clients = pushService.getPushClients(emitterKey);
         if (MapUtils.isEmpty(clients)) {
@@ -107,21 +112,21 @@ public class UdpEmitterService extends AbstractEmitter {
         putFutureMap(emitterKey, future);
     }
 
-    public String getACKKey(String host, int port, long lastRefTime) {
+    public String getACKKey(String host, long port, long lastRefTime) {
         return StringUtils.strip(host) + "," + port + "," + lastRefTime;
     }
 
-    public AckEntry prepareAckEntry(AbstractPushClient client, AckPacket data, long lastRefTime) {
-        if (data == null) {
+    public AckEntry prepareAckEntry(AbstractPushClient client, PushPacket pushPacket, long lastRefTime) {
+        if (pushPacket == null) {
             Loggers.PUSH.error("[NACOS-PUSH] pushing empty data for client is not allowed: {}", client);
             return null;
         }
 
-        data.setLastRefTime(lastRefTime);
+        pushPacket.setLastRefTime(lastRefTime);
         // we apply lastRefTime as sequence num for further ack
         String key = getACKKey(client.getIp(), client.getPort(), lastRefTime);
 
-        String dataStr = JSON.toJSONString(data);
+        String dataStr = JSON.toJSONString(pushPacket);
         UdpPushClient udpPushClient = (UdpPushClient) client;
         byte[] dataBytes = dataStr.getBytes(StandardCharsets.UTF_8);
         try {
@@ -130,17 +135,16 @@ public class UdpEmitterService extends AbstractEmitter {
             // we must store the key be fore send, otherwise there will be a chance the
             // ack returns before we put in
             AckEntry ackEntry = new AckEntry(key, packet);
-            ackEntry.setData(data);
+            ackEntry.setData(pushPacket);
             return ackEntry;
         } catch (Exception e) {
             Loggers.PUSH.error("[NACOS-PUSH] failed to prepare data: {} to client: {}, error: {}",
-                data, udpPushClient.getSocketAddr(), e);
+                pushPacket, udpPushClient.getSocketAddr(), e);
             return null;
         }
     }
 
     public AckEntry udpPush(AckEntry ackEntry) {
-        PushService pushService = applicationContext.getBean(PushService.class);
         // 1. check conditions for udp send
         {
             if (checkSendConditions(ackEntry, pushService)) {
@@ -190,7 +194,7 @@ public class UdpEmitterService extends AbstractEmitter {
     }
 
     public AckEntry prepareAckEntry(AbstractPushClient client, byte[] dataBytes,
-                                    AckPacket data, long lastRefTime) {
+                                    PushPacket data, long lastRefTime) {
         UdpPushClient udpPushClient = (UdpPushClient) client;
         String key = getACKKey(udpPushClient.getSocketAddr().getAddress().getHostAddress(),
             udpPushClient.getSocketAddr().getPort(), lastRefTime);

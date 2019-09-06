@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push.events;
 
+import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.RecyclableEvent;
 
 /**
@@ -29,16 +30,16 @@ public final class LocalizationEvents {
     public static class ZombiePushClientCheckEvent extends RecyclableEvent {
 
         public ZombiePushClientCheckEvent(Object source, int recycleInterval) {
-            super(source, recycleInterval);
+            super(source, recycleInterval, ZombiePushClientCheckEvent.class.getName());
         }
     }
 
     /**
      * the re-transmitter event
      */
-    public static class ReTransmitterEvent extends RecyclableEvent {
+    public static class ReTransmitterEvent extends Event {
         public ReTransmitterEvent(Object source, Object value) {
-            super(source, value);
+            super(source, value, ReTransmitterEvent.class.getName());
         }
     }
 }

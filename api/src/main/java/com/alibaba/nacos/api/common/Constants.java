@@ -162,4 +162,22 @@ public class Constants {
     public static final String NULL_STRING = "null";
 
     public static final String NUMBER_PATTERN = "^\\d+$";
+
+    /**
+     * use the udp port to tell server is subscribe or not.
+     * <p>
+     * if client startup a udp server ,will use a port bigger than zero
+     */
+
+    /**
+     * <p>
+     * zero means no need to subscribe（nnts）
+     */
+    public static final int PORT_IDENTIFY_NNTS = 0;
+
+    /**
+     * means use gRPC to subscribe .
+     */
+    public static final int PORT_IDENTIFY_GRPC_BIGGER = Integer.MAX_VALUE;
+
 }

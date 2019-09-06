@@ -28,7 +28,7 @@ public class AckEntry implements Serializable {
     private String key;
     private DatagramPacket origin;
     private AtomicInteger retryTimes = new AtomicInteger(0);
-    private AckPacket data;
+    private PushPacket data;
 
     public AckEntry(String key, DatagramPacket packet) {
         this.key = key;
@@ -63,11 +63,11 @@ public class AckEntry implements Serializable {
         this.retryTimes = retryTimes;
     }
 
-    public AckPacket getData() {
+    public PushPacket getData() {
         return data;
     }
 
-    public void setData(AckPacket data) {
+    public void setData(PushPacket data) {
         this.data = data;
     }
 }

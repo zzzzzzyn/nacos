@@ -15,13 +15,13 @@
  */
 package com.alibaba.nacos.core.remoting.event;
 
-import com.alibaba.nacos.core.remoting.event.reactive.SimpleEventPipelineReactive;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventPipelineReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.DefaultEventReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 
 import java.util.EventListener;
 
 /**
- * A listener with event pipeline features.
+ * A listenersSinkRegistry with event pipeline features.
  * <p>
  * Multiple event listeners can be in the form of a pipeline to respond to an event.
  * An event can interrupt the response in one of the listeners in the middle if onEvent returns false
@@ -39,24 +39,24 @@ public interface IPipelineEventListener<T extends Event> extends EventListener {
     boolean onEvent(T event, int listenerIndex);
 
     /**
-     * The type of event currently interested in this event listener.
+     * The type of event currently interested in this event listenersSinkRegistry.
      * <p>
      * Can have multiple
      *
      * @return
      */
-    Class<? extends Event>[] interestEventTypes();
+    String[] interestSinks();
 
     /**
      * event pipeline reactive partition.
      * Multiple eventListeners can be merged into the specified partition according to their respective characteristics
-     * By default, all of the event listeners are under the SimpleEventPipelineReactive partition.
+     * By default, all of the event listeners are under the DefaultEventReactive partition.
      *
-     * @return the default event listener partition。
+     * @return the default event listenersSinkRegistry partition。
      */
-    default Class<? extends IEventPipelineReactive> pipelineReactivePartition() {
+    default Class<? extends IEventReactive> pipelineReactivePartition() {
 
-        return SimpleEventPipelineReactive.class;
+        return DefaultEventReactive.class;
     }
 
 }
