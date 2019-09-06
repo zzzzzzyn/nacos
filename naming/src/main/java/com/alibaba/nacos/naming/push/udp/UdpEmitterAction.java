@@ -52,7 +52,7 @@ public class UdpEmitterAction implements Runnable {
         final String namespaceId = service.getNamespaceId();
         final long lastRefTime = System.nanoTime();
         final Map<String, Pair> cache = new HashMap<>(16);
-        final long pushThreshodCacheMillis = 20000;
+        final long pushThresholdCacheMillis = 20000;
         try {
             pushClients.forEach(client -> {
                 // 2. start to push
@@ -61,7 +61,7 @@ public class UdpEmitterAction implements Runnable {
                 AckEntry ackEntry = null;
                 {
                     // 2.1. get from cache
-                    if (pushCacheMillis >= pushThreshodCacheMillis && cache.containsKey(key)) {
+                    if (pushCacheMillis >= pushThresholdCacheMillis && cache.containsKey(key)) {
                         Pair pair = cache.get(key);
                         byte[] cacheRawDatum = (byte[]) pair.getValue0();
                         PushPacket ackPacket = (PushPacket) pair.getValue1();

@@ -53,8 +53,8 @@ public class UdpEmitterService extends AbstractEmitter {
         return t;
     });
 
-    public UdpEmitterService(ApplicationContext applicationContext, PushService pushService) {
-        super(applicationContext, pushService);
+    public UdpEmitterService(ApplicationContext applicationContext) {
+        super(applicationContext);
     }
 
     @Override

@@ -61,7 +61,7 @@ public class GrpcStartupServerEventListener extends StartupServerEventListener {
     }
 
     @Override
-    public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
+    public Class<? extends IEventReactiveHelm> listenerReactivePartition() {
         return GrpcServerEventReactive.class;
     }
 }

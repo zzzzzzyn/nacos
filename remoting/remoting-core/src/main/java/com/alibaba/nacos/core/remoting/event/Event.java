@@ -59,6 +59,10 @@ public class Event extends EventObject implements IEventContext {
         return (T) value;
     }
 
+    public <T> void setValue(T value) {
+        this.value = value;
+    }
+
     public void setSink(String sink) {
         this.sink = sink;
     }

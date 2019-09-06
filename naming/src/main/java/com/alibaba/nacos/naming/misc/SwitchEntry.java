@@ -31,6 +31,7 @@ public class SwitchEntry {
     public static final String CLIENT_GO = "go";
     public static final String CLIENT_PYTHON = "python";
     public static final String PUSH_CACHE_MILLIS = "pushCacheMillis";
+    public static final String MAX_PUSH_RETRY_TIMES = "maxPushRetryTimes";
     public static final String DEFAULT_CACHE_MILLIS = "defaultCacheMillis";
     public static final String MASTERS = "masters";
     public static final String DISTRO = "distro";

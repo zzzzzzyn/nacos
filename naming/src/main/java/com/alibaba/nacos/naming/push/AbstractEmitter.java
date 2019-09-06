@@ -17,6 +17,7 @@ package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.naming.core.Service;
+import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
@@ -41,15 +42,25 @@ public abstract class AbstractEmitter implements IEmitter,
 
     protected ApplicationContext applicationContext;
     protected PushService pushService;
+    protected SwitchDomain switchDomain;
 
-    public AbstractEmitter(ApplicationContext applicationContext, PushService pushService) {
+    public AbstractEmitter(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.pushService = pushService;
     }
 
     @Override
     public void afterSingletonsInstantiated() {
+        initSpringBean();
         initEmitter();
+    }
+
+    private void initSpringBean() {
+        this.pushService = this.applicationContext.getBean(PushService.class);
+        this.switchDomain = this.applicationContext.getBean(SwitchDomain.class);
+    }
+
+    public SwitchDomain getSwitchDomain() {
+        return switchDomain;
     }
 
     @Override

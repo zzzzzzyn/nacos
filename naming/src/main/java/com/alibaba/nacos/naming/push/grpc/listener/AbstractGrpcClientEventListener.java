@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.listener;
 
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 import com.alibaba.nacos.naming.push.PushService;
+import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
+import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcClientEventReactive;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
@@ -48,7 +50,7 @@ public abstract class AbstractGrpcClientEventListener implements IPipelineEventL
         this.applicationContext = applicationContext;
     }
 
-    public Class<? extends IEventReactive> pipelineReactivePartition() {
+    public Class<? extends IEventReactive> listenerReactivePartition() {
         return NamingGrpcClientEventReactive.class;
     }
 }

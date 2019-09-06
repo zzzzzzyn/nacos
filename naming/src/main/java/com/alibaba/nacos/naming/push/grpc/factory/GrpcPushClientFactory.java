@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.factory;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
@@ -21,6 +21,7 @@ import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInterac
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
 import com.alibaba.nacos.naming.push.IPushClientFactory;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushClient;
 
 /**
  * @author pbting

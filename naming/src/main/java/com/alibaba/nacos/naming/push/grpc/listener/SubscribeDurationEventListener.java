@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.listener;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.NamingCommonEventSinks;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
@@ -60,8 +61,9 @@ public class SubscribeDurationEventListener extends AbstractGrpcClientEventListe
         } else {
             abstractPushClient.refresh();
             Service service = serviceManager.getService(subscribeMetadata.getNamespaceId(), subscribeMetadata.getServiceName());
+            String checkSum = service == null ? Constants.NULL_STRING : service.getChecksum();
             interactive.sendResponsePayload(InteractivePayload.newBuilder()
-                .setPayload(ByteString.copyFrom(service.getChecksum().getBytes(Charset.forName("utf-8")))).build());
+                .setPayload(ByteString.copyFrom(checkSum.getBytes(Charset.forName("utf-8")))).build());
         }
         return true;
     }

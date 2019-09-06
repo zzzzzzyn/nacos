@@ -70,6 +70,10 @@ public class Constants {
 
     public static final String CONFIG_CONTROLLER_PATH = BASE_PATH + "/configs";
 
+    public static final String API_VERSION_V1 = "v1";
+
+    public static final String API_VERSION_V2 = "v2";
+
     /**
      * second
      */

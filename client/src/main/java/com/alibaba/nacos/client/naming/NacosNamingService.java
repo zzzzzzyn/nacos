@@ -32,6 +32,7 @@ import com.alibaba.nacos.client.naming.core.EventDispatcher;
 import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
 import com.alibaba.nacos.client.naming.core.grpc.GrpcServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.udp.UdpServiceChangedAwareStrategy;
 import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import com.alibaba.nacos.client.naming.utils.InitUtils;
@@ -78,7 +79,6 @@ public class NacosNamingService implements NamingService {
     public NacosNamingService(String serverList) {
         Properties properties = new Properties();
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverList);
-
         init(properties);
     }
 
@@ -97,15 +97,29 @@ public class NacosNamingService implements NamingService {
         serverProxy = new NamingProxy(namespace, endpoint, serverList);
         serverProxy.setProperties(properties);
         beatReactor = new BeatReactor(serverProxy, initClientBeatThreadCount(properties));
+        initServiceChangedAwareStrategy(properties);
+    }
 
-        serviceChangedAwareStrategy =
-            ServiceChangedAwareStrategyBuilder.builder()
-                .setEventDispatcher(eventDispatcher)
-                .setNamingProxy(serverProxy)
-                .setCacheDir(cacheDir)
-                .isLoadCacheAtStart(isLoadCacheAtStart(properties))
-                .setPollingThreadCount(initPollingThreadCount(properties))
-                .build(GrpcServiceChangedAwareStrategy.class);
+    private void initServiceChangedAwareStrategy(Properties properties) {
+        String apiVersion = properties.getProperty(PropertyKeyConst.API_VERSION, Constants.API_VERSION_V1);
+        ServiceChangedAwareStrategyBuilder builder = ServiceChangedAwareStrategyBuilder.builder()
+            .setEventDispatcher(eventDispatcher)
+            .setNamingProxy(serverProxy)
+            .setCacheDir(cacheDir)
+            .isLoadCacheAtStart(isLoadCacheAtStart(properties))
+            .setPollingThreadCount(initPollingThreadCount(properties));
+
+        if (Constants.API_VERSION_V1.equals(apiVersion)) {
+            serviceChangedAwareStrategy =
+                builder.build(UdpServiceChangedAwareStrategy.class);
+            return;
+        }
+
+        if (Constants.API_VERSION_V2.equals(apiVersion)) {
+            serviceChangedAwareStrategy =
+                builder.build(GrpcServiceChangedAwareStrategy.class);
+            return;
+        }
     }
 
     private int initClientBeatThreadCount(Properties properties) {

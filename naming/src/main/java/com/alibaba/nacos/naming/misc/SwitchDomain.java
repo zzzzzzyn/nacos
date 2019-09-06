@@ -32,6 +32,8 @@ public class SwitchDomain implements Record, Cloneable {
 
     private Map<String, Integer> adWeightMap = new HashMap<>();
 
+    private int maxPushRetryTimes = 1;
+
     private long defaultPushCacheMillis = TimeUnit.SECONDS.toMillis(10);
 
     private long clientBeatInterval = TimeUnit.SECONDS.toMillis(5);
@@ -172,6 +174,14 @@ public class SwitchDomain implements Record, Cloneable {
 
     public long getDefaultPushCacheMillis() {
         return defaultPushCacheMillis;
+    }
+
+    public int getMaxPushRetryTimes() {
+        return maxPushRetryTimes;
+    }
+
+    public void setMaxPushRetryTimes(int maxPushRetryTimes) {
+        this.maxPushRetryTimes = maxPushRetryTimes;
     }
 
     public void setDefaultPushCacheMillis(long defaultPushCacheMillis) {

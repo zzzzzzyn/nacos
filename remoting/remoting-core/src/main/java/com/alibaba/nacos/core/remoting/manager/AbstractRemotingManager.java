@@ -61,7 +61,7 @@ public abstract class AbstractRemotingManager implements IRemotingManager {
                 continue;
             }
 
-            Class<? extends IEventReactive> eventPipelineReactive = iPipelineEventListener.pipelineReactivePartition();
+            Class<? extends IEventReactive> eventPipelineReactive = iPipelineEventListener.listenerReactivePartition();
             IEventReactive eventReactive = getAbstractEventReactive(eventPipelineReactive);
             if (eventReactive == null) {
                 try {

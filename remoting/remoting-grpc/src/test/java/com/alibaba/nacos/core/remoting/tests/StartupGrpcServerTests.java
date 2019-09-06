@@ -88,7 +88,7 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends IEventReactive> pipelineReactivePartition() {
+            public Class<? extends IEventReactive> listenerReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });
@@ -117,7 +117,7 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
+            public Class<? extends IEventReactiveHelm> listenerReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });
@@ -144,7 +144,7 @@ public class StartupGrpcServerTests {
             }
 
             @Override
-            public Class<? extends IEventReactiveHelm> pipelineReactivePartition() {
+            public Class<? extends IEventReactiveHelm> listenerReactivePartition() {
                 return GrpcClientEventReactive.class;
             }
         });

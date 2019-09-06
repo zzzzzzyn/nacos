@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.listener;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.naming.NamingCommonEventSinks;
@@ -22,6 +22,7 @@ import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInteractive;
 import com.alibaba.nacos.naming.controllers.InstanceController;
 import com.alibaba.nacos.naming.push.DataSource;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushClient;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;

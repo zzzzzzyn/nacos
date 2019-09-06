@@ -65,7 +65,6 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
 
         try {
             lock.lock();
-
             Datum datum = consistencyService.get(UtilsAndCommons.getSwitchDomainKey());
             SwitchDomain switchDomain;
 
@@ -143,8 +142,18 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
                 if (cacheMillis < SwitchEntry.MIN_PUSH_CACHE_TIME_MIILIS) {
                     throw new IllegalArgumentException("min cache time for http or tcp is too small(<10000)");
                 }
-
                 switchDomain.setDefaultPushCacheMillis(cacheMillis);
+            }
+
+            if (entry.equals(SwitchEntry.MAX_PUSH_RETRY_TIMES)) {
+
+                try {
+                    int maxPushRetryTimes = Integer.parseInt(value.trim());
+                    if (maxPushRetryTimes > 0) {
+                        switchDomain.setMaxPushRetryTimes(maxPushRetryTimes);
+                    }
+                } catch (NumberFormatException e) {
+                }
             }
 
             // extremely careful while modifying this, cause it will affect all clients without pushing enabled
@@ -283,6 +292,7 @@ public class SwitchManager implements RecordListener<SwitchDomain> {
         switchDomain.setMasters(newSwitchDomain.getMasters());
         switchDomain.setAdWeightMap(newSwitchDomain.getAdWeightMap());
         switchDomain.setDefaultPushCacheMillis(newSwitchDomain.getDefaultPushCacheMillis());
+        switchDomain.setMaxPushRetryTimes(newSwitchDomain.getMaxPushRetryTimes());
         switchDomain.setClientBeatInterval(newSwitchDomain.getClientBeatInterval());
         switchDomain.setDefaultCacheMillis(newSwitchDomain.getDefaultCacheMillis());
         switchDomain.setDistroThreshold(newSwitchDomain.getDistroThreshold());

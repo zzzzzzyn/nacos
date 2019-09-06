@@ -123,4 +123,19 @@ public class SubscribeMetadata implements Serializable {
 
         return this.clientIp + ":" + this.port;
     }
+
+    @Override
+    public String toString() {
+        return "SubscribeMetadata{" +
+            "namespaceId='" + namespaceId + '\'' +
+            ", serviceName='" + serviceName + '\'' +
+            ", clusters='" + clusters + '\'' +
+            ", agent='" + agent + '\'' +
+            ", clientIp='" + clientIp + '\'' +
+            ", port=" + port +
+            ", tid='" + tid + '\'' +
+            ", app='" + app + '\'' +
+            ", success=" + success +
+            '}';
+    }
 }

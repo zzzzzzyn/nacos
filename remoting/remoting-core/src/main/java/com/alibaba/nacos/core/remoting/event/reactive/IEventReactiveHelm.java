@@ -36,7 +36,7 @@ public interface IEventReactiveHelm {
      *
      * @param reactiveFilters
      */
-    void registerEventReactiveFilter(Collection<IEventReactiveFilter> reactiveFilters);
+    void registerEventReactiveFilter(Collection<? extends IEventReactiveFilter> reactiveFilters);
 
     /**
      * Whether to include a practice type

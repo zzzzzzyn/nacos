@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.reactive;
 
-import com.alibaba.nacos.core.remoting.event.filter.IEventReactiveFilter;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
-import com.alibaba.nacos.core.remoting.grpc.reactive.GrpcClientEventReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.EventLoopReactive;
+import com.alibaba.nacos.naming.push.grpc.filter.IClientPushFilter;
+import io.netty.util.concurrent.MultithreadEventExecutorGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
@@ -28,25 +30,32 @@ import java.util.Collection;
 
 /**
  * @author pbting
- * @date 2019-09-05 11:19 AM
+ * @date 2019-09-06 2:12 PM
  */
 @Component
-public class NamingGrpcClientEventReactive extends GrpcClientEventReactive
+public class NamingGrpcPushEventReactive extends EventLoopReactive
     implements SmartInitializingSingleton, ApplicationContextAware {
 
+    private static final Logger logger = LoggerFactory.getLogger(NamingGrpcPushEventReactive.class);
+
     private ApplicationContext applicationContext;
+
+    public NamingGrpcPushEventReactive() {
+    }
+
+    public NamingGrpcPushEventReactive(MultithreadEventExecutorGroup multithreadEventExecutorGroup) {
+        super(multithreadEventExecutorGroup);
+    }
 
     @Override
     public void afterSingletonsInstantiated() {
 
-        // Assembly event response filter
         try {
-            Collection<IEventReactiveFilter> filters =
-                this.applicationContext.getBeansOfType(IEventReactiveFilter.class).values();
-            filters.removeIf(filter -> filter instanceof IEventReactive);
-            this.registerEventReactiveFilter(filters);
+            Collection<IClientPushFilter> clientPushFilters =
+                this.applicationContext.getBeansOfType(IClientPushFilter.class).values();
+            this.registerEventReactiveFilter(clientPushFilters);
         } catch (BeansException e) {
-            e.printStackTrace();
+            logger.error("get client push filter cause an exception.", e);
         }
     }
 

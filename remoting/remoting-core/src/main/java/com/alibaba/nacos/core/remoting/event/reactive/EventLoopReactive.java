@@ -22,7 +22,7 @@ import io.netty.util.concurrent.MultithreadEventExecutorGroup;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,18 +52,18 @@ public class EventLoopReactive extends AsyncEventReactive {
     }
 
     @Override
-    protected <T extends Event> void listenerPerform(final Deque<IPipelineEventListener> objectListeners, final T event) {
+    protected <T extends Event> void listenerPerform(final List<IPipelineEventListener> objectListeners, final T event) {
 
         this.listenerPerform0(objectListeners, event);
     }
 
     @Override
-    protected <T extends Event> void listenerPerform0(Deque<IPipelineEventListener> objectListeners, T event) {
+    protected <T extends Event> void listenerPerform0(List<IPipelineEventListener> objectListeners, T event) {
 
         super.listenerPerform0(objectListeners, event);
 
         RecyclableEvent recyclableEvent = (RecyclableEvent) event;
-        if (recyclableEvent.isInterrupt()) {
+        if (recyclableEvent.isCancel()) {
             // exit event loop
             return;
         }

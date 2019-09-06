@@ -24,7 +24,8 @@ import io.grpc.ManagedChannel;
 public class GrpcNetExceptionUtils {
 
     public static boolean isNetUnavailable(Exception e, ManagedChannel managedChannel) {
-        if (managedChannel.getState(true) == ConnectivityState.TRANSIENT_FAILURE) {
+        if (managedChannel != null &&
+            managedChannel.getState(true) == ConnectivityState.TRANSIENT_FAILURE) {
             return true;
         }
 

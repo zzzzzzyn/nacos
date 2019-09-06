@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.push.grpc;
+package com.alibaba.nacos.naming.push.grpc.filter.impl;
 
 import com.alibaba.nacos.core.remoting.event.Event;
-import com.alibaba.nacos.core.remoting.event.filter.IEventReactiveFilter;
+import com.alibaba.nacos.naming.push.grpc.filter.IClientProcessFilter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * @date 2019-09-05 11:43 AM
  */
 @Component
-public class PushProcessRtFilter implements IEventReactiveFilter {
+public class ClientProcessRtFilter implements IClientProcessFilter {
 
     private static final String START_PROCESS_TIME = "start.process.time";
 

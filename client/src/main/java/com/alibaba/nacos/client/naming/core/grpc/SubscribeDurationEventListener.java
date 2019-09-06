@@ -16,6 +16,7 @@
 package com.alibaba.nacos.client.naming.core.grpc;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.NamingCommonEventSinks;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
@@ -57,7 +58,8 @@ public class SubscribeDurationEventListener implements IPipelineEventListener<Re
             grpcServiceChangedAwareStrategy.requestSubscribeStream(subscribeMetadata, true);
             grpcServiceChangedAwareStrategy.updateSubscribeDuration(subscribeMetadata, serviceInfo);
             event.setCancel(true);
-        } else if (!serviceInfo.getChecksum().equals(responsePayload)) {
+        } else if (!Constants.NULL_STRING.equals(responsePayload)
+            && !serviceInfo.getChecksum().equals(responsePayload)) {
             serviceInfo = grpcServiceChangedAwareStrategy.getServiceInfo(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters());
             // use the newest to override
             event.setParameter(GrpcServiceChangedAwareStrategy.PUSH_PACKET_DOM_SERVICE, serviceInfo);

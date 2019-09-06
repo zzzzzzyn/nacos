@@ -54,9 +54,16 @@ public interface IPipelineEventListener<T extends Event> extends EventListener {
      *
      * @return the default event listenersSinkRegistry partition。
      */
-    default Class<? extends IEventReactive> pipelineReactivePartition() {
+    default Class<? extends IEventReactive> listenerReactivePartition() {
 
         return DefaultEventReactive.class;
     }
 
+    /**
+     * @return
+     */
+    default int pipelineOrder() {
+
+        return 0;
+    }
 }
