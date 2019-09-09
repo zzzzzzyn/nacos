@@ -17,7 +17,7 @@ package com.alibaba.nacos.client.naming.core;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
+import com.alibaba.nacos.client.naming.core.builder.ServiceAwareStrategyBuilder;
 
 import java.util.Map;
 
@@ -27,14 +27,14 @@ import java.util.Map;
  * @author pbting
  * @date 2019-08-30 11:30 AM
  */
-public interface IServiceChangedAwareStrategy {
+public interface IServiceAwareStrategy {
 
     /**
      * initializer a strategy which is for aware changed service.
      *
      * @param serviceChangedStrategyConfig some configuration for init service changed aware strategy
      */
-    void initServiceChangedAwareStrategy(ServiceChangedAwareStrategyBuilder.ServiceChangedStrategyConfig serviceChangedStrategyConfig);
+    void initServiceAwareStrategy(ServiceAwareStrategyBuilder.ServiceAwareStrategyConfig serviceChangedStrategyConfig);
 
     /**
      * can get service info use this method.

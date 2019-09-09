@@ -16,73 +16,73 @@
 package com.alibaba.nacos.client.naming.core.builder;
 
 import com.alibaba.nacos.client.naming.core.EventDispatcher;
-import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
-import com.alibaba.nacos.client.naming.core.udp.UdpServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.IServiceAwareStrategy;
+import com.alibaba.nacos.client.naming.core.udp.UdpServiceAwareStrategy;
 import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
+
+import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
 /**
  * @author pbting
  * @date 2019-08-30 11:41 AM
  */
-public final class ServiceChangedAwareStrategyBuilder {
+public final class ServiceAwareStrategyBuilder {
 
     /**
      * give an default service changed aware strategy when initialize cause an exception
      */
-    private static final IServiceChangedAwareStrategy UDP_SERVICE_CHANGED_AWARE_STRATEGY = new UdpServiceChangedAwareStrategy();
+    private static final IServiceAwareStrategy UDP_SERVICE_CHANGED_AWARE_STRATEGY = new UdpServiceAwareStrategy();
 
-    private ServiceChangedStrategyConfig serviceChangedStrategyConfig;
+    private ServiceAwareStrategyConfig serviceChangedStrategyConfig;
 
-    private ServiceChangedAwareStrategyBuilder(ServiceChangedStrategyConfig serviceChangedStrategyConfig) {
+    private ServiceAwareStrategyBuilder(ServiceAwareStrategyConfig serviceChangedStrategyConfig) {
         this.serviceChangedStrategyConfig = serviceChangedStrategyConfig;
     }
 
-    public static ServiceChangedAwareStrategyBuilder builder() {
+    public static ServiceAwareStrategyBuilder builder() {
 
-        return new ServiceChangedAwareStrategyBuilder(new ServiceChangedStrategyConfig());
+        return new ServiceAwareStrategyBuilder(new ServiceAwareStrategyConfig());
     }
 
-    public static ServiceChangedAwareStrategyBuilder builder(ServiceChangedStrategyConfig serviceChangedStrategyConfig) {
+    public static ServiceAwareStrategyBuilder builder(ServiceAwareStrategyConfig serviceChangedStrategyConfig) {
 
-        return new ServiceChangedAwareStrategyBuilder(serviceChangedStrategyConfig);
+        return new ServiceAwareStrategyBuilder(serviceChangedStrategyConfig);
     }
 
-    public ServiceChangedAwareStrategyBuilder setEventDispatcher(EventDispatcher eventDispatcher) {
+    public ServiceAwareStrategyBuilder setEventDispatcher(EventDispatcher eventDispatcher) {
         this.serviceChangedStrategyConfig.setEventDispatcher(eventDispatcher);
         return this;
     }
 
-    public ServiceChangedAwareStrategyBuilder setNamingProxy(NamingProxy namingProxy) {
+    public ServiceAwareStrategyBuilder setNamingProxy(NamingProxy namingProxy) {
         this.serviceChangedStrategyConfig.setServerProxy(namingProxy);
         return this;
     }
 
-    public ServiceChangedAwareStrategyBuilder setCacheDir(String cacheDir) {
+    public ServiceAwareStrategyBuilder setCacheDir(String cacheDir) {
         this.serviceChangedStrategyConfig.setCacheDir(cacheDir);
         return this;
     }
 
-    public ServiceChangedAwareStrategyBuilder isLoadCacheAtStart(boolean loadCacheAtStart) {
+    public ServiceAwareStrategyBuilder isLoadCacheAtStart(boolean loadCacheAtStart) {
         this.serviceChangedStrategyConfig.setLoadCacheAtStart(loadCacheAtStart);
         return this;
     }
 
-    public ServiceChangedAwareStrategyBuilder setPollingThreadCount(int pollingThreadCount) {
+    public ServiceAwareStrategyBuilder setPollingThreadCount(int pollingThreadCount) {
         this.serviceChangedStrategyConfig.setPollingThreadCount(pollingThreadCount);
         return this;
     }
 
-    public IServiceChangedAwareStrategy build(Class<? extends IServiceChangedAwareStrategy> clazz) {
-
+    public IServiceAwareStrategy build(Class<? extends IServiceAwareStrategy> clazz) {
+        NAMING_LOGGER.info("build service aware strategy with " + clazz);
         try {
-            IServiceChangedAwareStrategy serviceChangedAwareStrategy = clazz.newInstance();
-            serviceChangedAwareStrategy.initServiceChangedAwareStrategy(serviceChangedStrategyConfig);
+            IServiceAwareStrategy serviceChangedAwareStrategy = clazz.newInstance();
+            serviceChangedAwareStrategy.initServiceAwareStrategy(serviceChangedStrategyConfig);
             return serviceChangedAwareStrategy;
         } catch (InstantiationException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
 
         return UDP_SERVICE_CHANGED_AWARE_STRATEGY;
@@ -91,7 +91,7 @@ public final class ServiceChangedAwareStrategyBuilder {
     /**
      * some configuration for construct a {@IServiceChangedAwareStrategy}
      */
-    public static class ServiceChangedStrategyConfig {
+    public static class ServiceAwareStrategyConfig {
         private EventDispatcher eventDispatcher;
         private NamingProxy serverProxy;
         private String cacheDir;

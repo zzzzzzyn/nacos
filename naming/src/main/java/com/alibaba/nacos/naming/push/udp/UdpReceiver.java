@@ -32,17 +32,17 @@ import java.nio.charset.Charset;
  */
 public class UdpReceiver implements Runnable {
 
-    private UdpEmitterService udpEmitter;
+    private UdpPushAdaptor udpEmitter;
     private PushService pushService;
 
-    public UdpReceiver(UdpEmitterService udpEmitter, PushService pushService) {
+    public UdpReceiver(UdpPushAdaptor udpEmitter, PushService pushService) {
         this.udpEmitter = udpEmitter;
         this.pushService = pushService;
     }
 
     @Override
     public void run() {
-        DatagramSocket source = udpEmitter.getEmitSource(StringUtils.EMPTY);
+        DatagramSocket source = udpEmitter.getPushSource(StringUtils.EMPTY);
         while (true) {
             byte[] buffer = new byte[1024 * 64];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

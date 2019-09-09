@@ -31,19 +31,19 @@ import java.util.Map;
  * @author pbting
  * @date 2019-08-28 6:26 PM
  */
-public class UdpEmitterAction implements Runnable {
+public class UdpPushAction implements Runnable {
 
     private Service service;
     private Collection<AbstractPushClient> pushClients;
     private long pushCacheMillis;
-    private UdpEmitterService udpEmitterService;
+    private UdpPushAdaptor udpPushAdaptor;
 
-    public UdpEmitterAction(Service service, Collection<AbstractPushClient> pushClients,
-                            long pushCacheMillis, UdpEmitterService udpEmitterService) {
+    public UdpPushAction(Service service, Collection<AbstractPushClient> pushClients,
+                         long pushCacheMillis, UdpPushAdaptor pushAdaptor) {
         this.service = service;
         this.pushClients = pushClients;
         this.pushCacheMillis = pushCacheMillis;
-        this.udpEmitterService = udpEmitterService;
+        this.udpPushAdaptor = pushAdaptor;
     }
 
     @Override
@@ -55,8 +55,8 @@ public class UdpEmitterAction implements Runnable {
         final long pushThresholdCacheMillis = 20000;
         try {
             pushClients.forEach(client -> {
-                // 2. start to push
-                String key = udpEmitterService.getPushCacheKey(service.getName(), client.getSubscribeMetadata().getAgent());
+                // 1. start to push
+                String key = udpPushAdaptor.getPushCacheKey(service.getName(), client.getSubscribeMetadata().getAgent());
 
                 AckEntry ackEntry = null;
                 {
@@ -65,14 +65,14 @@ public class UdpEmitterAction implements Runnable {
                         Pair pair = cache.get(key);
                         byte[] cacheRawDatum = (byte[]) pair.getValue0();
                         PushPacket ackPacket = (PushPacket) pair.getValue1();
-                        ackEntry = udpEmitterService.prepareAckEntry(client, cacheRawDatum, ackPacket, lastRefTime);
+                        ackEntry = udpPushAdaptor.prepareAckEntry(client, cacheRawDatum, ackPacket, lastRefTime);
                     }
                 }
 
                 {
                     // 2.2. cache is not hit,so will get from data source
                     if (ackEntry == null) {
-                        ackEntry = udpEmitterService.prepareAckEntry(client, udpEmitterService.prepareHostsData(client), lastRefTime);
+                        ackEntry = udpPushAdaptor.prepareAckEntry(client, udpPushAdaptor.prepareHostsData(client), lastRefTime);
                         if (ackEntry != null) {
                             cache.put(key, new org.javatuples.Pair<>(ackEntry.getOrigin().getData(), ackEntry.getData()));
                         }
@@ -80,14 +80,14 @@ public class UdpEmitterAction implements Runnable {
                 }
 
                 // 2.3. push by the ack entry
-                udpEmitterService.udpPush(ackEntry);
+                udpPushAdaptor.udpPush(ackEntry);
                 Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
                     client.getSubscribeMetadata().getServiceName(),
                     client.getAddrStr(),
                     client.getSubscribeMetadata().getAgent(), (ackEntry == null ? null : ackEntry.getKey()));
             });
         } finally {
-            udpEmitterService.removeFutureMap(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
+            udpPushAdaptor.removeFutureMap(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
         }
     }
 }

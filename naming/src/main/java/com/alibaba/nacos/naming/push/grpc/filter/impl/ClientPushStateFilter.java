@@ -18,10 +18,10 @@ package com.alibaba.nacos.naming.push.grpc.filter.impl;
 import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
-import com.alibaba.nacos.naming.push.AbstractEmitter;
+import com.alibaba.nacos.naming.push.AbstractPushAdaptor;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.grpc.filter.IClientPushFilter;
-import com.alibaba.nacos.naming.push.grpc.listener.GrpcEmitterEventListener;
+import com.alibaba.nacos.naming.push.grpc.listener.GrpcPushEventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -35,8 +35,8 @@ public class ClientPushStateFilter implements IClientPushFilter {
 
     @Override
     public boolean aheadFilter(Event event) {
-        AbstractEmitter emitter = (AbstractEmitter) event.getSource();
-        SwitchDomain switchDomain = emitter.getSwitchDomain();
+        AbstractPushAdaptor pushAdaptor = (AbstractPushAdaptor) event.getSource();
+        SwitchDomain switchDomain = pushAdaptor.getSwitchDomain();
         if (!switchDomain.isPushEnabled()) {
             return false;
         }
@@ -47,7 +47,7 @@ public class ClientPushStateFilter implements IClientPushFilter {
     public boolean backFilter(Event event) {
 
         Map<String, AbstractPushClient> pushFailure =
-            event.getParameter(GrpcEmitterEventListener.PUSH_FAILURE);
+            event.getParameter(GrpcPushEventListener.PUSH_FAILURE);
 
         if (pushFailure.size() > 0) {
             for (Map.Entry<String, AbstractPushClient> entry : pushFailure.entrySet()) {

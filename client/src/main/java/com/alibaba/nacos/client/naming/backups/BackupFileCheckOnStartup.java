@@ -15,7 +15,7 @@
  */
 package com.alibaba.nacos.client.naming.backups;
 
-import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.IServiceAwareStrategy;
 
 import java.io.File;
 
@@ -28,9 +28,9 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 class BackupFileCheckOnStartup implements Runnable {
 
     private String failoverDir;
-    private IServiceChangedAwareStrategy serviceChangedAwareStrategy;
+    private IServiceAwareStrategy serviceChangedAwareStrategy;
 
-    public BackupFileCheckOnStartup(IServiceChangedAwareStrategy serviceChangedAwareStrategy, String failoverDir) {
+    public BackupFileCheckOnStartup(IServiceAwareStrategy serviceChangedAwareStrategy, String failoverDir) {
         this.serviceChangedAwareStrategy = serviceChangedAwareStrategy;
         this.failoverDir = failoverDir;
     }

@@ -22,7 +22,7 @@ import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.push.AbstractEmitter;
+import com.alibaba.nacos.naming.push.AbstractPushAdaptor;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.IPushClientFactory;
 import com.alibaba.nacos.naming.push.PushService;
@@ -34,6 +34,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -42,23 +44,23 @@ import java.util.concurrent.*;
  * @author pbting
  * @date 2019-08-28 9:00 AM
  */
-public class UdpEmitterService extends AbstractEmitter {
+public class UdpPushAdaptor extends AbstractPushAdaptor {
 
     private DatagramSocket udpSocket;
 
     private final ScheduledExecutorService udpSender = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, (runnable) -> {
         Thread t = new Thread(runnable);
         t.setDaemon(true);
-        t.setName(UdpEmitterService.class.getCanonicalName());
+        t.setName(UdpPushAdaptor.class.getCanonicalName());
         return t;
     });
 
-    public UdpEmitterService(ApplicationContext applicationContext) {
+    public UdpPushAdaptor(ApplicationContext applicationContext) {
         super(applicationContext);
     }
 
     @Override
-    public void initEmitter() {
+    public void initAdaptor() {
         initReceiver();
     }
 
@@ -80,7 +82,7 @@ public class UdpEmitterService extends AbstractEmitter {
     }
 
     @Override
-    public DatagramSocket getEmitSource(String sourceKey) {
+    public DatagramSocket getPushSource(String sourceKey) {
         return udpSocket;
     }
 
@@ -90,26 +92,35 @@ public class UdpEmitterService extends AbstractEmitter {
     }
 
     @Override
-    public void emitter(Service service) {
+    public void push(Service service) {
         final String serviceName = service.getName();
         final String namespaceId = service.getNamespaceId();
         // merge some change events to reduce the push frequency:
-        String emitterKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
-        if (isContainsFutureMap(emitterKey)) {
+        String pushKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
+        if (isContainsFutureMap(pushKey)) {
             return;
         }
 
         final SwitchDomain switchDomain = applicationContext.getBean(SwitchDomain.class);
-        final Map<String, AbstractPushClient> clients = pushService.getPushClients(emitterKey);
+        final Map<String, AbstractPushClient> clients = pushService.getPushClients(pushKey);
         if (MapUtils.isEmpty(clients)) {
             return;
         }
+
+        // filter udp push client
+        final Collection<AbstractPushClient> udpPushClientList = new LinkedList<>();
+        clients.values().forEach(pushClient -> {
+            if (pushClient instanceof UdpPushClient) {
+                udpPushClientList.add(pushClient);
+            }
+        });
+
         Future future =
-            udpSender.schedule(new UdpEmitterAction(service, clients.values(),
+            udpSender.schedule(new UdpPushAction(service, udpPushClientList,
                     switchDomain.getDefaultPushCacheMillis(), this),
                 1000, TimeUnit.MILLISECONDS);
 
-        putFutureMap(emitterKey, future);
+        putFutureMap(pushKey, future);
     }
 
     public String getACKKey(String host, long port, long lastRefTime) {
@@ -183,7 +194,7 @@ public class UdpEmitterService extends AbstractEmitter {
             return true;
         }
 
-        if (ackEntry.getRetryTimes() > PushService.MAX_RETRY_TIMES) {
+        if (ackEntry.getRetryTimes() > switchDomain.getMaxPushRetryTimes()) {
             Loggers.PUSH.warn("max re-push times reached, retry times {}, key: {}", ackEntry.getRetryTimes(), ackEntry.getKey());
             pushService.removeAckEntry(ackEntry.getKey());
             getAndRemoveSendTime(ackEntry.getKey(), -1);

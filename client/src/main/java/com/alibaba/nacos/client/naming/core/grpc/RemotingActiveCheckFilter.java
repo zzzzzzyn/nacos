@@ -21,8 +21,8 @@ import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.filter.IEventReactiveFilter;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
 /**
  * @author pbting
@@ -30,10 +30,9 @@ import org.slf4j.LoggerFactory;
  */
 public class RemotingActiveCheckFilter implements IEventReactiveFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(RemotingActiveCheckFilter.class);
-    private GrpcServiceChangedAwareStrategy grpcServiceChangedAwareStrategy;
+    private GrpcServiceAwareStrategy grpcServiceChangedAwareStrategy;
 
-    public RemotingActiveCheckFilter(GrpcServiceChangedAwareStrategy grpcServiceChangedAwareStrategy) {
+    public RemotingActiveCheckFilter(GrpcServiceAwareStrategy grpcServiceChangedAwareStrategy) {
 
         this.grpcServiceChangedAwareStrategy = grpcServiceChangedAwareStrategy;
     }
@@ -41,7 +40,7 @@ public class RemotingActiveCheckFilter implements IEventReactiveFilter {
     @Override
     public boolean aheadFilter(Event event) {
         AbstractRemotingChannel remotingChannel =
-            event.getParameter(GrpcServiceChangedAwareStrategy.EVENT_CONTEXT_CHANNEL);
+            event.getParameter(GrpcServiceAwareStrategy.EVENT_CONTEXT_CHANNEL);
         ManagedChannel managedChannel = remotingChannel.getRawChannel();
         ConnectivityState connectivityState = managedChannel.getState(true);
         if (connectivityState != ConnectivityState.TRANSIENT_FAILURE) {
@@ -51,10 +50,10 @@ public class RemotingActiveCheckFilter implements IEventReactiveFilter {
         boolean isDoFilter = true;
         try {
             grpcServiceChangedAwareStrategy.initRemotingChannel();
-            event.setParameter(GrpcServiceChangedAwareStrategy.EVENT_CONTEXT_CHANNEL,
+            event.setParameter(GrpcServiceAwareStrategy.EVENT_CONTEXT_CHANNEL,
                 grpcServiceChangedAwareStrategy.getRemotingChannel());
         } catch (NacosException e) {
-            logger.error("init remoting channel cause an exception.", e);
+            NAMING_LOGGER.error("init remoting channel cause an exception.", e);
             isDoFilter = false;
         }
         return isDoFilter;

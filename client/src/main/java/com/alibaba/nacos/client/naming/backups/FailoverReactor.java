@@ -16,7 +16,7 @@
 package com.alibaba.nacos.client.naming.backups;
 
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.client.naming.core.AbstractServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.AbstractServiceAwareStrategy;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 public class FailoverReactor {
 
     private String failoverDir;
-    private AbstractServiceChangedAwareStrategy serviceChangedAwareStrategy;
+    private AbstractServiceAwareStrategy serviceChangedAwareStrategy;
     private Map<String, ServiceInfo> serviceMap = new ConcurrentHashMap<String, ServiceInfo>();
     private Map<String, String> switchParams = new ConcurrentHashMap<String, String>();
     private static final long DAY_PERIOD_MINUTES = 24 * 60;
@@ -42,7 +42,7 @@ public class FailoverReactor {
         }
     });
 
-    public FailoverReactor(AbstractServiceChangedAwareStrategy serviceChangedAwareStrategy, String cacheDir) {
+    public FailoverReactor(AbstractServiceAwareStrategy serviceChangedAwareStrategy, String cacheDir) {
         this.serviceChangedAwareStrategy = serviceChangedAwareStrategy;
         this.failoverDir = cacheDir + "/failover";
         this.init();

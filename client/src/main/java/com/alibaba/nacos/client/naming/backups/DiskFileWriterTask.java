@@ -17,7 +17,7 @@ package com.alibaba.nacos.client.naming.backups;
 
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.client.naming.cache.DiskCache;
-import com.alibaba.nacos.client.naming.core.IServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.IServiceAwareStrategy;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import com.alibaba.nacos.client.utils.StringUtils;
 
@@ -30,10 +30,10 @@ import java.util.TimerTask;
  */
 class DiskFileWriterTask extends TimerTask {
 
-    private IServiceChangedAwareStrategy hostReactor;
+    private IServiceAwareStrategy hostReactor;
     private String failoverDir;
 
-    public DiskFileWriterTask(IServiceChangedAwareStrategy hostReactor, String failoverDir) {
+    public DiskFileWriterTask(IServiceAwareStrategy hostReactor, String failoverDir) {
         this.hostReactor = hostReactor;
         this.failoverDir = failoverDir;
     }

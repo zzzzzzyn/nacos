@@ -17,7 +17,7 @@ package com.alibaba.nacos.naming.push.grpc.listener;
 
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
-import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushAdaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,17 +30,17 @@ import java.util.concurrent.TimeUnit;
  * @date 2019-09-06 3:34 PM
  */
 @Component
-public class GrpcRetryPushCheckEventListener extends AbstractGrpcEmitterEventListener {
+public class GrpcRetryPushCheckEventListener extends AbstractGrpcPushEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcRetryPushCheckEventListener.class);
 
     @Override
-    public boolean onEvent(GrpcEmitterService.EmitterRecyclableEvent event, int listenerIndex) {
+    public boolean onEvent(GrpcPushAdaptor.PushRecyclableEvent event, int listenerIndex) {
         int pushTimes = event.getParameter(PUSH_TIMES, 0);
         pushTimes++;
         event.setParameter(PUSH_TIMES, pushTimes);
         Map<String, AbstractPushClient>
-            pushFailure = event.getParameter(AbstractGrpcEmitterEventListener.PUSH_FAILURE);
+            pushFailure = event.getParameter(AbstractGrpcPushEventListener.PUSH_FAILURE);
         if (pushFailure != null && pushFailure.size() > 0) {
             event.setValue(pushFailure);
             event.setRecycleInterval((int) TimeUnit.MILLISECONDS.toSeconds(event.getParameter(PUSH_CACHE_MILLS)));

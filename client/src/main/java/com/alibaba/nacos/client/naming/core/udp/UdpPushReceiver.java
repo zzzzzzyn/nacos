@@ -40,9 +40,9 @@ public class UdpPushReceiver implements Runnable {
 
     private DatagramSocket udpSocket;
 
-    private UdpServiceChangedAwareStrategy changedAwareStrategy;
+    private UdpServiceAwareStrategy changedAwareStrategy;
 
-    public UdpPushReceiver(UdpServiceChangedAwareStrategy changedAwareStrategy) {
+    public UdpPushReceiver(UdpServiceAwareStrategy changedAwareStrategy) {
         try {
             this.changedAwareStrategy = changedAwareStrategy;
             udpSocket = new DatagramSocket();

@@ -34,7 +34,7 @@ import java.util.zip.GZIPOutputStream;
  * @author pbting
  * @date 2019-08-28 9:01 AM
  */
-public abstract class AbstractEmitter implements IEmitter,
+public abstract class AbstractPushAdaptor implements IPushAdaptor,
     ApplicationListener<ServiceChangeEvent>, SmartInitializingSingleton {
 
     private Map<String, Future> futureMap = new ConcurrentHashMap<>();
@@ -44,14 +44,14 @@ public abstract class AbstractEmitter implements IEmitter,
     protected PushService pushService;
     protected SwitchDomain switchDomain;
 
-    public AbstractEmitter(ApplicationContext applicationContext) {
+    public AbstractPushAdaptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
     @Override
     public void afterSingletonsInstantiated() {
         initSpringBean();
-        initEmitter();
+        initAdaptor();
     }
 
     private void initSpringBean() {
@@ -66,7 +66,7 @@ public abstract class AbstractEmitter implements IEmitter,
     @Override
     public void onApplicationEvent(ServiceChangeEvent event) {
         Service service = event.getService();
-        emitter(service);
+        push(service);
     }
 
     public byte[] compressIfNecessary(byte[] dataBytes) throws IOException {

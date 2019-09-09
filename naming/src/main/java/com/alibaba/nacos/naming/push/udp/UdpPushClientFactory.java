@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.push.udp;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.DataSource;
@@ -26,7 +27,7 @@ import java.net.DatagramSocket;
  * @author pbting
  * @date 2019-09-04 2:23 PM
  */
-public class UdpPushClientFactory<T> implements IPushClientFactory {
+public class UdpPushClientFactory implements IPushClientFactory {
 
     private DatagramSocket pusher;
 
@@ -37,7 +38,8 @@ public class UdpPushClientFactory<T> implements IPushClientFactory {
     @Override
     public AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
 
-        if (subscribeMetadata.getPort() <= 0) {
+        long port = subscribeMetadata.getPort();
+        if (port <= Constants.PORT_IDENTIFY_NNTS || port > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
 
             return null;
         }

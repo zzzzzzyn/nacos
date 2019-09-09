@@ -26,9 +26,9 @@ import com.alibaba.nacos.naming.push.AbstractReTransmitter;
  */
 public class UdpReTransmitter extends AbstractReTransmitter {
 
-    private UdpEmitterService udpEmitter;
+    private UdpPushAdaptor udpEmitter;
 
-    public UdpReTransmitter(PushService pushService, AckEntry ackEntry, UdpEmitterService udpEmitter) {
+    public UdpReTransmitter(PushService pushService, AckEntry ackEntry, UdpPushAdaptor udpEmitter) {
         super(pushService, ackEntry);
         this.udpEmitter = udpEmitter;
     }

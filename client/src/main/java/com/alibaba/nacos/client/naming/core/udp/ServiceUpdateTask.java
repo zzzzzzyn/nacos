@@ -16,7 +16,7 @@
 package com.alibaba.nacos.client.naming.core.udp;
 
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.client.naming.core.AbstractServiceChangedAwareStrategy;
+import com.alibaba.nacos.client.naming.core.AbstractServiceAwareStrategy;
 
 import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
@@ -26,14 +26,14 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  */
 class ServiceUpdateTask implements Runnable {
 
-    private UdpServiceChangedAwareStrategy udpServiceChangedAwareStrategy;
+    private UdpServiceAwareStrategy udpServiceChangedAwareStrategy;
     private String clusters;
     private String serviceName;
     private long lastRefTime = Long.MAX_VALUE;
 
-    public ServiceUpdateTask(AbstractServiceChangedAwareStrategy serviceChangedAwareStrategy,
+    public ServiceUpdateTask(AbstractServiceAwareStrategy serviceChangedAwareStrategy,
                              String serviceName, String clusters) {
-        this.udpServiceChangedAwareStrategy = (UdpServiceChangedAwareStrategy) serviceChangedAwareStrategy;
+        this.udpServiceChangedAwareStrategy = (UdpServiceAwareStrategy) serviceChangedAwareStrategy;
         this.serviceName = serviceName;
         this.clusters = clusters;
     }
@@ -46,7 +46,7 @@ class ServiceUpdateTask implements Runnable {
             if (serviceObj == null) {
                 udpServiceChangedAwareStrategy.updateServiceAndNotify(serviceName, clusters);
                 ServiceInfo serviceInfo = udpServiceChangedAwareStrategy.getServiceInfo0(serviceName, clusters);
-                long delayMillis = serviceInfo != null ? serviceInfo.getCacheMillis() : AbstractServiceChangedAwareStrategy.DEFAULT_DELAY;
+                long delayMillis = serviceInfo != null ? serviceInfo.getCacheMillis() : AbstractServiceAwareStrategy.DEFAULT_DELAY;
                 udpServiceChangedAwareStrategy.reScheduleServiceUpdateTask(this, delayMillis);
                 return;
             }

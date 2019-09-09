@@ -24,11 +24,11 @@ import com.alibaba.nacos.core.remoting.grpc.manager.GrpcServerRemotingManager;
 import com.alibaba.nacos.core.remoting.manager.AbstractRemotingManager;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
-import com.alibaba.nacos.naming.push.AbstractEmitter;
+import com.alibaba.nacos.naming.push.AbstractPushAdaptor;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
 import com.alibaba.nacos.naming.push.IPushClientFactory;
 import com.alibaba.nacos.naming.push.grpc.factory.GrpcPushClientFactory;
-import com.alibaba.nacos.naming.push.grpc.listener.AbstractGrpcEmitterEventListener;
+import com.alibaba.nacos.naming.push.grpc.listener.AbstractGrpcPushEventListener;
 import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcClientEventReactive;
 import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcPushEventReactive;
 import org.apache.commons.collections.MapUtils;
@@ -37,15 +37,16 @@ import org.springframework.context.ApplicationContext;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * support emitter with gRPC
+ * support push with gRPC
  *
  * @author pbting
  * @date 2019-08-30 10:11 PM
  */
-public class GrpcEmitterService extends AbstractEmitter {
+public class GrpcPushAdaptor extends AbstractPushAdaptor {
 
     /**
      * the grpc server port
@@ -56,7 +57,7 @@ public class GrpcEmitterService extends AbstractEmitter {
 
     private final AbstractRemotingManager serverRemotingManager = new GrpcServerRemotingManager();
 
-    public GrpcEmitterService(ApplicationContext applicationContext) {
+    public GrpcPushAdaptor(ApplicationContext applicationContext) {
         super(applicationContext);
     }
 
@@ -65,12 +66,12 @@ public class GrpcEmitterService extends AbstractEmitter {
      * @return
      */
     @Override
-    public Map<String, AbstractPushClient> getEmitSource(String sourceKey) {
+    public Map<String, AbstractPushClient> getPushSource(String sourceKey) {
         return pushService.getPushClients(sourceKey);
     }
 
     @Override
-    public void initEmitter() {
+    public void initAdaptor() {
 
         // 1. Assembly event reactive
         try {
@@ -100,33 +101,39 @@ public class GrpcEmitterService extends AbstractEmitter {
     }
 
     @Override
-    public void emitter(Service service) {
+    public void push(Service service) {
         final String namespaceId = service.getNamespaceId();
         final String serviceName = service.getName();
         // merge some change events to reduce the push frequency:
-        String emitterKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
-        if (isContainsFutureMap(emitterKey)) {
+        String pushKey = UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName);
+        if (isContainsFutureMap(pushKey)) {
             return;
         }
 
-        final Map<String, AbstractPushClient> clients = pushService.getPushClients(emitterKey);
+        final Map<String, AbstractPushClient> clients = pushService.getPushClients(pushKey);
         if (MapUtils.isEmpty(clients)) {
             return;
         }
-
+        // filter gRPC push client
+        final Map<String, AbstractPushClient> targetClients = new HashMap<>(8);
+        targetClients.forEach((key, value) -> {
+            if (value instanceof GrpcPushClient) {
+                targetClients.put(key, value);
+            }
+        });
 
         NamingGrpcPushEventReactive namingGrpcPushEventReactive =
             (NamingGrpcPushEventReactive) serverRemotingManager.getAbstractEventReactive(NamingGrpcPushEventReactive.class);
 
-        EmitterRecyclableEvent event = new EmitterRecyclableEvent(this, clients, 1);
-        event.setParameter(AbstractGrpcEmitterEventListener.PUSH_MAX_RETRY_TIMES, switchDomain.getMaxPushRetryTimes());
-        event.setParameter(AbstractGrpcEmitterEventListener.PUSH_CACHE_MILLS, switchDomain.getDefaultCacheMillis());
+        PushRecyclableEvent event = new PushRecyclableEvent(this, targetClients, 1);
+        event.setParameter(AbstractGrpcPushEventListener.PUSH_MAX_RETRY_TIMES, switchDomain.getMaxPushRetryTimes());
+        event.setParameter(AbstractGrpcPushEventListener.PUSH_CACHE_MILLS, switchDomain.getDefaultCacheMillis());
         namingGrpcPushEventReactive.reactive(event);
     }
 
-    public static class EmitterRecyclableEvent extends RecyclableEvent {
+    public static class PushRecyclableEvent extends RecyclableEvent {
 
-        public EmitterRecyclableEvent(Object source, Object value, int recycleInterval) {
+        public PushRecyclableEvent(Object source, Object value, int recycleInterval) {
             super(source, value, EMPTY_SINK, recycleInterval);
         }
     }

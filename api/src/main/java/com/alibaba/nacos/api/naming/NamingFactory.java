@@ -15,10 +15,10 @@
  */
 package com.alibaba.nacos.api.naming;
 
+import com.alibaba.nacos.api.exception.NacosException;
+
 import java.lang.reflect.Constructor;
 import java.util.Properties;
-
-import com.alibaba.nacos.api.exception.NacosException;
 
 /**
  * Naming Factory
@@ -31,7 +31,18 @@ public class NamingFactory {
         try {
             Class<?> driverImplClass = Class.forName("com.alibaba.nacos.client.naming.NacosNamingService");
             Constructor constructor = driverImplClass.getConstructor(String.class);
-            NamingService vendorImpl = (NamingService)constructor.newInstance(serverList);
+            NamingService vendorImpl = (NamingService) constructor.newInstance(serverList);
+            return vendorImpl;
+        } catch (Throwable e) {
+            throw new NacosException(NacosException.CLIENT_INVALID_PARAM, e);
+        }
+    }
+
+    public static NamingService createNamingService(String serverList, String apiVersion) throws NacosException {
+        try {
+            Class<?> driverImplClass = Class.forName("com.alibaba.nacos.client.naming.NacosNamingService");
+            Constructor constructor = driverImplClass.getConstructor(String.class, String.class);
+            NamingService vendorImpl = (NamingService) constructor.newInstance(serverList, apiVersion);
             return vendorImpl;
         } catch (Throwable e) {
             throw new NacosException(NacosException.CLIENT_INVALID_PARAM, e);
@@ -42,7 +53,7 @@ public class NamingFactory {
         try {
             Class<?> driverImplClass = Class.forName("com.alibaba.nacos.client.naming.NacosNamingService");
             Constructor constructor = driverImplClass.getConstructor(Properties.class);
-            NamingService vendorImpl = (NamingService)constructor.newInstance(properties);
+            NamingService vendorImpl = (NamingService) constructor.newInstance(properties);
             return vendorImpl;
         } catch (Throwable e) {
             throw new NacosException(NacosException.CLIENT_INVALID_PARAM, e);

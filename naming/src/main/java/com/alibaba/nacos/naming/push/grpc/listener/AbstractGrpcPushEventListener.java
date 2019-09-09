@@ -17,14 +17,14 @@ package com.alibaba.nacos.naming.push.grpc.listener;
 
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
-import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushAdaptor;
 import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcPushEventReactive;
 
 /**
  * @author pbting
  * @date 2019-09-06 3:35 PM
  */
-public abstract class AbstractGrpcEmitterEventListener implements IPipelineEventListener<GrpcEmitterService.EmitterRecyclableEvent> {
+public abstract class AbstractGrpcPushEventListener implements IPipelineEventListener<GrpcPushAdaptor.PushRecyclableEvent> {
 
     public static final String PUSH_FAILURE = "pushFailure";
     public static final String PUSH_TIMES = "pushRetryTimes";
@@ -33,7 +33,7 @@ public abstract class AbstractGrpcEmitterEventListener implements IPipelineEvent
 
     @Override
     public String[] interestSinks() {
-        return new String[]{GrpcEmitterService.EmitterRecyclableEvent.class.getName()};
+        return new String[]{GrpcPushAdaptor.PushRecyclableEvent.class.getName()};
     }
 
     @Override

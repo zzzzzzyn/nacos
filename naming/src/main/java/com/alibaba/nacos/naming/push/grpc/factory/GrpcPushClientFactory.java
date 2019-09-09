@@ -35,6 +35,7 @@ public class GrpcPushClientFactory implements IPushClientFactory {
         if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
             return new GrpcPushClient(subscribeMetadata, dataSource, null);
         }
+
         return null;
     }
 
@@ -44,6 +45,7 @@ public class GrpcPushClientFactory implements IPushClientFactory {
         if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
             return new GrpcPushClient(subscribeMetadata, dataSource, (GrpcRequestStreamInteractive) pusher);
         }
+
         return null;
     }
 }

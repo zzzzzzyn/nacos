@@ -18,7 +18,7 @@ package com.alibaba.nacos.naming.push.grpc.listener;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
 import com.alibaba.nacos.naming.push.PushService;
-import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushAdaptor;
 import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcClientEventReactive;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContextAware;
 public abstract class AbstractGrpcClientEventListener implements IPipelineEventListener,
     SmartInitializingSingleton, ApplicationContextAware {
 
-    protected GrpcEmitterService grpcEmitterService;
+    protected GrpcPushAdaptor grpcEmitterService;
     protected ApplicationContext applicationContext;
     protected PushService pushService;
 
@@ -42,7 +42,7 @@ public abstract class AbstractGrpcClientEventListener implements IPipelineEventL
     @Override
     public void afterSingletonsInstantiated() {
         this.pushService = this.applicationContext.getBean(PushService.class);
-        this.grpcEmitterService = this.applicationContext.getBean(GrpcEmitterService.class);
+        this.grpcEmitterService = this.applicationContext.getBean(GrpcPushAdaptor.class);
     }
 
     @Override

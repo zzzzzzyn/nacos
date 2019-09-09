@@ -1,2 +1,2 @@
-com.alibaba.nacos.naming.push.IEmitter=com.alibaba.nacos.naming.push.udp.UdpEmitterService,\
-  com.alibaba.nacos.naming.push.grpc.GrpcEmitterService
+com.alibaba.nacos.naming.push.IPushAdaptor=com.alibaba.nacos.naming.push.udp.UdpPushAdaptor,\
+  com.alibaba.nacos.naming.push.grpc.GrpcPushAdaptor

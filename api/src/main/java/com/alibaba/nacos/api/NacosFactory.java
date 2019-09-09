@@ -15,15 +15,15 @@
  */
 package com.alibaba.nacos.api;
 
-import java.util.Properties;
-
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingMaintainFactory;
 import com.alibaba.nacos.api.naming.NamingMaintainService;
-import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
+
+import java.util.Properties;
 
 /**
  * Nacos Factory
@@ -63,6 +63,19 @@ public class NacosFactory {
      */
     public static NamingService createNamingService(String serverAddr) throws NacosException {
         return NamingFactory.createNamingService(serverAddr);
+    }
+
+
+    /**
+     * Create naming service
+     *
+     * @param serverAddr server list
+     * @param apiVersion the selector api version with v1 or v2 。
+     * @return Naming
+     * @throws NacosException Exception
+     */
+    public static NamingService createNamingService(String serverAddr, String apiVersion) throws NacosException {
+        return NamingFactory.createNamingService(serverAddr, apiVersion);
     }
 
     /**

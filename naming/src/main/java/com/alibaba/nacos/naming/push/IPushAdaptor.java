@@ -21,27 +21,27 @@ import com.alibaba.nacos.naming.core.Service;
  * @author pbting
  * @date 2019-08-28 8:52 AM
  */
-public interface IEmitter {
+public interface IPushAdaptor {
 
     /**
-     * get an emit source
+     * get an push source
      *
      * @param sourceKey the key of source
      * @return
      */
-    <T> T getEmitSource(String sourceKey);
+    <T> T getPushSource(String sourceKey);
 
     /**
-     * initializer emitter
+     * initializer push adaptor
      */
-    void initEmitter();
+    void initAdaptor();
 
     /**
-     * emitter service when service instance is changed
+     * push service when service instance is changed
      *
      * @param service
      */
-    void emitter(Service service);
+    void push(Service service);
 
     /**
      * get push client factory.will use it to construct a push client.

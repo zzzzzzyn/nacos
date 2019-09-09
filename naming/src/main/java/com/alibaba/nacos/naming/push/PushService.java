@@ -60,7 +60,6 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
     private ApplicationContext applicationContext;
 
     public static int ACK_TIMEOUT_SECONDS = 10;
-    public static int MAX_RETRY_TIMES = 1;
     public static long ACK_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(ACK_TIMEOUT_SECONDS);
 
     private AtomicInteger totalPush = new AtomicInteger();
@@ -72,6 +71,8 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         = new ConcurrentHashMap<>();
 
     private volatile ConcurrentHashMap<String, Long> pushCostMap = new ConcurrentHashMap<>();
+
+    private Collection<IPushAdaptor> pushAdaptors = Collections.EMPTY_LIST;
 
     private final EventLoopReactive pushEventLoopReactive
         = new EventLoopReactive(new DefaultEventExecutorGroup(2, runnable -> {
@@ -87,19 +88,29 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
         initEventLoopListener();
         // 2. init push configuration
         initPushConfiguration();
-        // 3. reactive remove push client id zombie with recycle
+        // 3. init push adaptors
+        initPushAdaptor();
+        // 4. reactive remove push client id zombie with recycle
         pushEventLoopReactive.reactive(new LocalizationEvents.ZombiePushClientCheckEvent(this,
             (int) TimeUnit.MILLISECONDS.toSeconds(switchDomain.getPushCacheMillis("") * 2)));
     }
 
     private void initPushConfiguration() {
         ACK_TIMEOUT_SECONDS = Integer.parseInt(ackTimeoutSeconds);
-        MAX_RETRY_TIMES = Integer.parseInt(maxRetryTimes);
     }
 
     private void initEventLoopListener() {
         pushEventLoopReactive.addListener(new PushRelatedPipelineEventListeners.RemoveClientIfZombieEventListener(this));
         pushEventLoopReactive.addListener(new PushRelatedPipelineEventListeners.ReTransmitterEventListener());
+    }
+
+    private void initPushAdaptor() {
+        Collection<IPushAdaptor> pushAdaptors = this.applicationContext.getBeansOfType(IPushAdaptor.class).values();
+        if (pushAdaptors == null || pushAdaptors.isEmpty()) {
+            return;
+        }
+
+        this.pushAdaptors = pushAdaptors;
     }
 
     public Map<String, Long> getPushCostMap() {
@@ -136,14 +147,12 @@ public class PushService implements ApplicationContextAware, SmartInitializingSi
      * @param pushDataSource
      */
     public void addClient(final SubscribeMetadata subscribeMetadata, final DataSource pushDataSource) {
-        Collection<IEmitter> emittersServices = this.applicationContext.getBeansOfType(IEmitter.class).values();
-        if (emittersServices == null || emittersServices.isEmpty()) {
+        if (pushAdaptors.isEmpty()) {
             return;
         }
-
-        emittersServices.forEach(emitter -> {
+        pushAdaptors.forEach(pushAdaptor -> {
             AbstractPushClient abstractPushClient =
-                emitter.getPushClientFactory().newPushClient(subscribeMetadata, pushDataSource);
+                pushAdaptor.getPushClientFactory().newPushClient(subscribeMetadata, pushDataSource);
             if (abstractPushClient != null) {
                 this.addClient(abstractPushClient);
             }

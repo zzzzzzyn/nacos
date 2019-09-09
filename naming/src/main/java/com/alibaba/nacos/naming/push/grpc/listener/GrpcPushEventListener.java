@@ -22,7 +22,7 @@ import com.alibaba.nacos.core.remoting.grpc.interactive.GrpcRequestStreamInterac
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.push.AbstractPushClient;
-import com.alibaba.nacos.naming.push.grpc.GrpcEmitterService;
+import com.alibaba.nacos.naming.push.grpc.GrpcPushAdaptor;
 import com.alibaba.nacos.naming.push.grpc.GrpcPushClient;
 import com.google.protobuf.ByteString;
 import org.springframework.stereotype.Component;
@@ -36,20 +36,17 @@ import java.util.Map;
  * @date 2019-09-06 2:04 PM
  */
 @Component
-public class GrpcEmitterEventListener extends AbstractGrpcEmitterEventListener {
+public class GrpcPushEventListener extends AbstractGrpcPushEventListener {
 
     @Override
-    public boolean onEvent(GrpcEmitterService.EmitterRecyclableEvent event, int listenerIndex) {
-        GrpcEmitterService grpcEmitterService = (GrpcEmitterService) event.getSource();
+    public boolean onEvent(GrpcPushAdaptor.PushRecyclableEvent event, int listenerIndex) {
+        GrpcPushAdaptor grpcPushAdaptor = (GrpcPushAdaptor) event.getSource();
         Map<String, AbstractPushClient> clients = event.getValue();
         Map<String, AbstractPushClient> pushFailure = new HashMap<>(8);
         for (Map.Entry<String, AbstractPushClient> entry : clients.entrySet()) {
             AbstractPushClient pushClient = entry.getValue();
             String key = entry.getKey();
-            if (!(pushClient instanceof GrpcPushClient)) {
-                continue;
-            }
-            PushPacket pushPacket = grpcEmitterService.prepareHostsData(pushClient);
+            PushPacket pushPacket = grpcPushAdaptor.prepareHostsData(pushClient);
             pushPacket.setLastRefTime(System.currentTimeMillis());
             GrpcPushClient grpcPushClient = (GrpcPushClient) pushClient;
             GrpcRequestStreamInteractive pusher = grpcPushClient.getPusher();

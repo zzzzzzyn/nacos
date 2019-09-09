@@ -20,10 +20,9 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingCommonEventSinks;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.api.naming.push.PushPacket;
 import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
-import com.alibaba.nacos.client.naming.core.AbstractServiceChangedAwareStrategy;
-import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
+import com.alibaba.nacos.client.naming.core.AbstractServiceAwareStrategy;
+import com.alibaba.nacos.client.naming.core.builder.ServiceAwareStrategyBuilder;
 import com.alibaba.nacos.client.naming.utils.NetUtils;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import com.alibaba.nacos.client.utils.AppNameUtils;
@@ -36,7 +35,6 @@ import com.alibaba.nacos.core.remoting.event.reactive.EventLoopReactive;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcClientRemotingManager;
 import com.alibaba.nacos.core.remoting.manager.IClientRemotingManager;
 import com.alibaba.nacos.core.remoting.proto.InteractivePayload;
-import com.alibaba.nacos.core.remoting.stream.IRemotingRequestStreamObserver;
 import com.google.protobuf.ByteString;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
@@ -56,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author pbting
  * @date 2019-09-03 9:41 AM
  */
-public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAwareStrategy {
+public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
 
     public static final String PUSH_PACKET_DOM_TYPE = "dom";
     public static final String PUSH_PACKET_DOM_SERVICE = "service";
@@ -74,13 +72,15 @@ public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAware
             @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = new Thread(runnable);
-                thread.setName(GrpcServiceChangedAwareStrategy.class.getName());
+                thread.setName(GrpcServiceAwareStrategy.class.getName());
                 thread.setDaemon(false);
                 return thread;
             }
         }));
 
     private final IClientRemotingManager clientRemotingManager = new GrpcClientRemotingManager();
+
+    private GrpcPushReceiver grpcPushReceiver;
 
     @Override
     public ServiceInfo getServiceInfo(String serviceName, String clusters) {
@@ -100,21 +100,6 @@ public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAware
         }
     }
 
-    public void updateSubscribeDuration(SubscribeMetadata subscribeMetadata, ServiceInfo result) {
-        if (!subscribeMetadata.isSuccess()) {
-            return;
-        }
-        result = (result == null ? emptyServiceInfo : result);
-        // subscribe duration for server
-        RecyclableEvent recyclableEvent =
-            new RecyclableEvent(this, subscribeMetadata,
-                NamingCommonEventSinks.SUBSCRIBE_DURATION_SINK,
-                (int) TimeUnit.MILLISECONDS.toSeconds(result.getCacheMillis()));
-        recyclableEvent.setParameter(PUSH_PACKET_DOM_SERVICE, result);
-        recyclableEvent.setParameter(EVENT_CONTEXT_CHANNEL, remotingChannel);
-        asyncEventReactive.reactive(recyclableEvent);
-    }
-
     public void requestSubscribeStream(SubscribeMetadata subscribeMetadata, boolean isForce) {
         AtomicBoolean atomicBoolean = new AtomicBoolean();
         AtomicBoolean resultBoolean = serviceNameRequestStreamRegistry.putIfAbsent(ServiceInfo.getKey(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters()), atomicBoolean);
@@ -131,21 +116,22 @@ public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAware
         InteractivePayload.Builder builder = InteractivePayload.newBuilder();
         builder.setSink(NamingCommonEventSinks.SUBSCRIBE_SINK);
         builder.setPayload(ByteString.copyFrom(JSON.toJSONString(subscribeMetadata).getBytes(Charset.forName("utf-8"))));
-        remotingChannel.requestStream(builder.build(), new IRemotingRequestStreamObserver() {
-            @Override
-            public void onNext(InteractivePayload interactivePayload) {
-                String pushPackJson = interactivePayload.getPayload().toStringUtf8();
-                PushPacket pushPacket = JSON.parseObject(pushPackJson, PushPacket.class);
-                if (PUSH_PACKET_DOM_TYPE.equals(pushPacket.getType()) ||
-                    PUSH_PACKET_DOM_SERVICE.equals(pushPacket.getType())) {
-                    processDataStreamResponse(pushPacket.getData());
-                } else if (PUSH_PACKET_DOM_DUMP.equals(pushPacket.getType())) {
-                    // dump data to server
-                } else {
-                    // do nothing send ack only
-                }
-            }
-        });
+        remotingChannel.requestStream(builder.build(), grpcPushReceiver);
+    }
+
+    public void updateSubscribeDuration(SubscribeMetadata subscribeMetadata, ServiceInfo result) {
+        if (!subscribeMetadata.isSuccess()) {
+            return;
+        }
+        result = (result == null ? emptyServiceInfo : result);
+        // subscribe duration for server
+        RecyclableEvent recyclableEvent =
+            new RecyclableEvent(this, subscribeMetadata,
+                NamingCommonEventSinks.SUBSCRIBE_DURATION_SINK,
+                (int) TimeUnit.MILLISECONDS.toSeconds(result.getCacheMillis()));
+        recyclableEvent.setParameter(PUSH_PACKET_DOM_SERVICE, result);
+        recyclableEvent.setParameter(EVENT_CONTEXT_CHANNEL, remotingChannel);
+        asyncEventReactive.reactive(recyclableEvent);
     }
 
     @Override
@@ -157,7 +143,7 @@ public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAware
     }
 
     @Override
-    public void initServiceChangedAwareStrategy(ServiceChangedAwareStrategyBuilder.ServiceChangedStrategyConfig serviceChangedStrategyConfig) {
+    public void initServiceAwareStrategy(ServiceAwareStrategyBuilder.ServiceAwareStrategyConfig serviceChangedStrategyConfig) {
         // 1. init common state
         initCommonState(serviceChangedStrategyConfig);
         initFilters();
@@ -168,6 +154,8 @@ public class GrpcServiceChangedAwareStrategy extends AbstractServiceChangedAware
         } catch (NacosException e) {
             e.printStackTrace();
         }
+
+        grpcPushReceiver = new GrpcPushReceiver(this);
     }
 
     protected void initRemotingChannel() throws NacosException {

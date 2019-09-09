@@ -23,7 +23,7 @@ import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.client.monitor.MetricsMonitor;
 import com.alibaba.nacos.client.naming.backups.FailoverReactor;
 import com.alibaba.nacos.client.naming.cache.DiskCache;
-import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
+import com.alibaba.nacos.client.naming.core.builder.ServiceAwareStrategyBuilder;
 import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.utils.StringUtils;
 
@@ -38,7 +38,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  * @author pbting
  * @date 2019-08-30 11:38 AM
  */
-public abstract class AbstractServiceChangedAwareStrategy implements IServiceChangedAwareStrategy {
+public abstract class AbstractServiceAwareStrategy implements IServiceAwareStrategy {
 
     public static final long DEFAULT_DELAY = 1000L;
     public static final long UPDATE_HOLD_INTERVAL = 5000L;
@@ -53,7 +53,7 @@ public abstract class AbstractServiceChangedAwareStrategy implements IServiceCha
     /**
      * @param serviceChangedStrategyConfig
      */
-    protected void initCommonState(ServiceChangedAwareStrategyBuilder.ServiceChangedStrategyConfig
+    protected void initCommonState(ServiceAwareStrategyBuilder.ServiceAwareStrategyConfig
                                        serviceChangedStrategyConfig) {
 
         this.eventDispatcher = serviceChangedStrategyConfig.getEventDispatcher();

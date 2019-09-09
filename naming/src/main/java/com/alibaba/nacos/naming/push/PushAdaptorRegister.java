@@ -29,36 +29,36 @@ import org.springframework.util.ClassUtils;
 import java.util.List;
 
 /**
- * emitter service register.
+ * push service register.
  * <p>
- * will load some emitter from spring.factories by {@SpringFactoriesLoader#loadFactoryNames}
+ * will load some push from spring.factories by {@SpringFactoriesLoader#loadFactoryNames}
  *
  * @author pbting
  * @date 2019-08-28 11:38 AM
  */
 @Component
-public class EmitterRegister implements BeanDefinitionRegistryPostProcessor {
+public class PushAdaptorRegister implements BeanDefinitionRegistryPostProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmitterRegister.class);
+    private static final Logger logger = LoggerFactory.getLogger(PushAdaptorRegister.class);
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 
         final ClassLoader classLoader = registry.getClass().getClassLoader();
-        final Class<IEmitter> factoryClass = IEmitter.class;
+        final Class<IPushAdaptor> factoryClass = IPushAdaptor.class;
 
-        List<String> emitterRegistry = SpringFactoriesLoader.loadFactoryNames(factoryClass, classLoader);
+        List<String> adaptorRegistry = SpringFactoriesLoader.loadFactoryNames(factoryClass, classLoader);
 
-        for (String emitter : emitterRegistry) {
+        for (String adaptor : adaptorRegistry) {
             try {
-                Class<?> instanceClass = ClassUtils.forName(emitter, classLoader);
+                Class<?> instanceClass = ClassUtils.forName(adaptor, classLoader);
                 if (!factoryClass.isAssignableFrom(instanceClass)) {
                     throw new IllegalArgumentException(
-                        "Class [" + emitter + "] is not assignable to [" + factoryClass.getName() + "]");
+                        "Class [" + adaptor + "] is not assignable to [" + factoryClass.getName() + "]");
                 }
-                registry.registerBeanDefinition(emitter, new RootBeanDefinition(instanceClass));
+                registry.registerBeanDefinition(adaptor, new RootBeanDefinition(instanceClass));
             } catch (ClassNotFoundException e) {
-                logger.error("load emitter service cause an exception with class not fount.", e);
+                logger.error("load push service cause an exception with class not fount.", e);
             }
         }
     }

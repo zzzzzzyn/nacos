@@ -29,15 +29,17 @@ import com.google.protobuf.ByteString;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
+import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
+
 /**
  * @author pbting
  * @date 2019-09-05 9:33 PM
  */
 public class SubscribeDurationEventListener implements IPipelineEventListener<RecyclableEvent> {
 
-    private GrpcServiceChangedAwareStrategy grpcServiceChangedAwareStrategy;
+    private GrpcServiceAwareStrategy grpcServiceChangedAwareStrategy;
 
-    public SubscribeDurationEventListener(GrpcServiceChangedAwareStrategy grpcServiceChangedAwareStrategy) {
+    public SubscribeDurationEventListener(GrpcServiceAwareStrategy grpcServiceChangedAwareStrategy) {
         this.grpcServiceChangedAwareStrategy = grpcServiceChangedAwareStrategy;
     }
 
@@ -46,12 +48,12 @@ public class SubscribeDurationEventListener implements IPipelineEventListener<Re
         SubscribeMetadata subscribeMetadata = event.getValue();
         String jsonContent = JSON.toJSONString(subscribeMetadata);
         AbstractRemotingChannel remotingChannel =
-            event.getParameter(GrpcServiceChangedAwareStrategy.EVENT_CONTEXT_CHANNEL);
+            event.getParameter(GrpcServiceAwareStrategy.EVENT_CONTEXT_CHANNEL);
 
         InteractivePayload response = remotingChannel.requestResponse(InteractivePayload.newBuilder().setSink(NamingCommonEventSinks.SUBSCRIBE_DURATION_SINK)
             .setPayload(ByteString.copyFrom(jsonContent.getBytes(Charset.forName("utf-8")))).build());
 
-        ServiceInfo serviceInfo = event.getParameter(GrpcServiceChangedAwareStrategy.PUSH_PACKET_DOM_SERVICE);
+        ServiceInfo serviceInfo = event.getParameter(GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE);
         String responsePayload = response.getPayload().toStringUtf8();
 
         if (NamingCommonEventSinks.SUBSCRIBE_SINK.equals(responsePayload)) {
@@ -60,9 +62,11 @@ public class SubscribeDurationEventListener implements IPipelineEventListener<Re
             event.setCancel(true);
         } else if (!Constants.NULL_STRING.equals(responsePayload)
             && !serviceInfo.getChecksum().equals(responsePayload)) {
+            NAMING_LOGGER.info("[gRPC] subscribe duration aware checksum is different from server response. local is {},server is {}", serviceInfo.getChecksum(), responsePayload);
+            grpcServiceChangedAwareStrategy.updateServiceAndNotify(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters());
             serviceInfo = grpcServiceChangedAwareStrategy.getServiceInfo(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters());
             // use the newest to override
-            event.setParameter(GrpcServiceChangedAwareStrategy.PUSH_PACKET_DOM_SERVICE, serviceInfo);
+            event.setParameter(GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE, serviceInfo);
             event.setRecycleInterval((int) TimeUnit.MILLISECONDS.toSeconds(serviceInfo.getCacheMillis()));
         }
         return true;

@@ -17,8 +17,8 @@ package com.alibaba.nacos.client.naming.core.udp;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.client.naming.core.AbstractServiceChangedAwareStrategy;
-import com.alibaba.nacos.client.naming.core.builder.ServiceChangedAwareStrategyBuilder;
+import com.alibaba.nacos.client.naming.core.AbstractServiceAwareStrategy;
+import com.alibaba.nacos.client.naming.core.builder.ServiceAwareStrategyBuilder;
 import com.alibaba.nacos.client.utils.StringUtils;
 
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  *
  * @author xuanyin
  */
-public class UdpServiceChangedAwareStrategy extends AbstractServiceChangedAwareStrategy {
+public class UdpServiceAwareStrategy extends AbstractServiceAwareStrategy {
 
     private final Map<String, ScheduledFuture<?>> futureMap = new HashMap<String, ScheduledFuture<?>>();
     private UdpPushReceiver pushReceiver;
@@ -41,14 +41,14 @@ public class UdpServiceChangedAwareStrategy extends AbstractServiceChangedAwareS
     /**
      * An empty constructor must be given.
      */
-    public UdpServiceChangedAwareStrategy() {
+    public UdpServiceAwareStrategy() {
     }
 
     /**
      * @param serviceChangedStrategyConfig some configuration for init service changed aware strategy
      */
     @Override
-    public void initServiceChangedAwareStrategy(ServiceChangedAwareStrategyBuilder.ServiceChangedStrategyConfig serviceChangedStrategyConfig) {
+    public void initServiceAwareStrategy(ServiceAwareStrategyBuilder.ServiceAwareStrategyConfig serviceChangedStrategyConfig) {
 
         executor = new ScheduledThreadPoolExecutor(serviceChangedStrategyConfig.getPollingThreadCount(), new ThreadFactory() {
             @Override
