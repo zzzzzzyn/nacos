@@ -116,7 +116,7 @@ public class GrpcPushAdaptor extends AbstractPushAdaptor {
         }
         // filter gRPC push client
         final Map<String, AbstractPushClient> targetClients = new HashMap<>(8);
-        targetClients.forEach((key, value) -> {
+        clients.forEach((key, value) -> {
             if (value instanceof GrpcPushClient) {
                 targetClients.put(key, value);
             }
