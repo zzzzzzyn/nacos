@@ -62,7 +62,7 @@ public class ApiController extends InstanceController {
         JSONObject result = new JSONObject();
         // For old DNS-F client:
         String dnsfVersion = "1.0.1";
-        String agent = request.getHeader("Client-Version");
+        String agent = WebUtils.getUserAgent(request);
         ClientInfo clientInfo = new ClientInfo(agent);
         if (clientInfo.type == ClientType.DNS &&
             clientInfo.version.compareTo(VersionUtil.parseVersion(dnsfVersion)) <= 0) {
@@ -123,7 +123,7 @@ public class ApiController extends InstanceController {
             Constants.DEFAULT_NAMESPACE_ID);
 
         String dom = WebUtils.required(request, "dom");
-        String agent = request.getHeader("Client-Version");
+        String agent = WebUtils.getUserAgent(request);
         String clusters = WebUtils.optional(request, "clusters", StringUtils.EMPTY);
         String clientIP = WebUtils.optional(request, "clientIP", StringUtils.EMPTY);
         Integer udpPort = Integer.parseInt(WebUtils.optional(request, "udpPort", "0"));

@@ -167,6 +167,8 @@ public class Constants {
 
     public static final String NUMBER_PATTERN = "^\\d+$";
 
+    public static final String ANY_PATTERN = ".*";
+
     /**
      * use the udp port to tell server is subscribe or not.
      * <p>
