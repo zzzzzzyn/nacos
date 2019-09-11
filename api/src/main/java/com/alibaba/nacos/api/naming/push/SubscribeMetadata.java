@@ -31,6 +31,7 @@ public class SubscribeMetadata implements Serializable {
     private long port;
     private String tid;
     private String app;
+    private String pushType;
     private boolean success = true;
 
     public SubscribeMetadata(String namespaceId, String serviceName,
