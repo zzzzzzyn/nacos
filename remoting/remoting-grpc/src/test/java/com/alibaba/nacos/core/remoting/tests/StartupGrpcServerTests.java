@@ -18,8 +18,9 @@ package com.alibaba.nacos.core.remoting.tests;
 import com.alibaba.nacos.core.remoting.channel.AbstractRemotingChannel;
 import com.alibaba.nacos.core.remoting.event.Event;
 import com.alibaba.nacos.core.remoting.event.IPipelineEventListener;
-import com.alibaba.nacos.core.remoting.event.reactive.IEventReactiveHelm;
+import com.alibaba.nacos.core.remoting.event.listener.StartupServerEventListener;
 import com.alibaba.nacos.core.remoting.event.reactive.IEventReactive;
+import com.alibaba.nacos.core.remoting.event.reactive.IEventReactiveHelm;
 import com.alibaba.nacos.core.remoting.grpc.GrpcRemotingChannel;
 import com.alibaba.nacos.core.remoting.grpc.entrance.GrpcClientEntranceServiceImpl;
 import com.alibaba.nacos.core.remoting.grpc.manager.GrpcClientRemotingManager;
@@ -84,7 +85,7 @@ public class StartupGrpcServerTests {
 
             @Override
             public String[] interestSinks() {
-                return new String[]{""};
+                return new String[]{"request/response"};
             }
 
             @Override
@@ -113,7 +114,7 @@ public class StartupGrpcServerTests {
 
             @Override
             public String[] interestSinks() {
-                return new String[]{""};
+                return new String[]{"request/stream"};
             }
 
             @Override
@@ -140,7 +141,7 @@ public class StartupGrpcServerTests {
 
             @Override
             public String[] interestSinks() {
-                return new String[]{""};
+                return new String[]{"request/bi"};
             }
 
             @Override
@@ -150,7 +151,8 @@ public class StartupGrpcServerTests {
         });
 
         Event event =
-            new Event(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848));
+            new Event(serverRemotingManager, new InetSocketAddress("0.0.0.0", 28848), StartupServerEventListener.SINK);
+        event.setParameter(StartupServerEventListener.CLIENT_EVENT_REACTIVE, GrpcClientEventReactive.class);
         serverRemotingManager.notifyListeners(event);
         return serverRemotingManager;
     }
@@ -177,7 +179,7 @@ public class StartupGrpcServerTests {
             try {
                 System.err.println("channel state :" + grpcRemotingChannel.getRawChannel().getState(true));
                 responsePayload = remotingChannel
-                    .requestResponse(InteractivePayload.newBuilder().setEventType(DEBUG_EVENT_TYPE)
+                    .requestResponse(InteractivePayload.newBuilder().setSink("request/response")
                         .setPayload(ByteString.copyFrom(String.format(" Hello Word %s", i).getBytes())).build());
                 System.err.println(responsePayload.getPayload().toStringUtf8());
             } catch (Exception e) {
@@ -195,7 +197,7 @@ public class StartupGrpcServerTests {
         final GrpcRemotingChannel remotingChannel = (GrpcRemotingChannel)
             clientRemotingManager.getRemotingChannelFactory().newRemotingChannel("0.0.0.0:28848", "default");
         InteractivePayload.Builder builder = InteractivePayload.newBuilder();
-        builder.setEventType(DEBUG_STREAM_EVENT_TYPE);
+        builder.setSink("request/stream");
         builder.setPayload(ByteString.copyFrom("dataId:production.yaml,group:default".getBytes()));
         remotingChannel.requestStream(builder.build(), new IRemotingRequestStreamObserver() {
             @Override
