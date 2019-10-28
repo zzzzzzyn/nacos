@@ -25,12 +25,12 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  * @author pbting
  * @date 2019-08-30 1:39 PM
  */
-class BackupFileCheckOnStartup implements Runnable {
+class BackupFileCheckOnStartupTask implements Runnable {
 
     private String failoverDir;
     private IServiceAwareStrategy serviceChangedAwareStrategy;
 
-    public BackupFileCheckOnStartup(IServiceAwareStrategy serviceChangedAwareStrategy, String failoverDir) {
+    public BackupFileCheckOnStartupTask(IServiceAwareStrategy serviceChangedAwareStrategy, String failoverDir) {
         this.serviceChangedAwareStrategy = serviceChangedAwareStrategy;
         this.failoverDir = failoverDir;
     }

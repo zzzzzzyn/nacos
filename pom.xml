@@ -210,8 +210,10 @@
                     <printFailingErrors>true</printFailingErrors>
                     <excludes>
                         <exclude>**/remoting/**</exclude>
+                        <exclude>**/istio/model/mcp/*.java</exclude>
+                        <exclude>**/istio/model/naming/*.java</exclude>
+                        <exclude>**/istio/model/*.java</exclude>
                     </excludes>
-
                 </configuration>
                 <executions>
                     <execution>
@@ -250,6 +252,7 @@
                         <exclude>bin/*</exclude>
                         <exclude>conf/*</exclude>
                         <exclude>derby.log</exclude>
+                        <exclude>**/istio/model/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -330,9 +333,9 @@
 
     <profiles>
         <profile>
-            <id>jdk7</id>
+            <id>jdk8</id>
             <activation>
-                <jdk>[1.7,)</jdk>
+                <jdk>[1.8,)</jdk>
             </activation>
             <!-- Disable doclint under JDK 8 -->
             <reporting>
@@ -450,6 +453,7 @@
         <module>remoting/remoting-core</module>
         <module>remoting/remoting-protocol</module>
         <module>remoting/remoting-grpc</module>
+        <module>istio</module>
     </modules>
 
     <!-- 所有的子项目默认依赖 -->
@@ -529,6 +533,12 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>nacos-example</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>nacos-istio</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -681,13 +691,13 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>2.9.9</version>
+                <version>2.9.10</version>
             </dependency>
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.9.9</version>
+                <version>2.9.10</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
@@ -738,19 +748,40 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>1.17.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.8.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>protoc-gen-grpc-java</artifactId>
+                <version>1.24.0</version>
+                <type>pom</type>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <!-- 这里的ID一定要在maven setting文件中存在于server下的ID -->
-            <id>sona</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sona</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 </project>
 

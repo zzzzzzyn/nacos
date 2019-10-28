@@ -22,8 +22,7 @@ import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.nacos.api.naming.pojo.AbstractHealthChecker;
 import com.alibaba.nacos.common.util.VersionUtils;
-import com.alibaba.nacos.naming.client.ClientTypeDescription;
-import com.alibaba.nacos.naming.exception.NacosException;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.naming.healthcheck.JsonAdapter;
 import com.alibaba.nacos.naming.selector.Selector;
 import com.alibaba.nacos.naming.selector.SelectorJsonAdapter;
@@ -70,6 +69,8 @@ public class UtilsAndCommons {
 
     // ********************** Nacos HTTP Context ************************ //
 
+    public static final String NACOS_SERVER_HEADER = "Nacos-Server";
+
     public static final String NACOS_VERSION = VersionUtils.VERSION;
 
     public static final String SUPER_TOKEN = "xy";
@@ -90,11 +91,11 @@ public class UtilsAndCommons {
 
     public static final int RAFT_PUBLISH_TIMEOUT = 5000;
 
-    public static final String SERVER_VERSION = ClientTypeDescription.NACOS_SERVER_HEADER + ":" + NACOS_VERSION;
+    public static final String SERVER_VERSION = NACOS_SERVER_HEADER + ":" + NACOS_VERSION;
 
     public static final String SELF_SERVICE_CLUSTER_ENV = "naming_self_service_cluster_ips";
 
-    public static final String CACHE_KEY_SPLITER = "@";
+    public static final String CACHE_KEY_SPLITER = "@@@@";
 
     public static final String LOCAL_HOST_IP = "127.0.0.1";
 
@@ -246,7 +247,7 @@ public class UtilsAndCommons {
      * the number will be nearly uniform distribution.
      * <p>
      * <p>
-     * <p>
+     *
      * e.g. Assume there's an array which contains some IP of the servers provide the same service,
      * the caller name can be used to choose the server to achieve load balance.
      * <blockquote><pre>
@@ -259,8 +260,8 @@ public class UtilsAndCommons {
      * @param upperLimit the upper limit of the returned number, must be a positive integer, which means > 0
      * @return a number between 0(inclusive) and upperLimit(exclusive)
      * @throws IllegalArgumentException if the upper limit equals or less than 0
-     * @author jifengnan
      * @since 1.0.0
+     * @author jifengnan
      */
     public static int shakeUp(String string, int upperLimit) {
         if (upperLimit < 1) {

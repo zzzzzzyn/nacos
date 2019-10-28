@@ -31,12 +31,12 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  * @author pbting
  * @date 2019-08-30 1:08 PM
  */
-class SwitchRefresher implements Runnable {
+class SwitchRefresherTask implements Runnable {
 
     private FailoverReactor failoverReactor;
     private long lastModifiedMillis = 0L;
 
-    public SwitchRefresher(FailoverReactor failoverReactor) {
+    public SwitchRefresherTask(FailoverReactor failoverReactor) {
         this.failoverReactor = failoverReactor;
     }
 

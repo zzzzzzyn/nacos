@@ -50,10 +50,10 @@ public class FailoverReactor {
 
     public void init() {
 
-        executorService.scheduleWithFixedDelay(new SwitchRefresher(this), 0L, 5000L, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(new SwitchRefresherTask(this), 0L, 5000L, TimeUnit.MILLISECONDS);
         executorService.scheduleWithFixedDelay(new DiskFileWriterTask(serviceChangedAwareStrategy, getFailoverDir()), 30, DAY_PERIOD_MINUTES, TimeUnit.MINUTES);
         // backup file on startup if failover directory is empty.
-        executorService.schedule(new BackupFileCheckOnStartup(serviceChangedAwareStrategy, getFailoverDir()), 10000L, TimeUnit.MILLISECONDS);
+        executorService.schedule(new BackupFileCheckOnStartupTask(serviceChangedAwareStrategy, getFailoverDir()), 10000L, TimeUnit.MILLISECONDS);
     }
 
     public String getFailoverDir() {
