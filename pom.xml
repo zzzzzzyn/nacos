@@ -774,6 +774,7 @@
                 <artifactId>protobuf-java</artifactId>
                 <version>3.8.0</version>
             </dependency>
+
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>protoc-gen-grpc-java</artifactId>
