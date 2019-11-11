@@ -17,15 +17,11 @@ package com.alibaba.nacos.naming.consistency.weak.tree;
 
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 /**
  * @author satjd
  */
-
-@Configuration
 @Component("protocolConfig")
 public class ProtocolConfig {
     public static final String TREE_API_ON_PUB_PATH = UtilsAndCommons.NACOS_NAMING_CONTEXT + "/tree/datum/onPub";
@@ -104,10 +100,5 @@ public class ProtocolConfig {
 
     public int getBoltPort() {
         return boltPort;
-    }
-
-    @Bean
-    public ConflictResolver getConflictResolver() {
-        return new UnionConflictResolver(1000000);
     }
 }

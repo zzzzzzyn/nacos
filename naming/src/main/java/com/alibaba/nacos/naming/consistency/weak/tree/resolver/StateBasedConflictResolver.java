@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.naming.consistency.ephemeral.simple;
+package com.alibaba.nacos.naming.consistency.weak.tree.resolver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.alibaba.nacos.naming.consistency.Datum;
 
 /**
+ * Public interface for a state based conflict resolver.
+ *
  * @author lostcharlie
  */
-public class SimpleMisc {
-    public static final Logger SIMPLE_LOGGER = LoggerFactory.getLogger("com.alibaba.nacos.naming.simple");
+public interface StateBasedConflictResolver {
+    /**
+     * Apply target state on local data replica and resolve conflicts for concurrent updates
+     *
+     * @param current current value of the datum
+     * @param target target value of the datum
+     */
+    void merge(Datum current, Datum target);
 }
