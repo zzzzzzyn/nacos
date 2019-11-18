@@ -34,6 +34,7 @@ import com.alibaba.nacos.naming.push.grpc.reactive.NamingGrpcPushEventReactive;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -46,6 +47,7 @@ import java.util.Map;
  * @author pbting
  * @date 2019-08-30 10:11 PM
  */
+@Component
 public class GrpcPushAdaptor extends AbstractPushAdaptor {
 
     /**

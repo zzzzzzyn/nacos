@@ -25,7 +25,11 @@ import com.alibaba.nacos.api.naming.push.SubscribeMetadata;
 public class NamingUtils {
 
     public static String getGroupedName(String serviceName, String groupName) {
-        return groupName + Constants.SERVICE_INFO_SPLITER + serviceName;
+        StringBuilder resultGroupedName = new StringBuilder()
+            .append(groupName)
+            .append(Constants.SERVICE_INFO_SPLITER)
+            .append(serviceName);
+        return resultGroupedName.toString().intern();
     }
 
     public static String getServiceName(String serviceNameWithGroup) {

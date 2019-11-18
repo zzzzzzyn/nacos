@@ -29,6 +29,7 @@ import com.alibaba.nacos.naming.push.PushService;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -44,6 +45,7 @@ import java.util.concurrent.*;
  * @author pbting
  * @date 2019-08-28 9:00 AM
  */
+@Component
 public class UdpPushAdaptor extends AbstractPushAdaptor {
 
     private DatagramSocket udpSocket;

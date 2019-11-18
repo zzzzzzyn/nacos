@@ -77,7 +77,7 @@ public class InstanceController {
                     subscribeMetadata.getServiceName(),
                     subscribeMetadata.getAgent(),
                     subscribeMetadata.getClusters(),
-                    client.getIp(), Constants.PORT_IDENTIFY_NNTS, StringUtils.EMPTY,
+                    client.getIp(), Constants.PORT_IDENTIFY_NNTS, subscribeMetadata.getPushType(), StringUtils.EMPTY,
                     false, StringUtils.EMPTY, StringUtils.EMPTY, false);
             } catch (Exception e) {
                 Loggers.SRV_LOG.warn("PUSH-SERVICE: service is not modified", e);
@@ -157,7 +157,8 @@ public class InstanceController {
 
         boolean healthyOnly = Boolean.parseBoolean(WebUtils.optional(request, "healthyOnly", "false"));
 
-        return doSrvIPXT(namespaceId, serviceName, agent, clusters, clientIP, udpPort, env, isCheck, app, tenant,
+        String pushType = WebUtils.getPushType(request);
+        return doSrvIPXT(namespaceId, serviceName, agent, clusters, clientIP, udpPort, pushType, env, isCheck, app, tenant,
             healthyOnly);
     }
 
@@ -357,7 +358,7 @@ public class InstanceController {
 
 
     public JSONObject doSrvIPXT(String namespaceId, String serviceName, String agent, String clusters, String clientIP,
-                                int udpPort,
+                                int udpPort, String pushType,
                                 String env, boolean isCheck, String app, String tid, boolean healthyOnly)
         throws Exception {
 
@@ -384,7 +385,7 @@ public class InstanceController {
             if (pushService.canEnablePush(agent)) {
                 SubscribeMetadata subscribeMetadata =
                     new SubscribeMetadata(namespaceId, serviceName, clusters,
-                        agent, clientIP, udpPort, tid, app);
+                        agent, clientIP, udpPort, pushType, tid, app);
                 pushService.addClient(subscribeMetadata, pushDataSource);
                 cacheMillis = switchDomain.getPushCacheMillis(serviceName);
             }

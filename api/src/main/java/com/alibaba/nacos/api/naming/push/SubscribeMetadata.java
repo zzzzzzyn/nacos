@@ -37,6 +37,7 @@ public class SubscribeMetadata implements Serializable {
     public SubscribeMetadata(String namespaceId, String serviceName,
                              String clusters, String agent,
                              String clientIp, long port,
+                             String pushType,
                              String tid, String app) {
         this.namespaceId = namespaceId;
         this.serviceName = serviceName;
@@ -44,8 +45,17 @@ public class SubscribeMetadata implements Serializable {
         this.agent = agent;
         this.clientIp = clientIp;
         this.port = port;
+        this.pushType = pushType;
         this.tid = tid;
         this.app = app;
+    }
+
+    public String getPushType() {
+        return pushType;
+    }
+
+    public void setPushType(String pushType) {
+        this.pushType = pushType;
     }
 
     public String getNamespaceId() {
@@ -122,7 +132,7 @@ public class SubscribeMetadata implements Serializable {
 
     public String getAddrStr() {
 
-        return this.clientIp + ":" + this.port;
+        return this.clientIp + "/" + this.pushType;
     }
 
     @Override

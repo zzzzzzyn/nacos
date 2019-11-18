@@ -123,8 +123,14 @@ public abstract class AbstractServiceAwareStrategy implements IServiceAwareStrat
         return Collections.unmodifiableMap(serviceInfoMap);
     }
 
+    /**
+     * the result format of server push is json.
+     *
+     * @param json
+     * @return
+     */
     @Override
-    public ServiceInfo processDataStreamResponse(String json) {
+    public ServiceInfo processServiceAwareResult(String json) {
         ServiceInfo serviceInfo = JSON.parseObject(json, ServiceInfo.class);
         ServiceInfo oldService = serviceInfoMap.get(serviceInfo.getKey());
         if (serviceInfo.getHosts() == null || !serviceInfo.validate()) {

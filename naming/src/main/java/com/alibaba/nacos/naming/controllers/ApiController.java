@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.util.VersionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -137,8 +136,10 @@ public class ApiController extends InstanceController {
 
         boolean healthyOnly = Boolean.parseBoolean(WebUtils.optional(request, "healthyOnly", "false"));
 
+        String pushType = WebUtils.getPushType(request);
+
         return doSrvIPXT(namespaceId, NamingUtils.getGroupedName(dom, Constants.DEFAULT_GROUP),
-            agent, clusters, clientIP, udpPort, env, isCheck, app, tenant, healthyOnly);
+            agent, clusters, clientIP, udpPort, pushType, env, isCheck, app, tenant, healthyOnly);
     }
 
     @CanDistro

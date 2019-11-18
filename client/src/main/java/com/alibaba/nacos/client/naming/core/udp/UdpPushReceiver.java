@@ -17,8 +17,8 @@ package com.alibaba.nacos.client.naming.core.udp;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.naming.push.PushPacket;
-import com.alibaba.nacos.client.naming.utils.IoUtils;
 import com.alibaba.nacos.client.utils.StringUtils;
+import com.alibaba.nacos.common.utils.IoUtils;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -79,7 +79,7 @@ public class UdpPushReceiver implements Runnable {
                 PushPacket pushPacket = JSON.parseObject(json, PushPacket.class);
                 PushPacket pushResponseAck;
                 if ("dom".equals(pushPacket.getType()) || "service".equals(pushPacket.getType())) {
-                    changedAwareStrategy.processDataStreamResponse(pushPacket.getData());
+                    changedAwareStrategy.processServiceAwareResult(pushPacket.getData());
 
                     // send ack to server
                     pushResponseAck = new PushPacket("push-ack", pushPacket.getLastRefTime(), StringUtils.EMPTY);

@@ -149,7 +149,7 @@ public class ClientWorker {
         synchronized (cacheMap) {
             CacheData cacheFromMap = getCache(dataId, group);
             // multiple listeners on the same dataid+group and race condition,so double check again
-            //other listenersSinkRegistry thread beat me to set to cacheMap
+            //other listener thread beat me to set to cacheMap
             if (null != cacheFromMap) {
                 cache = cacheFromMap;
                 //reset so that server not hang this check
@@ -181,7 +181,7 @@ public class ClientWorker {
             CacheData cacheFromMap = getCache(dataId, group, tenant);
             // multiple listeners on the same dataid+group and race condition,so
             // double check again
-            // other listenersSinkRegistry thread beat me to set to cacheMap
+            // other listener thread beat me to set to cacheMap
             if (null != cacheFromMap) {
                 cache = cacheFromMap;
                 // reset so that server not hang this check
@@ -374,8 +374,12 @@ public class ClientWorker {
         }
 
         try {
-            HttpResult result = agent.httpPost(Constants.CONFIG_CONTROLLER_PATH + "/listenersSinkRegistry", headers, params,
-                agent.getEncode(), timeout);
+            // In order to prevent the server from handling the delay of the client's long task,
+            // increase the client's read timeout to avoid this problem.
+
+            long readTimeoutMs = timeout + (long) Math.round(timeout >> 1);
+            HttpResult result = agent.httpPost(Constants.CONFIG_CONTROLLER_PATH + "/listener", headers, params,
+                agent.getEncode(), readTimeoutMs);
 
             if (HttpURLConnection.HTTP_OK == result.code) {
                 setHealthServer(true);

@@ -25,7 +25,6 @@ import com.alibaba.nacos.naming.cluster.ServerListManager;
 import com.alibaba.nacos.naming.cluster.ServerStatusManager;
 import com.alibaba.nacos.naming.consistency.persistent.raft.RaftCore;
 import com.alibaba.nacos.naming.consistency.persistent.raft.RaftPeer;
-import com.alibaba.nacos.naming.consistency.persistent.raft.RaftPeerSet;
 import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.Service;
 import com.alibaba.nacos.naming.core.ServiceManager;
@@ -78,9 +77,6 @@ public class OperatorController {
 
     @Autowired
     private RaftCore raftCore;
-
-    @Autowired
-    private RaftPeerSet raftPeerSet;
 
     @Value("${nacos.support.api.version:v1}")
     private String apiVersion;

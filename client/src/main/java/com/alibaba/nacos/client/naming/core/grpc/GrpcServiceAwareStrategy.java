@@ -57,7 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
 
     public static final String PUSH_PACKET_DOM_TYPE = "dom";
-    public static final String PUSH_PACKET_DOM_SERVICE = "service";
+    public static final String PUSH_PACKET_DOM_SERVICE_KEY = "pushPacketDomServiceKey";
     public static final String PUSH_PACKET_DOM_DUMP = "dump";
     public static final String EVENT_CONTEXT_CHANNEL = "remotingChannel";
     private final ServiceInfo emptyServiceInfo = new ServiceInfo();
@@ -93,10 +93,12 @@ public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
                 new SubscribeMetadata(serverProxy.getNamespaceId(), serviceName,
                     clusters, UtilAndComs.VERSION,
                     NetUtils.localIP(), System.nanoTime(),
+                    Constants.SERVICE_AWARE_STRATEGY_GRPC,
                     serverProxy.getNamespaceId(), AppNameUtils.getAppName());
 
             requestSubscribeStream(subscribeMetadata, false);
-            updateSubscribeDuration(subscribeMetadata, result);
+            long cacheMillis = (result != null ? result.getCacheMillis() : emptyServiceInfo.getCacheMillis());
+            updateSubscribeDuration(subscribeMetadata, cacheMillis, ServiceInfo.getKey(serviceName, clusters));
         }
     }
 
@@ -112,6 +114,7 @@ public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
             return;
         }
 
+        subscribeMetadata.setPushType(Constants.SERVICE_AWARE_STRATEGY_GRPC);
         // send the subscribe remoting event
         InteractivePayload.Builder builder = InteractivePayload.newBuilder();
         builder.setSink(NamingCommonEventSinks.SUBSCRIBE_SINK);
@@ -119,26 +122,32 @@ public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
         remotingChannel.requestStream(builder.build(), grpcPushReceiver);
     }
 
-    public void updateSubscribeDuration(SubscribeMetadata subscribeMetadata, ServiceInfo result) {
+    public void updateSubscribeDuration(SubscribeMetadata subscribeMetadata, long cacheMillis, String pushKey) {
         if (!subscribeMetadata.isSuccess()) {
             return;
         }
-        result = (result == null ? emptyServiceInfo : result);
         // subscribe duration for server
         RecyclableEvent recyclableEvent =
             new RecyclableEvent(this, subscribeMetadata,
                 NamingCommonEventSinks.SUBSCRIBE_DURATION_SINK,
-                (int) TimeUnit.MILLISECONDS.toSeconds(result.getCacheMillis()));
-        recyclableEvent.setParameter(PUSH_PACKET_DOM_SERVICE, result);
+                (int) TimeUnit.MILLISECONDS.toSeconds(cacheMillis));
+        recyclableEvent.setParameter(PUSH_PACKET_DOM_SERVICE_KEY, pushKey);
         recyclableEvent.setParameter(EVENT_CONTEXT_CHANNEL, remotingChannel);
         asyncEventReactive.reactive(recyclableEvent);
     }
 
+    /**
+     * 长连接推送的时候，发现客户端和服务的 checksum 不一样的时候，会主动拉一次。
+     *
+     * @param serviceName
+     * @param clusters
+     * @throws NacosException
+     */
     @Override
     public void updateService(String serviceName, String clusters) throws NacosException {
         String result = serverProxy.queryList(serviceName, clusters, Constants.PORT_IDENTIFY_NNTS, false);
         if (StringUtils.isNotEmpty(result)) {
-            processDataStreamResponse(result);
+            processServiceAwareResult(result);
         }
     }
 

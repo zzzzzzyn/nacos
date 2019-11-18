@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.common.util;
+package com.alibaba.nacos.naming.push;
+
+
+import com.alibaba.nacos.naming.BaseTest;
+import org.junit.Test;
 
 /**
  * @author nkorange
- * @since 0.8.0
  */
-public class HttpMethod {
+public class PushClientTest extends BaseTest {
 
-    public static final String GET = "GET";
+    @Test
+    public void testAddClient() {
 
-    public static final String HEAD = "HEAD";
-
-    public static final String POST = "POST";
-
-    public static final String PUT = "PUT";
-
-    public static final String PATCH = "PATCH";
-
-    public static final String DELETE = "DELETE";
-
-    public static final String OPTIONS = "OPTIONS";
-
-    public static final String TRACE = "TRACE";
+        String namespaceId = "public";
+        String serviceName = "test.1";
+        String clusters = "DEFAULT";
+        String agent = "Nacos-Java-Client:v1.1.4";
+        String clientIp = "xxxxx";
+        String app = "nacos";
+        int udpPort = 10000;
+    }
 }

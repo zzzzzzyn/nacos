@@ -103,7 +103,7 @@ public class UdpServiceAwareStrategy extends AbstractServiceAwareStrategy {
     public void updateService(String serviceName, String clusters) throws NacosException {
         String result = serverProxy.queryList(serviceName, clusters, pushReceiver.getUDPPort(), false);
         if (StringUtils.isNotEmpty(result)) {
-            processDataStreamResponse(result);
+            processServiceAwareResult(result);
         }
     }
 

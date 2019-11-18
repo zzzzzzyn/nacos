@@ -39,9 +39,8 @@ public class GrpcPushReceiver implements IRemotingRequestStreamObserver {
         String pushPackJson = interactivePayload.getPayload().toStringUtf8();
         PushPacket pushPacket = JSON.parseObject(pushPackJson, PushPacket.class);
         NAMING_LOGGER.info("[gRPC]receive server push with, the data is " + pushPackJson);
-        if (GrpcServiceAwareStrategy.PUSH_PACKET_DOM_TYPE.equals(pushPacket.getType()) ||
-            GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE.equals(pushPacket.getType())) {
-            grpcServiceChangedAwareStrategy.processDataStreamResponse(pushPacket.getData());
+        if (GrpcServiceAwareStrategy.PUSH_PACKET_DOM_TYPE.equals(pushPacket.getType())) {
+            grpcServiceChangedAwareStrategy.processServiceAwareResult(pushPacket.getData());
         } else if (GrpcServiceAwareStrategy.PUSH_PACKET_DOM_DUMP.equals(pushPacket.getType())) {
             // dump data to server
         } else {

@@ -13,17 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.common.constant;
+package com.alibaba.nacos.common.utils;
 
 /**
- * Nacos header constants
- *
- * @author ly
+ * @author nkorange
+ * @since 0.8.0
  */
-public interface HttpHeaderConsts {
+public class HttpMethod {
 
-    String CLIENT_VERSION_HEADER = "Client-Version";
-    String USER_AGENT_HEADER = "User-Agent";
-    String PUSH_TYPE = "Push-Type";
+    public static final String GET = "GET";
 
+    public static final String HEAD = "HEAD";
+
+    public static final String POST = "POST";
+
+    public static final String PUT = "PUT";
+
+    public static final String PATCH = "PATCH";
+
+    public static final String DELETE = "DELETE";
+
+    public static final String OPTIONS = "OPTIONS";
+
+    public static final String TRACE = "TRACE";
 }

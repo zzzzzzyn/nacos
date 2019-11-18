@@ -62,7 +62,7 @@ public interface IServiceAwareStrategy {
      * @param json
      * @return
      */
-    ServiceInfo processDataStreamResponse(String json);
+    ServiceInfo processServiceAwareResult(String json);
 
     /**
      * get service info mapping

@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.core.utils;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.common.constant.HttpHeaderConsts;
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,8 +79,8 @@ public class WebUtils {
      *
      * @param request HttpServletRequest
      * @return the value of the request header "user-agent", or the value of the
-     *         request header "client-version" if the request does not have a
-     *         header of "user-agent"
+     * request header "client-version" if the request does not have a
+     * header of "user-agent"
      */
     public static String getUserAgent(HttpServletRequest request) {
         String userAgent = request.getHeader(HttpHeaderConsts.USER_AGENT_HEADER);
@@ -87,5 +88,19 @@ public class WebUtils {
             userAgent = StringUtils.defaultIfEmpty(request.getHeader(HttpHeaderConsts.CLIENT_VERSION_HEADER), StringUtils.EMPTY);
         }
         return userAgent;
+    }
+
+    /**
+     * In order to be compatible with older versions, the default push type is udp
+     *
+     * @param request
+     * @return
+     */
+    public static String getPushType(HttpServletRequest request) {
+        String pushType = request.getHeader(HttpHeaderConsts.PUSH_TYPE);
+        if (StringUtils.isEmpty(pushType)) {
+            pushType = Constants.SERVICE_AWARE_STRATEGY_UDP;
+        }
+        return pushType;
     }
 }

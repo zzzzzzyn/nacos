@@ -83,13 +83,13 @@ public class NacosNamingService implements NamingService {
     }
 
     /**
-     * @param serverList server list
-     * @param apiVersion the value is v1 or v2 .v1 will use udp push and v2 use gRPC
+     * @param serverList           server list
+     * @param serviceAwareStrategy the value is udp or gRPC .
      */
-    public NacosNamingService(String serverList, String apiVersion) {
+    public NacosNamingService(String serverList, String serviceAwareStrategy) {
         Properties properties = new Properties();
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, serverList);
-        properties.setProperty(PropertyKeyConst.API_VERSION, apiVersion);
+        properties.setProperty(PropertyKeyConst.SERVICE_AWARE_STRATEGY, serviceAwareStrategy);
         init(properties);
     }
 
@@ -112,7 +112,7 @@ public class NacosNamingService implements NamingService {
     }
 
     private void initServiceChangedAwareStrategy(Properties properties) {
-        String apiVersion = properties.getProperty(PropertyKeyConst.API_VERSION, Constants.API_VERSION_V1);
+        String serviceAwareStrategy = properties.getProperty(PropertyKeyConst.SERVICE_AWARE_STRATEGY, Constants.SERVICE_AWARE_STRATEGY_GRPC);
         ServiceAwareStrategyBuilder builder = ServiceAwareStrategyBuilder.builder()
             .setEventDispatcher(eventDispatcher)
             .setNamingProxy(serverProxy)
@@ -120,20 +120,22 @@ public class NacosNamingService implements NamingService {
             .isLoadCacheAtStart(isLoadCacheAtStart(properties))
             .setPollingThreadCount(initPollingThreadCount(properties));
 
-        if (Constants.API_VERSION_V1.equals(apiVersion)) {
-            serviceAwareStrategy =
+        if (Constants.SERVICE_AWARE_STRATEGY_UDP.equals(serviceAwareStrategy)) {
+            this.serviceAwareStrategy =
                 builder.build(UdpServiceAwareStrategy.class);
+            serverProxy.setPushType(Constants.SERVICE_AWARE_STRATEGY_UDP);
             return;
         }
 
-        if (Constants.API_VERSION_V2.equals(apiVersion)) {
-            serviceAwareStrategy =
+        if (Constants.SERVICE_AWARE_STRATEGY_GRPC.equals(serviceAwareStrategy)) {
+            this.serviceAwareStrategy =
                 builder.build(GrpcServiceAwareStrategy.class);
+            serverProxy.setPushType(Constants.SERVICE_AWARE_STRATEGY_GRPC);
             return;
         }
 
         // the default if input error
-        serviceAwareStrategy = builder.build(UdpServiceAwareStrategy.class);
+        this.serviceAwareStrategy = builder.build(UdpServiceAwareStrategy.class);
     }
 
     private int initClientBeatThreadCount(Properties properties) {

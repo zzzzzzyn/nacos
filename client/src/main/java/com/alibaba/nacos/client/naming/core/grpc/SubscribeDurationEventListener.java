@@ -53,20 +53,23 @@ public class SubscribeDurationEventListener implements IPipelineEventListener<Re
         InteractivePayload response = remotingChannel.requestResponse(InteractivePayload.newBuilder().setSink(NamingCommonEventSinks.SUBSCRIBE_DURATION_SINK)
             .setPayload(ByteString.copyFrom(jsonContent.getBytes(Charset.forName("utf-8")))).build());
 
-        ServiceInfo serviceInfo = event.getParameter(GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE);
+
+        String pushPacketDomServiceKey = event.getParameter(GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE_KEY);
+        ServiceInfo serviceInfo =
+            grpcServiceChangedAwareStrategy.getServiceInfoMap().get(pushPacketDomServiceKey);
         String responsePayload = response.getPayload().toStringUtf8();
 
         if (NamingCommonEventSinks.SUBSCRIBE_SINK.equals(responsePayload)) {
             grpcServiceChangedAwareStrategy.requestSubscribeStream(subscribeMetadata, true);
-            grpcServiceChangedAwareStrategy.updateSubscribeDuration(subscribeMetadata, serviceInfo);
+            grpcServiceChangedAwareStrategy.updateSubscribeDuration(subscribeMetadata, serviceInfo.getCacheMillis(), pushPacketDomServiceKey);
             event.setCancel(true);
         } else if (!Constants.NULL_STRING.equals(responsePayload)
             && !serviceInfo.getChecksum().equals(responsePayload)) {
+            // 定时的检测客户端内存数据是否和服务端一致(通过 checksum 来检验)。
             NAMING_LOGGER.info("[gRPC] subscribe duration aware checksum is different from server response. local is {},server is {}", serviceInfo.getChecksum(), responsePayload);
             grpcServiceChangedAwareStrategy.updateServiceAndNotify(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters());
             serviceInfo = grpcServiceChangedAwareStrategy.getServiceInfo(subscribeMetadata.getServiceName(), subscribeMetadata.getClusters());
             // use the newest to override
-            event.setParameter(GrpcServiceAwareStrategy.PUSH_PACKET_DOM_SERVICE, serviceInfo);
             event.setRecycleInterval((int) TimeUnit.MILLISECONDS.toSeconds(serviceInfo.getCacheMillis()));
         }
         return true;

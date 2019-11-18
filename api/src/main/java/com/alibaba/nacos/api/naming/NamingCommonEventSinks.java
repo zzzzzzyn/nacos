@@ -21,7 +21,7 @@ package com.alibaba.nacos.api.naming;
  */
 public interface NamingCommonEventSinks {
 
-    String SUBSCRIBE_SINK = "/v2/ns/subscribe";
+    String SUBSCRIBE_SINK = "/ns/service/subscribe";
 
-    String SUBSCRIBE_DURATION_SINK = "/v2/ns/subscribe/duration";
+    String SUBSCRIBE_DURATION_SINK = "/ns/service/subscribe/duration";
 }
