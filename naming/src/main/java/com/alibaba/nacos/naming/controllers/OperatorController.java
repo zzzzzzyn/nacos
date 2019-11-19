@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.push.AckEntry;
+import com.alibaba.nacos.common.utils.VersionUtils;
 import com.alibaba.nacos.core.utils.SystemUtils;
 import com.alibaba.nacos.naming.cluster.ServerListManager;
 import com.alibaba.nacos.naming.cluster.ServerStatusManager;
@@ -35,7 +36,6 @@ import com.alibaba.nacos.naming.web.NeedAuth;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,13 +78,10 @@ public class OperatorController {
     @Autowired
     private RaftCore raftCore;
 
-    @Value("${nacos.support.api.version:v1}")
-    private String apiVersion;
-
-    @GetMapping("/api/version")
+    @GetMapping("/server/version")
     public ResponseEntity getServerSupportApiVersion() {
 
-        return ResponseEntity.ok(apiVersion);
+        return ResponseEntity.ok().body(VersionUtils.VERSION);
     }
 
     @RequestMapping("/push/state")

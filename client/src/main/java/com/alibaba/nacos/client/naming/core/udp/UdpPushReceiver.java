@@ -42,35 +42,39 @@ public class UdpPushReceiver implements Runnable {
 
     private UdpServiceAwareStrategy changedAwareStrategy;
 
+    private volatile boolean isDestroy = false;
+
     public UdpPushReceiver(UdpServiceAwareStrategy changedAwareStrategy) {
         try {
             this.changedAwareStrategy = changedAwareStrategy;
             udpSocket = new DatagramSocket();
-
-            executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread thread = new Thread(r);
-                    thread.setDaemon(true);
-                    thread.setName("com.alibaba.nacos.naming.push.receiver");
-                    return thread;
-                }
-            });
-
-            executorService.execute(this);
+            initUdpReceiver();
         } catch (Exception e) {
             NAMING_LOGGER.error("[NA] init udp socket failed", e);
         }
     }
 
+    private void initUdpReceiver() {
+        executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                thread.setName("com.alibaba.nacos.naming.push.receiver");
+                return thread;
+            }
+        });
+
+        executorService.execute(this);
+    }
+
     @Override
     public void run() {
-        while (true) {
+        while (!isDestroy) {
             try {
                 // byte[] is initialized with 0 full filled by default
                 byte[] buffer = new byte[UDP_MSS];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
                 udpSocket.receive(packet);
 
                 String json = new String(IoUtils.tryDecompress(packet.getData()), "UTF-8").trim();
@@ -101,5 +105,16 @@ public class UdpPushReceiver implements Runnable {
 
     public int getUDPPort() {
         return udpSocket.getLocalPort();
+    }
+
+    /**
+     * destroy some resource
+     */
+    public void destroy() {
+        isDestroy = true;
+        udpSocket.close();
+        executorService.shutdown();
+        executorService = null;
+        udpSocket = null;
     }
 }

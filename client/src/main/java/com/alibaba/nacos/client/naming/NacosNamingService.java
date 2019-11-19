@@ -112,7 +112,7 @@ public class NacosNamingService implements NamingService {
     }
 
     private void initServiceChangedAwareStrategy(Properties properties) {
-        String serviceAwareStrategy = properties.getProperty(PropertyKeyConst.SERVICE_AWARE_STRATEGY, Constants.SERVICE_AWARE_STRATEGY_GRPC);
+        String serviceAwareStrategy = properties.getProperty(PropertyKeyConst.SERVICE_AWARE_STRATEGY, InitUtils.initDefaultPushType(serverProxy));
         ServiceAwareStrategyBuilder builder = ServiceAwareStrategyBuilder.builder()
             .setEventDispatcher(eventDispatcher)
             .setNamingProxy(serverProxy)
@@ -137,6 +137,7 @@ public class NacosNamingService implements NamingService {
         // the default if input error
         this.serviceAwareStrategy = builder.build(UdpServiceAwareStrategy.class);
     }
+
 
     private int initClientBeatThreadCount(Properties properties) {
         if (properties == null) {

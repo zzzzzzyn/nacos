@@ -70,6 +70,11 @@ public abstract class AbstractServiceAwareStrategy implements IServiceAwareStrat
     }
 
     @Override
+    public void destroy() {
+        // nothing to do
+    }
+
+    @Override
     public ServiceInfo getServiceInfo(String serviceName, String clusters) {
         NAMING_LOGGER.debug("failover-mode: " + failoverReactor.isFailoverSwitch());
         String key = ServiceInfo.getKey(serviceName, clusters);

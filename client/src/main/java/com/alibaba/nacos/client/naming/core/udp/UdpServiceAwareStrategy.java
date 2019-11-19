@@ -64,6 +64,14 @@ public class UdpServiceAwareStrategy extends AbstractServiceAwareStrategy {
         this.pushReceiver = new UdpPushReceiver(this);
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        executor.shutdown();
+        pushReceiver.destroy();
+        executor = null;
+    }
+
     public ScheduledFuture<?> addTask(ServiceUpdateTask task) {
         return executor.schedule(task, DEFAULT_DELAY, TimeUnit.MILLISECONDS);
     }

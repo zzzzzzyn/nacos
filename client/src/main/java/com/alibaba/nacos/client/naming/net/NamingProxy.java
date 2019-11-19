@@ -410,16 +410,7 @@ public class NamingProxy {
         long end;
         checkSignature(params);
         List<String> headers = builderHeaders();
-
-        String url;
-        if (curServer.startsWith(UtilAndComs.HTTPS) || curServer.startsWith(UtilAndComs.HTTP)) {
-            url = curServer + api;
-        } else {
-            if (!curServer.contains(UtilAndComs.SERVER_ADDR_IP_SPLITER)) {
-                curServer = curServer + UtilAndComs.SERVER_ADDR_IP_SPLITER + serverPort;
-            }
-            url = HttpClient.getPrefix() + curServer + api;
-        }
+        String url = builderUrl(api, curServer);
 
         HttpClient.HttpResult result = HttpClient.request(url, headers, params, UtilAndComs.ENCODING, method);
         end = System.currentTimeMillis();
@@ -438,6 +429,19 @@ public class NamingProxy {
         throw new NacosException(NacosException.SERVER_ERROR, "failed to req API:"
             + curServer + api + ". code:"
             + result.code + " msg: " + result.content);
+    }
+
+    private String builderUrl(String api, String curServer) {
+        String url;
+        if (curServer.startsWith(UtilAndComs.HTTPS) || curServer.startsWith(UtilAndComs.HTTP)) {
+            url = curServer + api;
+        } else {
+            if (!curServer.contains(UtilAndComs.SERVER_ADDR_IP_SPLITER)) {
+                curServer = curServer + UtilAndComs.SERVER_ADDR_IP_SPLITER + serverPort;
+            }
+            url = HttpClient.getPrefix() + curServer + api;
+        }
+        return url;
     }
 
     public String reqAPI(String api, Map<String, String> params, List<String> servers) throws NacosException {

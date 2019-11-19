@@ -19,10 +19,18 @@ package com.alibaba.nacos.client.naming.utils;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.SystemPropertyKeyConst;
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.client.naming.net.NamingProxy;
 import com.alibaba.nacos.client.utils.*;
+import com.alibaba.nacos.common.utils.HttpMethod;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Callable;
+
+import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
 /**
  * @author liaochuntao
@@ -150,4 +158,36 @@ public class InitUtils {
         return endpointUrl + ":" + endpointPort;
     }
 
+    public static String initDefaultPushType(NamingProxy serverProxy) {
+
+        List<String> servers = serverProxy.getServers();
+        Random random = new Random(System.currentTimeMillis());
+        int index = random.nextInt(servers.size());
+
+        for (int i = 0; i < servers.size(); i++) {
+            String server = servers.get(index);
+            try {
+                String version =
+                    serverProxy.callServer(UtilAndComs.NACOS_SERVER_VERSION, new HashMap<String, String>(2), server, HttpMethod.GET);
+                String[] versionArry = version.split("[.]");
+
+                int[] intVersionArray = new int[]{Integer.valueOf(versionArry[0]), Integer.valueOf(versionArry[1]), Integer.valueOf(versionArry[2])};
+
+                if (intVersionArray[0] >= 1 &&
+                    intVersionArray[1] >= 1 && intVersionArray[2] >= 5) {
+                    return Constants.SERVICE_AWARE_STRATEGY_GRPC;
+                } else {
+                    return Constants.SERVICE_AWARE_STRATEGY_UDP;
+                }
+            } catch (NacosException e) {
+                NAMING_LOGGER.error("request {} failed.", server, e);
+            } catch (Exception e) {
+                NAMING_LOGGER.error("request {} failed.", server, e);
+            }
+
+            index = (index + 1) % servers.size();
+        }
+
+        return Constants.SERVICE_AWARE_STRATEGY_UDP;
+    }
 }

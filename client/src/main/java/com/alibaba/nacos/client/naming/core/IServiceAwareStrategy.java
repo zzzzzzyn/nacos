@@ -36,6 +36,12 @@ public interface IServiceAwareStrategy {
      */
     void initServiceAwareStrategy(ServiceAwareStrategyBuilder.ServiceAwareStrategyConfig serviceChangedStrategyConfig);
 
+
+    /**
+     * destroy some resources in memory.
+     */
+    void destroy();
+
     /**
      * can get service info use this method.
      * will get from local memory first,if is empty ,then get from server directly.

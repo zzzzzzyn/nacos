@@ -25,7 +25,7 @@ import io.netty.util.concurrent.MultithreadEventExecutorGroup;
  */
 public class AsyncEventReactive extends DefaultEventReactive {
 
-    private static final MultithreadEventExecutorGroup DEFAULT_EVENT_EXECUTOR =
+    private final MultithreadEventExecutorGroup defaultEventExecutorGroup =
         new DefaultEventExecutorGroup(Runtime.getRuntime().availableProcessors() * 2,
             (runnable) -> {
                 Thread thread = new Thread(runnable);
@@ -34,7 +34,7 @@ public class AsyncEventReactive extends DefaultEventReactive {
                 return thread;
             });
 
-    protected MultithreadEventExecutorGroup eventExecutorGroup = DEFAULT_EVENT_EXECUTOR;
+    protected MultithreadEventExecutorGroup eventExecutorGroup = defaultEventExecutorGroup;
 
     public AsyncEventReactive() {
     }
@@ -47,5 +47,12 @@ public class AsyncEventReactive extends DefaultEventReactive {
     public void reactive(final Event event) {
 
         eventExecutorGroup.execute(() -> super.reactive0(event));
+    }
+
+    public void destroy() {
+        eventExecutorGroup.shutdownGracefully();
+        if (eventExecutorGroup != defaultEventExecutorGroup) {
+            defaultEventExecutorGroup.shutdownGracefully();
+        }
     }
 }

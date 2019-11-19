@@ -200,6 +200,18 @@ public class GrpcServiceAwareStrategy extends AbstractServiceAwareStrategy {
         }
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        asyncEventReactive.destroy();
+        for (AbstractRemotingChannel remotingChannel : remotingChannelMapping.values()) {
+            remotingChannel.close();
+        }
+        this.remotingChannel.close();
+        remotingChannelMapping.clear();
+        serviceNameRequestStreamRegistry.clear();
+    }
+
     public AbstractRemotingChannel getRemotingChannel() {
         return remotingChannel;
     }

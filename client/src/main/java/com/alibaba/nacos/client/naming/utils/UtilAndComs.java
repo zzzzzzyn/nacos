@@ -32,6 +32,8 @@ public class UtilAndComs {
 
     public static String NACOS_URL_SERVICE = NACOS_URL_BASE + "/service";
 
+    public static String NACOS_SERVER_VERSION = NACOS_URL_BASE + "/operator/server/version";
+
     public static final String ENCODING = "UTF-8";
 
     public static final String ENV_LIST_KEY = "envList";

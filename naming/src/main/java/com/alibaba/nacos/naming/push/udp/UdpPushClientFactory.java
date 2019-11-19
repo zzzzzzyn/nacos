@@ -38,6 +38,10 @@ public class UdpPushClientFactory implements IPushClientFactory {
     @Override
     public AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
 
+        if (!Constants.SERVICE_AWARE_STRATEGY_UDP.equals(subscribeMetadata.getPushType())) {
+            return null;
+        }
+
         long port = subscribeMetadata.getPort();
         if (port <= Constants.PORT_IDENTIFY_NNTS || port > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
 
