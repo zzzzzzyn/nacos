@@ -382,7 +382,7 @@ public class InstanceController {
 
         // now try to enable the push
         try {
-            if (pushService.canEnablePush(agent)) {
+            if (udpPort > 0 && pushService.canEnablePush(agent)) {
                 SubscribeMetadata subscribeMetadata =
                     new SubscribeMetadata(namespaceId, serviceName, clusters,
                         agent, clientIP, udpPort, pushType, tid, app);

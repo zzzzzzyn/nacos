@@ -181,11 +181,6 @@ public class Constants {
      */
     public static final int PORT_IDENTIFY_NNTS = 0;
 
-    /**
-     * means use gRPC to subscribe .
-     */
-    public static final int PORT_IDENTIFY_GRPC_BIGGER = Integer.MAX_VALUE;
-
     public static final String DEFAULT_INSTANCE_ID_GENERATOR = "simple";
 
     public static final String SNOWFLAKE_INSTANCE_ID_GENERATOR = "snowflake";

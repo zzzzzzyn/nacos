@@ -43,7 +43,7 @@ public class UdpPushClientFactory implements IPushClientFactory {
         }
 
         long port = subscribeMetadata.getPort();
-        if (port <= Constants.PORT_IDENTIFY_NNTS || port > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
+        if (port <= Constants.PORT_IDENTIFY_NNTS || port > Integer.MAX_VALUE) {
 
             return null;
         }

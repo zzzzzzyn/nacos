@@ -32,7 +32,7 @@ public class GrpcPushClientFactory implements IPushClientFactory {
     @Override
     public AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource) {
 
-        if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
+        if (Constants.SERVICE_AWARE_STRATEGY_GRPC.equals(subscribeMetadata.getPushType())) {
             return new GrpcPushClient(subscribeMetadata, dataSource, null);
         }
 
@@ -42,7 +42,7 @@ public class GrpcPushClientFactory implements IPushClientFactory {
     @Override
     public <T> AbstractPushClient newPushClient(SubscribeMetadata subscribeMetadata, DataSource dataSource, T pusher) {
 
-        if (subscribeMetadata.getPort() > Constants.PORT_IDENTIFY_GRPC_BIGGER) {
+        if (Constants.SERVICE_AWARE_STRATEGY_GRPC.equals(subscribeMetadata.getPushType())) {
             return new GrpcPushClient(subscribeMetadata, dataSource, (GrpcRequestStreamInteractive) pusher);
         }
 
