@@ -52,7 +52,6 @@ public class GrpcClientEntranceServiceImpl
     @Override
     public StreamObserver<InteractivePayload> requestChannel(
         StreamObserver<InteractivePayload> responseObserver) {
-
         return new ClientBiStreamObserver(this.clientEventReactive,
             (CallStreamObserver<InteractivePayload>) responseObserver);
     }
