@@ -297,7 +297,7 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
     public List<Instance> allIPs(boolean ephemeral) {
         List<Instance> allIPs = new ArrayList<>();
         for (Map.Entry<String, Cluster> entry : clusterMap.entrySet()) {
-            allIPs.addAll(entry.getValue().allIPs(ephemeral));
+            allIPs.addAll(entry.getValue().allIPs(ephemeral).values());
         }
 
         return allIPs;

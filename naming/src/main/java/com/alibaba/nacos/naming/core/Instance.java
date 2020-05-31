@@ -230,10 +230,14 @@ public class Instance extends com.alibaba.nacos.api.naming.pojo.Instance impleme
 
     @JsonIgnore
     public String getDatumKey() {
-        if (getPort() > 0) {
-            return getIp() + ":" + getPort() + ":" + UtilsAndCommons.LOCALHOST_SITE + ":" + getClusterName();
+        return buildDatumKey(getIp(), getPort(), getClusterName());
+    }
+
+    public static String buildDatumKey(final String ip, final int port, final String clusterName) {
+        if (port > 0) {
+            return ip + ":" + port + ":" + UtilsAndCommons.LOCALHOST_SITE + ":" + clusterName;
         } else {
-            return getIp() + ":" + UtilsAndCommons.LOCALHOST_SITE + ":" + getClusterName();
+            return ip + ":" + UtilsAndCommons.LOCALHOST_SITE + ":" + clusterName;
         }
     }
 
@@ -363,4 +367,6 @@ public class Instance extends com.alibaba.nacos.api.naming.pojo.Instance impleme
 
         return this.toString().compareTo(ipKey);
     }
+
+
 }

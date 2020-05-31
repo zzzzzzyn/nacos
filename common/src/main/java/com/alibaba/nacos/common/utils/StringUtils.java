@@ -15,8 +15,6 @@
  */
 package com.alibaba.nacos.common.utils;
 
-import org.apache.commons.lang3.CharSequenceUtils;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;

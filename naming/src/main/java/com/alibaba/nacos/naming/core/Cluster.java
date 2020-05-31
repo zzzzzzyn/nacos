@@ -48,10 +48,10 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
     private HealthCheckTask checkTask;
 
     @JsonIgnore
-    private Set<Instance> persistentInstances = new HashSet<>();
+    private Map<String, Instance> persistentInstances = new HashMap<>();
 
     @JsonIgnore
-    private Set<Instance> ephemeralInstances = new HashSet<>();
+    private Map<String, Instance> ephemeralInstances = new HashMap<>();
 
     @JsonIgnore
     private Service service;
@@ -94,13 +94,13 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
 
     public List<Instance> allIPs() {
         List<Instance> allInstances = new ArrayList<>();
-        allInstances.addAll(persistentInstances);
-        allInstances.addAll(ephemeralInstances);
+        allInstances.addAll(persistentInstances.values());
+        allInstances.addAll(ephemeralInstances.values());
         return allInstances;
     }
 
-    public List<Instance> allIPs(boolean ephemeral) {
-        return ephemeral ? new ArrayList<>(ephemeralInstances) : new ArrayList<>(persistentInstances);
+    public Map<String, Instance> allIPs(boolean ephemeral) {
+        return ephemeral ? new HashMap<>(ephemeralInstances) : new HashMap<>(persistentInstances);
     }
 
     public void init() {
@@ -177,7 +177,7 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
         super.clone();
         Cluster cluster = new Cluster(this.getName(), service);
         cluster.setHealthChecker(getHealthChecker().clone());
-        cluster.persistentInstances = new HashSet<>();
+        cluster.persistentInstances = new HashMap<>();
         cluster.checkTask = null;
         cluster.metadata = new HashMap<>(metadata);
         return cluster;
@@ -189,13 +189,11 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
 
     public void updateIPs(List<Instance> ips, boolean ephemeral) {
 
-        Set<Instance> toUpdateInstances = ephemeral ? ephemeralInstances : persistentInstances;
+        Map<String, Instance> toUpdateInstances = ephemeral ? ephemeralInstances : persistentInstances;
 
         HashMap<String, Instance> oldIPMap = new HashMap<>(toUpdateInstances.size());
 
-        for (Instance ip : toUpdateInstances) {
-            oldIPMap.put(ip.getDatumKey(), ip);
-        }
+        toUpdateInstances.forEach(oldIPMap::put);
 
         List<Instance> updatedIPs = updatedIPs(ips, oldIPMap.values());
         if (updatedIPs.size() > 0) {
@@ -243,7 +241,7 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
             }
         }
 
-        toUpdateInstances = new HashSet<>(ips);
+        toUpdateInstances = ips.stream().collect(HashMap::new, (m, v) -> m.put(v.getDatumKey(), v), HashMap::putAll);
 
         if (ephemeral) {
             ephemeralInstances = toUpdateInstances;
@@ -383,7 +381,7 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
     }
 
     public boolean contains(Instance ip) {
-        return persistentInstances.contains(ip) || ephemeralInstances.contains(ip);
+        return persistentInstances.containsKey(ip.getDatumKey()) || ephemeralInstances.containsKey(ip.getDatumKey());
     }
 
     /**

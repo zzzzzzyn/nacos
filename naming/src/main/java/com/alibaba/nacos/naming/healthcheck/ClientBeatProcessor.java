@@ -25,6 +25,7 @@ import com.alibaba.nacos.naming.push.PushService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -69,23 +70,23 @@ public class ClientBeatProcessor implements Runnable {
         String clusterName = rsInfo.getCluster();
         int port = rsInfo.getPort();
         Cluster cluster = service.getClusterMap().get(clusterName);
-        List<Instance> instances = cluster.allIPs(true);
+        final String key = Instance.buildDatumKey(ip, port, clusterName);
 
-        for (Instance instance : instances) {
-            if (instance.getIp().equals(ip) && instance.getPort() == port) {
-                if (Loggers.EVT_LOG.isDebugEnabled()) {
-                    Loggers.EVT_LOG.debug("[CLIENT-BEAT] refresh beat: {}", rsInfo.toString());
-                }
-                instance.setLastBeat(System.currentTimeMillis());
-                if (!instance.isMarked()) {
-                    if (!instance.isHealthy()) {
-                        instance.setHealthy(true);
-                        Loggers.EVT_LOG.info("service: {} {POS} {IP-ENABLED} valid: {}:{}@{}, region: {}, msg: client beat ok",
+        Map<String, Instance> instances = cluster.allIPs(true);
+        instances.computeIfPresent(key, (name, instance) -> {
+            if (Loggers.EVT_LOG.isDebugEnabled()) {
+                Loggers.EVT_LOG.debug("[CLIENT-BEAT] refresh beat: {}", rsInfo.toString());
+            }
+            instance.setLastBeat(System.currentTimeMillis());
+            if (!instance.isMarked()) {
+                if (!instance.isHealthy()) {
+                    instance.setHealthy(true);
+                    Loggers.EVT_LOG.info("service: {} {POS} {IP-ENABLED} valid: {}:{}@{}, region: {}, msg: client beat ok",
                             cluster.getService().getName(), ip, port, cluster.getName(), UtilsAndCommons.LOCALHOST_SITE);
-                        getPushService().serviceChanged(service);
-                    }
+                    getPushService().serviceChanged(service);
                 }
             }
-        }
+            return instance;
+        });
     }
 }
